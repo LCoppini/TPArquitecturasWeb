@@ -1,4 +1,4 @@
-package org.example.factory;
+package org.entrega1.factory;
 
 import java.sql.Connection;
 

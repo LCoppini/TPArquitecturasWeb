@@ -1,6 +1,6 @@
-package org.example.repository;
+package org.entrega1.repository;
 
-import org.example.factory.ConnectionManager;
+import org.entrega1.factory.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -55,8 +55,12 @@ public final class MySQLConnectionManager implements ConnectionManager {
 
     // Preguntar el lunes ----> ¿Es necesario este metodo aunque no se use derby?
     @Override
-    public void shutdown() {
-
+    public void shutdown(){
+        try{
+            this.getConnection().close();
+        }catch(SQLException e){
+            e.printStackTrace();
+        }
     }
 
 

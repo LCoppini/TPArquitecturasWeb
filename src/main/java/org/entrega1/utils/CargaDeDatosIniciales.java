@@ -3,6 +3,7 @@ package org.entrega1.utils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.entrega1.factory.DAOFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,7 +20,6 @@ public class CargaDeDatosIniciales {
       private final ProductoDAO productoDAO;
 
     public CargaDeDatosIniciales() {
-        //Los this
         DAOFactory f =DAOFactory.getInstances();
         this.clienteDAO = f.createClienteDAO();
         this.facturaDAO = f.crearFacturaDAO();
@@ -28,9 +28,6 @@ public class CargaDeDatosIniciales {
     }
     // Preguntarrrr
     public void cargarClientes(String resourcePath){
-            //Cargo los datos De los clientes
-            //InputStream is = mustGetResource(resourcePath);
-            //Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8);
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
                     .parse(new FileReader("clientes.csv"))) {
 
@@ -38,9 +35,9 @@ public class CargaDeDatosIniciales {
                     String nombre = row.get("nombre");
                     String email = row.get("email");
 
-                    clienteDAO.create(new Cliente(null, nombre, email));
+                    clienteDAO.crearUsuarioDAO(new Cliente(null, nombre, email));
                 }
-                // podria ir un mensaje
+
             } catch (IOException e) {
                 throw new RuntimeException("Error cargando clientes desde clientes.csv", e);
         }
@@ -55,17 +52,15 @@ public class CargaDeDatosIniciales {
                 String nombre = row.get("nombre");
                 Integer valor = Integer.parseInt(row.get("valor"));
 
-                productosDAO.create(new Productos(null, nombre, valor));
+                productosDAO.crearProductoDAO(new Productos(null, nombre, valor));
             }
-            // podria ir un mensaje
+
         } catch (IOException e) {
             throw new RuntimeException("Error cargando prodcutos", e);
         }
     }
 
     private void cargarFactura(String resourcePath) {
-        //Carga de facturas.
-        //preguntar si se pasa los ds IDs o se deja null para que venga del construct de la factura
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
                 .parse(new FileReader("facturas.csv"))) {
 
@@ -73,7 +68,7 @@ public class CargaDeDatosIniciales {
                 Integer idFactura = Integer.parseInt(row.get("idFactura"));
                 Integer idCliente = Integer.parseInt(row.get("idCliente"));
 
-                facturasDAO.create(new Facturas(idFactura, idCliente));
+                facturasDAO.crearFacturaDAO(new Facturas(idFactura, idCliente));
             }
             // podria ir un mensaje
         } catch (IOException e) {
@@ -91,10 +86,9 @@ public class CargaDeDatosIniciales {
                 Integer idProducto = Integer.parseInt(row.get("idProducto"));
                 Integer cantidad = Integer.parseInt(row.get("cantidad"));
 
-                facturasProductosDAO.create(new Facturasproductos(idFactura,idProducto, cantidad));
-                // volver a calcular la cantidad?
+                facturasProductosDAO.crearFacturaPedidoDAO(new Facturasproductos(idFactura,idProducto, cantidad));
             }
-            // podria ir un mensaje
+
         } catch (IOException e) {
             throw new RuntimeException("Error cargando prodcutos", e);
         }

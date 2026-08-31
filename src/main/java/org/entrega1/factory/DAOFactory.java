@@ -1,6 +1,6 @@
-package org.example.factory;
+package org.entrega1.factory;
 
-import org.example.repository.MySQLDAOFactory;
+import org.entrega1.repository.MySQLDAOFactory;
 
 import java.sql.Connection;
 
@@ -37,10 +37,10 @@ public abstract class DAOFactory {
     }
 
     // ------ Factory Methods
-    public abstract UsuarioDAO crearUsuarioDAO();
+    public abstract ClienteDAO crearUsuarioDAO();
     public abstract ProductoDAO crearProductoDAO();
-    public abstract PedidoDAO crearPedidoDAO();
-    public abstract DetallePedidoDAO crearDetallePedidoDAO();
+    public abstract FacturaDAO crearPedidoDAO();
+    public abstract FacturaProductoDAO crearDetallePedidoDAO();
 
     protected abstract Connection getConnection();
 

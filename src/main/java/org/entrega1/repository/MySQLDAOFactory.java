@@ -1,6 +1,6 @@
-package org.example.repository;
+package org.entrega1.repository;
 
-import org.example.factory.DAOFactory;
+import org.entrega1.factory.DAOFactory;
 
 import java.sql.Connection;
 
@@ -32,12 +32,12 @@ public class MySQLDAOFactory extends DAOFactory {
     }
 
     @Override
-    public PedidoDAO crearPedidoDAO() {
+    public PedidoDAO crearFacturaDAO() {
         return new MySQLPedidoDAO(getConnection());
     }
 
     @Override
-    public DetallePedidoDAO crearDetallePedidoDAO() {
+    public DetallePedidoDAO crearFacturaPedidoDAO() {
         return new MySQLDetallePedidoDAO(getConnection());
     }
 
