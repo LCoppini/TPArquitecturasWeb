@@ -1,5 +1,9 @@
 package org.entrega1.factory;
 
+import org.entrega1.dao.ClienteDAO;
+import org.entrega1.dao.FacturaDAO;
+import org.entrega1.dao.Factura_ProductoDAO;
+import org.entrega1.dao.ProductoDAO;
 import org.entrega1.repository.MySQLDAOFactory;
 
 import java.sql.Connection;
@@ -40,7 +44,7 @@ public abstract class DAOFactory {
     public abstract ClienteDAO crearUsuarioDAO();
     public abstract ProductoDAO crearProductoDAO();
     public abstract FacturaDAO crearPedidoDAO();
-    public abstract FacturaProductoDAO crearDetallePedidoDAO();
+    public abstract Factura_ProductoDAO crearDetallePedidoDAO();
 
     protected abstract Connection getConnection();
 
