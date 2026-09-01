@@ -9,7 +9,7 @@ import lombok.*;
 @ToString
 
 public class Factura_Producto {
-    private Integer idFactura;
-    private Integer idProducto;
+    private Long idFactura;
+    private Long idProducto;
     private Integer cantidad;
 }

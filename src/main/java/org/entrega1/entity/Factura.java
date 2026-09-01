@@ -9,6 +9,6 @@ import lombok.*;
 @ToString
 
 public class Factura {
-    private Integer idFactura;
-    private Integer idCliente;
+    private Long idFactura;
+    private Long idCliente;
 }

@@ -1,12 +1,14 @@
 package org.entrega1.dao;
 
+import org.entrega1.entity.Factura;
+
 import java.util.List;
 
 public interface FacturaDAO {
 
-    Factura findById(Long id);
+    Factura findById(Long idFactura);
     List<Factura> findAll();
-    List<Factura> findByCliente(Long clienteId);
+    List<Factura> findByCliente(Long idCliente);
 
     void create(Factura f);
     void update(Factura f);

@@ -9,7 +9,7 @@ import lombok.*;
 @ToString
 
 public class Producto {
-    private Integer idProducto;
+    private Long idProducto;
     private String nombre;
     private Float valor;
 }
