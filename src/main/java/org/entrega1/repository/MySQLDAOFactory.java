@@ -1,19 +1,21 @@
 package org.entrega1.repository;
 
+import org.entrega1.dao.ClienteDAO;
+import org.entrega1.dao.FacturaDAO;
+import org.entrega1.dao.Factura_ProductoDAO;
+import org.entrega1.dao.ProductoDAO;
 import org.entrega1.factory.DAOFactory;
 
 import java.sql.Connection;
 
 public class MySQLDAOFactory extends DAOFactory {
 
-
-
     @Override
     protected Connection getConnection() {
         return MySQLConnectionManager.getInstance().getConnection();
     }
 
-    /** Cierre especifico de MySQL: delega en su propio gestor de conexiones. */
+    /** Cierre específico de MySQL: delega en su propio gestor de conexiones. */
     @Override
     protected void doShutdown() {
         MySQLConnectionManager.getInstance().shutdown();
@@ -22,8 +24,8 @@ public class MySQLDAOFactory extends DAOFactory {
     // Retornan las implementaciones concretas MYSQL de los DAOS
 
     @Override
-    public UsuarioDAO crearUsuarioDAO() {
-        return new MySQLUsuarioDAO(getConnection());
+    public ClienteDAO crearUsuarioDAO() {
+        return new MySQLClienteDAO(getConnection());
     }
 
     @Override
@@ -32,15 +34,12 @@ public class MySQLDAOFactory extends DAOFactory {
     }
 
     @Override
-    public PedidoDAO crearFacturaDAO() {
-        return new MySQLPedidoDAO(getConnection());
+    public FacturaDAO crearPedidoDAO() {
+        return new MySQLFacturaDAO(getConnection());
     }
 
     @Override
-    public DetallePedidoDAO crearFacturaPedidoDAO() {
-        return new MySQLDetallePedidoDAO(getConnection());
+    public Factura_ProductoDAO crearDetallePedidoDAO() {
+        return new MySQLFactura_ProductoDAO(getConnection());
     }
-
-
-
 }
