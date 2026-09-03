@@ -41,10 +41,10 @@ public abstract class DAOFactory {
     }
 
     // ------ Factory Methods
-    public abstract ClienteDAO crearUsuarioDAO();
+    public abstract ClienteDAO createClienteDAO();
     public abstract ProductoDAO crearProductoDAO();
-    public abstract FacturaDAO crearPedidoDAO();
-    public abstract Factura_ProductoDAO crearDetallePedidoDAO();
+    public abstract FacturaDAO crearFacturaDAO();
+    public abstract Factura_ProductoDAO crearFacturaproducto();
 
     protected abstract Connection getConnection();
 

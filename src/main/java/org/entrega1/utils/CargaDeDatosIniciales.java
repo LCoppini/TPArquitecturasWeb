@@ -3,24 +3,31 @@ package org.entrega1.utils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.entrega1.dao.ClienteDAO;
+import org.entrega1.dao.FacturaDAO;
+import org.entrega1.dao.Factura_ProductoDAO;
+import org.entrega1.dao.ProductoDAO;
+import org.entrega1.entity.Cliente;
+import org.entrega1.entity.Factura;
+import org.entrega1.entity.Factura_Producto;
+import org.entrega1.entity.Producto;
 import org.entrega1.factory.DAOFactory;
+
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 
 
 public class CargaDeDatosIniciales {
 
-    //Constantes de Dao
 
       private final ClienteDAO clienteDAO;
       private final FacturaDAO facturaDAO;
-      private final FacturaProductoDAO factura_produtoDAO;
+      private final Factura_ProductoDAO factura_productoDAO;
       private final ProductoDAO productoDAO;
 
     public CargaDeDatosIniciales() {
-        DAOFactory f =DAOFactory.getInstances();
+        DAOFactory f =DAOFactory.getInstance();
         this.clienteDAO = f.createClienteDAO();
         this.facturaDAO = f.crearFacturaDAO();
         this.factura_productoDAO = f.crearFacturaproducto();
@@ -35,7 +42,7 @@ public class CargaDeDatosIniciales {
                     String nombre = row.get("nombre");
                     String email = row.get("email");
 
-                    clienteDAO.crearUsuarioDAO(new Cliente(null, nombre, email));
+                    clienteDAO.create(new Cliente(null, nombre, email));
                 }
 
             } catch (IOException e) {
@@ -50,9 +57,9 @@ public class CargaDeDatosIniciales {
 
             for (CSVRecord row : parser) {
                 String nombre = row.get("nombre");
-                Integer valor = Integer.parseInt(row.get("valor"));
+                float valor = Integer.parseInt(row.get("valor"));
 
-                productosDAO.crearProductoDAO(new Productos(null, nombre, valor));
+                productoDAO.create(new Producto(null, nombre, valor));
             }
 
         } catch (IOException e) {
@@ -65,10 +72,10 @@ public class CargaDeDatosIniciales {
                 .parse(new FileReader("facturas.csv"))) {
 
             for (CSVRecord row : parser) {
-                Integer idFactura = Integer.parseInt(row.get("idFactura"));
-                Integer idCliente = Integer.parseInt(row.get("idCliente"));
+                Long idFactura = (long) Integer.parseInt(row.get("idFactura"));
+                Long idCliente = (long) Integer.parseInt(row.get("idCliente"));
 
-                facturasDAO.crearFacturaDAO(new Facturas(idFactura, idCliente));
+                facturaDAO.create(new Factura(idFactura, idCliente));
             }
             // podria ir un mensaje
         } catch (IOException e) {
@@ -82,11 +89,11 @@ public class CargaDeDatosIniciales {
                 .parse(new FileReader("facturas-productos.csv"))) {
 
             for (CSVRecord row : parser) {
-                Integer idFactura = Integer.parseInt(row.get("idFactura"));
-                Integer idProducto = Integer.parseInt(row.get("idProducto"));
+                Long idFactura = (long) Integer.parseInt(row.get("idFactura"));
+                Long idProducto = (long) Integer.parseInt(row.get("idProducto"));
                 Integer cantidad = Integer.parseInt(row.get("cantidad"));
 
-                facturasProductosDAO.crearFacturaPedidoDAO(new Facturasproductos(idFactura,idProducto, cantidad));
+                factura_productoDAO.create(new Factura_Producto(null, idFactura,idProducto, cantidad));
             }
 
         } catch (IOException e) {
@@ -94,10 +101,6 @@ public class CargaDeDatosIniciales {
         }
 
     }
-    private InputStream mustGetResource(String path) {
-        InputStream is = getClass().getResourceAsStream(path);
-        if (is == null) throw new IllegalArgumentException("Recurso no encontrado: " + path);
-        return is;
-    }
+
 
 }
