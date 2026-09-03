@@ -36,7 +36,7 @@ public class CargaDeDatosIniciales {
     // Preguntarrrr
     public void cargarClientes(String resourcePath){
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
-                    .parse(new FileReader("clientes.csv"))) {
+                    .parse(new FileReader(resourcePath))) {
 
                 for (CSVRecord row : parser) {
                     String nombre = row.get("nombre");
@@ -50,10 +50,10 @@ public class CargaDeDatosIniciales {
         }
     }
 
-    private void cargarProductos(String resourcePath) {
+    public void cargarProductos(String resourcePath) {
         //Carga de productos.
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
-                .parse(new FileReader("productos.csv"))) {
+                .parse(new FileReader(resourcePath))) {
 
             for (CSVRecord row : parser) {
                 String nombre = row.get("nombre");
@@ -67,9 +67,9 @@ public class CargaDeDatosIniciales {
         }
     }
 
-    private void cargarFactura(String resourcePath) {
+    public void cargarFactura(String resourcePath) {
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
-                .parse(new FileReader("facturas.csv"))) {
+                .parse(new FileReader(resourcePath))) {
 
             for (CSVRecord row : parser) {
                 Long idFactura = (long) Integer.parseInt(row.get("idFactura"));
@@ -84,9 +84,9 @@ public class CargaDeDatosIniciales {
 
     }
 
-    private void cargarYRecalcularFacturasproductos(String resourcePath) {
+    public void cargarFacturasproductos(String resourcePath) {
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
-                .parse(new FileReader("facturas-productos.csv"))) {
+                .parse(new FileReader(resourcePath))) {
 
             for (CSVRecord row : parser) {
                 Long idFactura = (long) Integer.parseInt(row.get("idFactura"));

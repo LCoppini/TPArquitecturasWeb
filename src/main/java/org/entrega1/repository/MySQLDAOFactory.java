@@ -24,7 +24,7 @@ public class MySQLDAOFactory extends DAOFactory {
     // Retornan las implementaciones concretas MYSQL de los DAOS
 
     @Override
-    public ClienteDAO crearUsuarioDAO() {
+    public ClienteDAO createClienteDAO() {
         return new MySQLClienteDAO(getConnection());
     }
 
@@ -34,12 +34,12 @@ public class MySQLDAOFactory extends DAOFactory {
     }
 
     @Override
-    public FacturaDAO crearPedidoDAO() {
+    public FacturaDAO crearFacturaDAO() {
         return new MySQLFacturaDAO(getConnection());
     }
 
     @Override
-    public Factura_ProductoDAO crearDetallePedidoDAO() {
+    public Factura_ProductoDAO crearFacturaproducto() {
         return new MySQLFactura_ProductoDAO(getConnection());
     }
 }

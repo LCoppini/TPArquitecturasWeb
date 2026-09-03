@@ -12,9 +12,9 @@ public final class MySQLConnectionManager implements ConnectionManager {
     private Connection connection;
 
     // Config de conexion
-    private static final String URL = "jdbc:mysql://localhost:3307/mysql_dao_DB?createDatabaseIfNotExist=true";
+    private static final String URL = "jdbc:mysql://localhost:3306/mi_primera_base?createDatabaseIfNotExist=true";
     private static final String USER = "root";
-    private static final String PASSWORD = "password";
+    private static final String PASSWORD = "mi_password_secreto";
 
     // ----- Constructor privado
     private MySQLConnectionManager() {

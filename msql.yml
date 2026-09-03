@@ -4,8 +4,8 @@ services:
     image: mysql:8.0
     restart: always
     environment:
-      - "MYSQL_ROOT_PASSWORD=password"
+      - "MYSQL_ROOT_PASSWORD=mi_password_secreto"
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
-      - "C:/Users/Nahuel/IdeaProjects/PruebasArqui/pruebaTp/mysql_data:/var/lib/mysql"
+      - "C:\Users\juanc\IdeaProjects\TPArquitecturasWeb1"
