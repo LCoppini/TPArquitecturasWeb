@@ -1,6 +1,7 @@
 package org.entrega1.repository;
 
 import org.entrega1.dao.ClienteDAO;
+import org.entrega1.dto.ClienteMayorFacturacion;
 import org.entrega1.entity.Cliente;
 
 import java.sql.*;
@@ -22,6 +23,16 @@ public class MySQLClienteDAO implements ClienteDAO {
                 rs.getString("email")
         );
     }
+
+    private ClienteMayorFacturacion map2(ResultSet rs) throws SQLException {
+        return new ClienteMayorFacturacion(
+                rs.getLong("idCliente"),
+                rs.getString("nombre"),
+                rs.getString("email"),
+                rs.getFloat("totalFacturado")
+        );
+    }
+
 
     @Override
     public Cliente findById(Long idCliente) {
@@ -104,26 +115,26 @@ public class MySQLClienteDAO implements ClienteDAO {
 
     // Ejercicio Integrador punto 4: clientes ordenados por lo que se les facturó (desc).
     @Override
-    public List<Cliente> findAllOrderByFacturacion() {
+    public List<ClienteMayorFacturacion> findAllOrderByFacturacion() {
         String sql = """
             SELECT c.idCliente, c.nombre, c.email,
-                   COALESCE(SUM(fp.cantidad * p.valor), 0) AS total_facturado
+                   COALESCE(SUM(fp.cantidad * p.valor), 0) AS totalFacturado
             FROM Cliente c
             LEFT JOIN Factura f ON f.idCliente = c.idCliente
             LEFT JOIN Factura_Producto fp ON fp.idFactura = f.idFactura
             LEFT JOIN Producto p ON p.idProducto = fp.idProducto
             GROUP BY c.idCliente, c.nombre, c.email
-            ORDER BY total_facturado DESC
+            ORDER BY totalFacturado DESC
             """;
-        List<Cliente> clientes = new ArrayList<>();
+        List<ClienteMayorFacturacion> clientesMayorFacturado = new ArrayList<>();
         try (Statement st = connection.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                clientes.add(map(rs));
+                clientesMayorFacturado.add(map2(rs));
             }
         } catch (SQLException e) {
             throw new RuntimeException("Error listando clientes ordenados por facturación", e);
         }
-        return clientes;
+        return clientesMayorFacturado;
     }
 }

@@ -33,7 +33,6 @@ public class CargaDeDatosIniciales {
         this.factura_productoDAO = f.crearFacturaproducto();
         this.productoDAO = f.crearProductoDAO();
     }
-    // Preguntarrrr
     public void cargarClientes(String resourcePath){
         try (CSVParser parser = CSVFormat.DEFAULT.withHeader()
                     .parse(new FileReader(resourcePath))) {
@@ -77,7 +76,6 @@ public class CargaDeDatosIniciales {
 
                 facturaDAO.create(new Factura(idFactura, idCliente));
             }
-            // podria ir un mensaje
         } catch (IOException e) {
             throw new RuntimeException("Error cargando prodcutos", e);
         }

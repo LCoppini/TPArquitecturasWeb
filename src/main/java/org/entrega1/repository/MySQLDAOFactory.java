@@ -42,4 +42,6 @@ public class MySQLDAOFactory extends DAOFactory {
     public Factura_ProductoDAO crearFacturaproducto() {
         return new MySQLFactura_ProductoDAO(getConnection());
     }
+
+
 }

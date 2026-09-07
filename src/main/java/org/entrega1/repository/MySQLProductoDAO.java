@@ -1,7 +1,9 @@
 package org.entrega1.repository;
 
 import org.entrega1.dao.ProductoDAO;
+import org.entrega1.dto.ProductoMasRecaudoDTO;
 import org.entrega1.entity.Producto;
+import org.entrega1.dto.ProductoMasRecaudoDTO;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -104,9 +106,10 @@ public class MySQLProductoDAO implements ProductoDAO {
 
     // Ejercicio Integrador punto 3: producto que más recaudó (cantidad vendida * valor).
     @Override
-    public Producto prodMasRecaudacion() {
+    public ProductoMasRecaudoDTO prodMasRecaudacion() {
         String sql = """
-            SELECT p.idProducto, p.nombre, p.valor,
+            
+                SELECT p.idProducto, p.nombre, p.valor,
                    SUM(fp.cantidad * p.valor) AS recaudacion
             FROM Producto p
             JOIN Factura_Producto fp ON fp.idProducto = p.idProducto
@@ -116,9 +119,17 @@ public class MySQLProductoDAO implements ProductoDAO {
             """;
         try (Statement st = connection.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            return rs.next() ? map(rs) : null;
+            if(rs.next()) {
+                String nombre = rs.getString("nombre");
+                float totalRecaudado = rs.getFloat("recaudacion");
+
+
+                return new ProductoMasRecaudoDTO(nombre,totalRecaudado);
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Error calculando el producto con mayor recaudación", e);
         }
+        return null;
     }
+
 }

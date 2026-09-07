@@ -4,10 +4,19 @@ import org.entrega1.dao.ClienteDAO;
 import org.entrega1.dao.FacturaDAO;
 import org.entrega1.dao.Factura_ProductoDAO;
 import org.entrega1.dao.ProductoDAO;
+import org.entrega1.dto.ClienteMayorFacturacion;
+import org.entrega1.dto.ProductoMasRecaudoDTO;
 import org.entrega1.factory.DAOFactory;
 import org.entrega1.factory.DBType;
+import org.entrega1.repository.MySQLClienteDAO;
+import org.entrega1.repository.MySQLConnectionManager;
+import org.entrega1.repository.MySQLProductoDAO;
 import org.entrega1.repository.MySQLSchemaInitializer;
 import org.entrega1.utils.CargaDeDatosIniciales;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.List;
 
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
@@ -20,7 +29,7 @@ public class Main {
 
         // no correr ya creados
 
-        MySQLSchemaInitializer.crearEsquema();
+       /* MySQLSchemaInitializer.crearEsquema();
         final var carga = new CargaDeDatosIniciales();
 
         carga.cargarClientes("src/main/resources/data/clientes.csv");
@@ -28,27 +37,30 @@ public class Main {
         carga.cargarFactura("src/main/resources/data/facturas.csv");
         carga.cargarFacturasproductos("src/main/resources/data/facturas-productos.csv");
 
-        System.out.println("Carga Inicial");
-
+        System.out.println("Carga Inicial");*/
+        
         DAOFactory f = DAOFactory.getInstance(); // resuelve segun db.type, ya fijado arriba
 
-        ClienteDAO clienteDAO = f.createClienteDAO();
-        ProductoDAO productoDAO=f.crearProductoDAO();
-        FacturaDAO facturaDAO = f.crearFacturaDAO();
-        Factura_ProductoDAO facturaProductoDAO = f.crearFacturaproducto();
+//        ClienteDAO clienteDAO = f.createClienteDAO();
+         //ProductoDAO productoDAO=f.crearProductoDAO();
+//        FacturaDAO facturaDAO = f.crearFacturaDAO();
+//        Factura_ProductoDAO facturaProductoDAO = f.crearFacturaproducto();
+        Connection conn = MySQLConnectionManager.getInstance().getConnection();
+        MySQLProductoDAO productoDAO = new MySQLProductoDAO(conn);
+        ProductoMasRecaudoDTO productoMasRecaudado = productoDAO.prodMasRecaudacion();
 
-        /**Cliente uno = ClienteDAO.findById(1L);
-        System.out.println("findById: " + uno);
+        if (productoMasRecaudado != null) {
+            System.out.println("Producto MasRecaudado");
+            System.out.println("Producto: " + productoMasRecaudado.getNombre());
+            System.out.println("Total: " + productoMasRecaudado.getTotalRecaudado());
+        }
 
-        uno.setEdad(37);
-        usuarioDAO.update(uno);*/
+        Connection connn = MySQLConnectionManager.getInstance().getConnection();
+        MySQLClienteDAO clienteDAO = new MySQLClienteDAO(connn);
+        List<ClienteMayorFacturacion> clientesOrdenados =  clienteDAO.findAllOrderByFacturacion();
+
+        System.out.println("Clientes Ordenados" + clientesOrdenados);
 
 
-        /**System.out.println("Todos los usuarios: " + clienteDAO.findAll());
-
-        System.out.println("Todos los productos: " + productoDAO.findAll());
-
-        System.out.println("Todos los pedidos: " + facturaDAO.findAll());
-        */
     }
 }

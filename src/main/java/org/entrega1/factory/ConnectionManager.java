@@ -15,6 +15,5 @@ public interface ConnectionManager {
      * exige además un shutdown explícito del engine.
      */
 
-    // Preguntar el lunes ---> Misma consulta ubicada en MySQLConnectionManager
     void shutdown();
 }

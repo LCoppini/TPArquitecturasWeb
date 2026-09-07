@@ -1,5 +1,6 @@
 package org.entrega1.dao;
 
+import org.entrega1.dto.ClienteMayorFacturacion;
 import org.entrega1.entity.Cliente;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface ClienteDAO {
     void delete(Long id);
     void deleteAll();
 
-    List<Cliente>  findAllOrderByFacturacion();
+    List<ClienteMayorFacturacion>  findAllOrderByFacturacion();
 
 }
 

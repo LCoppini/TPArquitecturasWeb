@@ -1,5 +1,6 @@
 package org.entrega1.dao;
 
+import org.entrega1.dto.ProductoMasRecaudoDTO;
 import org.entrega1.entity.Producto;
 
 import java.util.List;
@@ -13,5 +14,5 @@ public interface ProductoDAO {
     void delete(Long idProducto);
     void deleteAll();
 
-    Producto prodMasRecaudacion();
+    ProductoMasRecaudoDTO prodMasRecaudacion();
 }
