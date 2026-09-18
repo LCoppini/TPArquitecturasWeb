@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1"
+             xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+
+    <persistence-unit name="RegistroEstudiantes">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <class>Entity.Estudiante</class>
+        <class>Entity.Carrera</class>
+        <class>Entity.EstudianteCarrera</class>
+
+        <properties>
+
+            <!-- Propiedades de configuracion de JDBC para MySQL -->
+            <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
+            <!--            Cambiar nombre la base-->
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/Nombre_de_la_base" />
+            <property name="javax.persistence.jdbc.user" value="root" />
+            <!--            cambiar contraseña-->
+            <property name="javax.persistence.jdbc.password" value="mi_password_secreto" />
+
+            <!-- Propiedad para la generacion automatica del esquema de base de datos -->
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <!--            <property name="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"/>-->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <!-- property name="hibernate.use_sql_comments" value="true"/-->
+
+        </properties>
+    </persistence-unit>
+
+</persistence>
