@@ -37,3 +37,14 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Base de datos local
+mysql_data/
+*.sock
+
+# Archivos compilados por Maven
+**/target/
+
+# Archivos del entorno (IntelliJ IDEA)
+.idea/
+*.iml

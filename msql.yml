@@ -8,4 +8,4 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - "C:\Users\juanc\IdeaProjects\TPArquitecturasWeb1"
+      - "C:/Users/lauty/IdeaProjects/TPArquitecturaWeb/mysql_data:/var/lib/mysql"
