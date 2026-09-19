@@ -2,24 +2,28 @@ package Entity;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.time.Period;
 
 @Entity
 public class EstudianteCarrera {
-
 
     @EmbeddedId
     private EstudianteCPK estudianteCPK;
 
     @ManyToOne
+    @MapsId("idEstudiante") // le dice a hibernate que el campo embeddebId y estudiante son lo mismo y no dos cosas distintas
+    @JoinColumn("num_libreta")
     private Estudiante estudiante;
 
     @ManyToOne
+    @MapsId("idCarrera")
+    @JoinColumn(name = "id_carrera")
     private Carrera carrera;
 
-    @Column
-    private LocalDate fechaDeinscripcion;
+    @Column(name = "fecha_inscripcion", nullable = false)
+    private LocalDate fechaInscripcion;
 
-    @Column
+    @Column(name = "fecha_graduacion", nullable = true)
     private LocalDate fechaGraduacion;
 
     public EstudianteCarrera(Estudiante estudiante, Carrera carrera) {
@@ -27,8 +31,7 @@ public class EstudianteCarrera {
 
     public EstudianteCarrera(EstudianteCPK estudianteCPK,LocalDate fechaDeinscripcion,Carrera carrera,Estudiante estudiante) {
         this.estudianteCPK = estudianteCPK;
-        this.fechaGraduacion = fechaGraduacion;
-        this.fechaDeinscripcion = fechaDeinscripcion;
+        this.fechaInscripcion = fechaDeinscripcion;
         this.carrera = carrera;
         this.estudiante = estudiante;
     }
@@ -76,5 +79,20 @@ public class EstudianteCarrera {
 
     public void setFechaGraduacion(LocalDate fechaGraduacion) {
         this.fechaGraduacion = fechaGraduacion;
+    }
+
+
+    public boolean estaGraduado() {
+        return fechaGraduacion != null;
+    }
+
+    public int getAntiguedadAnios() {
+        LocalDate hasta;
+        if (fechaGraduacion != null)
+            hasta = fechaGraduacion;
+        else
+            hasta = LocalDate.now();
+
+        return Period.between(fechaInscripcion, hasta).getYears();
     }
 }

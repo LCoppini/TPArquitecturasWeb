@@ -3,6 +3,7 @@ package Entity;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import java.io.Serializable;
+import java.util.Objects;
 
 
 //Preguntar si se hace asi
@@ -38,5 +39,17 @@ public class EstudianteCPK implements Serializable {
 
     public void setIdEstudiante(Long idEstudiante) {
         this.idEstudiante = idEstudiante;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        EstudianteCPK that = (EstudianteCPK) o;
+        return Objects.equals(idEstudiante, that.idEstudiante) && Objects.equals(idCarrera, that.idCarrera);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(idEstudiante, idCarrera);
     }
 }

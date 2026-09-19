@@ -7,25 +7,25 @@ import java.util.List;
 @Entity
 public class Estudiante {
     @Id
-    //PK, era auto generado?
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long num_libreta;
 
-    @Column
+    @Column(length = 30, nullable = false)
     private String nombre;
 
-    @Column
+    @Column(length = 30, nullable = false)
     private String apellido;
 
-    @Column
+    @Column(nullable = false)
     private int edad;
 
-    @Column
+    @Column(length = 10, nullable = false)
     private String genero;
 
-    @Column
+    @Column(nullable = false)
     private int dni;
 
-    @Column
+    @Column(name = "ciudad_residencia", length = 30, nullable = false)
     private String ciudadResidencia;
 
     @OneToMany(mappedBy = "estudiante")

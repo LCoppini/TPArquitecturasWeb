@@ -9,10 +9,10 @@ public class Carrera {
     @Id
     private Long idCarrera;
 
-    @Column
+    @Column(nullable = false)
     private String nombreCarrera;
 
-    @Column
+    @Column(nullable = false)
     private int duracion;
 
     @OneToMany(mappedBy = "carrera")

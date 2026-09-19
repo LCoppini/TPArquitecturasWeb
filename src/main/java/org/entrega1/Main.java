@@ -29,7 +29,7 @@ public class Main {
 
         // no correr ya creados
 
-       /* MySQLSchemaInitializer.crearEsquema();
+        /*MySQLSchemaInitializer.crearEsquema();
         final var carga = new CargaDeDatosIniciales();
 
         carga.cargarClientes("src/main/resources/data/clientes.csv");
@@ -37,14 +37,17 @@ public class Main {
         carga.cargarFactura("src/main/resources/data/facturas.csv");
         carga.cargarFacturasproductos("src/main/resources/data/facturas-productos.csv");
 
-        System.out.println("Carga Inicial");*/
+        System.out.println("Carga Inicial");
         
         DAOFactory f = DAOFactory.getInstance(); // resuelve segun db.type, ya fijado arriba
 
-//        ClienteDAO clienteDAO = f.createClienteDAO();
-         //ProductoDAO productoDAO=f.crearProductoDAO();
-//        FacturaDAO facturaDAO = f.crearFacturaDAO();
-//        Factura_ProductoDAO facturaProductoDAO = f.crearFacturaproducto();
+        ClienteDAO clienteDAO = f.createClienteDAO();
+        ProductoDAO productoDAO=f.crearProductoDAO();
+        FacturaDAO facturaDAO = f.crearFacturaDAO();
+        Factura_ProductoDAO facturaProductoDAO = f.crearFacturaproducto();
+
+         */
+
         Connection conn = MySQLConnectionManager.getInstance().getConnection();
         MySQLProductoDAO productoDAO = new MySQLProductoDAO(conn);
         ProductoMasRecaudoDTO productoMasRecaudado = productoDAO.prodMasRecaudacion();
