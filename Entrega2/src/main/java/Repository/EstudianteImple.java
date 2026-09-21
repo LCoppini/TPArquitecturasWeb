@@ -62,5 +62,46 @@ public class EstudianteImple implements Estudianteinter {
         return estudiantesInOrder.getResultList();
     }
 
+    //d) recuperar un estudiante, en base a su número de libreta universitaria.
+
+    public Estudiante getEstudiantePorNumLibreta(Long numLibreta) {
+        EntityManager em = JPAutil.getEntityManager();
+        em.getTransaction().begin();
+
+        TypedQuery<Estudiante> estudiantePorNumLib = em.createQuery(
+                "SELECT e FROM Estudiante e " +
+                        "WHERE e.num_libreta = :numLibreta ", Estudiante.class);
+
+        estudiantePorNumLib.setParameter("numLibreta", numLibreta);
+
+        Estudiante estudiante = estudiantePorNumLib.getSingleResult();
+
+        em.getTransaction().commit();
+        em.close();
+
+        return estudiante;
+    }
+
+    // e) recuperar todos los estudiantes, en base a su género
+
+    public List<Estudiante> getEstudiantesPorGenero(String generoSolicitado) {
+
+        EntityManager em = JPAutil.getEntityManager();
+        em.getTransaction().begin();
+
+        TypedQuery<Estudiante> estudiantesPorGenero = em.createQuery(
+                "SELECT e FROM Estudiante e " +
+                        "WHERE e.genero = :generoSolicitado ", Estudiante.class);
+
+        estudiantesPorGenero.setParameter("generoSolicitado", generoSolicitado);
+
+        List<Estudiante> resultado = estudiantesPorGenero.getResultList();
+
+        em.getTransaction().commit();
+        em.close();
+
+        return resultado;
+    }
+
 
 }
