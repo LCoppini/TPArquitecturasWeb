@@ -13,6 +13,16 @@ import java.util.List;
 
 public class EstudianteImple implements Estudianteinter {
 
+    //Singleton
+    private static EstudianteImple instance = new EstudianteImple();
+
+    private EstudianteImple getInstance(){
+        return instance;
+    }
+
+    public EstudianteImple(){
+
+    }
 
     //a) dar de alta un estudiante
     @Override
