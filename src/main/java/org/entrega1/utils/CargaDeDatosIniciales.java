@@ -27,7 +27,7 @@ public class CargaDeDatosIniciales {
       private final ProductoDAO productoDAO;
 
     public CargaDeDatosIniciales() {
-        DAOFactory f =DAOFactory.getInstance();
+        DAOFactory f = DAOFactory.getInstance();
         this.clienteDAO = f.createClienteDAO();
         this.facturaDAO = f.crearFacturaDAO();
         this.factura_productoDAO = f.crearFacturaproducto();

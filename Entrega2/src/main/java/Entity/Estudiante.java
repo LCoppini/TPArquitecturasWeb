@@ -1,6 +1,7 @@
 package Entity;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class Estudiante {
     private String apellido;
 
     @Column(nullable = false)
-    private int edad;
+    private LocalDate fechaNacimiento;
 
     @Column(length = 10, nullable = false)
     private String genero;
@@ -34,11 +35,11 @@ public class Estudiante {
     public Estudiante() {
     }
 
-    public Estudiante(Long num_libreta, String nombre, String apellido, int edad, String genero, int dni, String ciudadResidencia) {
+    public Estudiante(Long num_libreta, String nombre, String apellido, LocalDate fechaNacimiento, String genero, int dni, String ciudadResidencia) {
         this.num_libreta = num_libreta;
         this.nombre = nombre;
         this.apellido = apellido;
-        this.edad = edad;
+        this.fechaNacimiento = fechaNacimiento;
         this.genero = genero;
         this.dni = dni;
         this.ciudadResidencia = ciudadResidencia;
@@ -56,8 +57,9 @@ public class Estudiante {
         return apellido;
     }
 
-    public int getEdad() {
-        return edad;
+    public LocalDate getEdad() {
+
+        return fechaNacimiento;
     }
 
     public int getDni() {
@@ -84,8 +86,8 @@ public class Estudiante {
         this.nombre = nombre;
     }
 
-    public void setEdad(int edad) {
-        this.edad = edad;
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
     }
 
     public void setGenero(String genero) {

@@ -12,7 +12,7 @@ public class EstudianteCarrera {
 
     @ManyToOne
     @MapsId("idEstudiante") // le dice a hibernate que el campo embeddebId y estudiante son lo mismo y no dos cosas distintas
-    @JoinColumn("num_libreta")
+    @JoinColumn(name = "num_libreta")
     private Estudiante estudiante;
 
     @ManyToOne
@@ -66,11 +66,11 @@ public class EstudianteCarrera {
     }
 
     public LocalDate getFechaDeinscripcion() {
-        return fechaDeinscripcion;
+        return fechaInscripcion;
     }
 
     public void setFechaDeinscripcion(LocalDate fechaDeinscripcion) {
-        this.fechaDeinscripcion = fechaDeinscripcion;
+        this.fechaInscripcion = fechaDeinscripcion;
     }
 
     public LocalDate getFechaGraduacion() {
@@ -85,6 +85,11 @@ public class EstudianteCarrera {
     public boolean estaGraduado() {
         return fechaGraduacion != null;
     }
+
+//    int anio = 2022;
+//
+//    // Crea la fecha 1 de enero de 2022
+//    LocalDate fecha = LocalDate.of(anio, 1, 1);
 
     public int getAntiguedadAnios() {
         LocalDate hasta;
