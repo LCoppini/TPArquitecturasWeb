@@ -10,4 +10,5 @@ public interface Estudianteinter {
     void matricularEstudiante(Long idEstudiante, Long idCarrera);
     Estudiante getEstudiantePorNumLibreta(Long numLibreta);
     List<Estudiante> getEstudiantesPorGenero(String generoSolicitado);
+    List<Estudiante> getEstudiantesPorCarreraYCiudad(Long idCarrera, String ciudad);
 }

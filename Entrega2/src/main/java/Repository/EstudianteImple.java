@@ -113,5 +113,28 @@ public class EstudianteImple implements Estudianteinter {
         return resultado;
     }
 
+    // g) recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia
+    @Override
+    public List<Estudiante> getEstudiantesPorCarreraYCiudad(Long idCarrera, String ciudad) {
+        EntityManager em = JPAutil.getEntityManager();
+        em.getTransaction().begin();
+
+        TypedQuery<Estudiante> query = em.createQuery(
+                "SELECT e FROM EstudianteCarrera ec " +
+                        "JOIN ec.estudiante e " +
+                        "WHERE ec.carrera.idCarrera = :idCarrera " +
+                        "AND e.ciudadResidencia = :ciudad", Estudiante.class);
+
+        query.setParameter("idCarrera", idCarrera);
+        query.setParameter("ciudad", ciudad);
+
+        List<Estudiante> resultado = query.getResultList();
+
+        em.getTransaction().commit();
+        em.close();
+
+        return resultado;
+    }
+
 
 }
