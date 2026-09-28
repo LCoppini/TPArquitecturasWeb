@@ -16,7 +16,7 @@ public class EstudianteImple implements Estudianteinter {
     //Singleton
     private static EstudianteImple instance = new EstudianteImple();
 
-    private EstudianteImple getInstance(){
+    public static EstudianteImple getInstance(){
         return instance;
     }
 
@@ -66,9 +66,9 @@ public class EstudianteImple implements Estudianteinter {
                 "SELECT e FROM Estudiante e " +
                         "ORDER BY e.apellido ASC, e.nombre ASC", Estudiante.class);
 
-        em.getTransaction().commit();
+        List<Estudiante> resultado = estudiantesInOrder.getResultList();
         em.close();
-        return estudiantesInOrder.getResultList();
+        return resultado;
     }
 
     //d) recuperar un estudiante, en base a su número de libreta universitaria.

@@ -15,7 +15,7 @@
             <!-- Propiedades de configuracion de JDBC para MySQL -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
             <!--            Cambiar nombre la base-->
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/mi_base_de_datos" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/Inscripciones_DB" />
             <property name="javax.persistence.jdbc.user" value="root" />
             <!--            cambiar contraseña-->
             <property name="javax.persistence.jdbc.password" value="mi_password_secreto" />

@@ -11,7 +11,7 @@ public class CarreraImple implements CarreraInter {
     // Singleton
     private static CarreraImple instance = new CarreraImple();
 
-    private CarreraImple getInstance(){
+    public static CarreraImple getInstance(){
         return instance;
     }
 
