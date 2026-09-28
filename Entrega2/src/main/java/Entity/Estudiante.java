@@ -25,7 +25,7 @@ public class Estudiante {
     private String genero;
 
     @Column(nullable = false)
-    private int dni;
+    private Long dni;
 
     @Column(name = "ciudad_residencia", length = 30, nullable = false)
     private String ciudadResidencia;
@@ -36,7 +36,7 @@ public class Estudiante {
     public Estudiante() {
     }
 
-    public Estudiante(Long num_libreta, String nombre, String apellido, LocalDate fechaNacimiento, String genero, int dni, String ciudadResidencia) {
+    public Estudiante(Long num_libreta, String nombre, String apellido, LocalDate fechaNacimiento, String genero, Long dni, String ciudadResidencia) {
         this.num_libreta = num_libreta;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -63,7 +63,7 @@ public class Estudiante {
         return fechaNacimiento;
     }
 
-    public int getDni() {
+    public Long getDni() {
         return dni;
     }
 
@@ -95,7 +95,7 @@ public class Estudiante {
         this.genero = genero;
     }
 
-    public void setDni(int dni) {
+    public void setDni(Long dni) {
         this.dni = dni;
     }
 

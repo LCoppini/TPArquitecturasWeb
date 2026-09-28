@@ -48,8 +48,7 @@ public class EstudianteImple implements Estudianteinter {
         Carrera carrera = em.find(Carrera.class, idCarrera);
 
 
-        EstudianteCarrera matricula = new EstudianteCarrera(estudiante, carrera);
-        matricula.setFechaDeinscripcion(LocalDate.now());
+        EstudianteCarrera matricula = new EstudianteCarrera(estudiante, carrera, LocalDate.now());
         em.persist(matricula);
         em.getTransaction().commit();
 

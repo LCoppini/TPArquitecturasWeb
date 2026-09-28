@@ -26,15 +26,13 @@ public class EstudianteCarrera {
     @Column(name = "fecha_graduacion", nullable = true)
     private LocalDate fechaGraduacion;
 
-    public EstudianteCarrera(Estudiante estudiante, Carrera carrera) {
-    }
-
-    public EstudianteCarrera(EstudianteCPK estudianteCPK,LocalDate fechaDeinscripcion,Carrera carrera,Estudiante estudiante) {
-        this.estudianteCPK = estudianteCPK;
-        this.fechaInscripcion = fechaDeinscripcion;
+    public EstudianteCarrera(Estudiante estudiante, Carrera carrera,  LocalDate fechaInscripcion) {
         this.carrera = carrera;
         this.estudiante = estudiante;
+        this.fechaInscripcion = fechaInscripcion;
+        this.estudianteCPK = new EstudianteCPK(estudiante.getNum_libreta(),carrera.getIdCarrera());
     }
+
 
     public EstudianteCarrera() {
 
