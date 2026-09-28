@@ -67,6 +67,7 @@ public class EstudianteImple implements Estudianteinter {
                         "ORDER BY e.apellido ASC, e.nombre ASC", Estudiante.class);
 
         List<Estudiante> resultado = estudiantesInOrder.getResultList();
+
         em.close();
         return resultado;
     }
@@ -85,7 +86,6 @@ public class EstudianteImple implements Estudianteinter {
 
         Estudiante estudiante = estudiantePorNumLib.getSingleResult();
 
-        em.getTransaction().commit();
         em.close();
 
         return estudiante;
@@ -106,7 +106,6 @@ public class EstudianteImple implements Estudianteinter {
 
         List<Estudiante> resultado = estudiantesPorGenero.getResultList();
 
-        em.getTransaction().commit();
         em.close();
 
         return resultado;
@@ -129,7 +128,6 @@ public class EstudianteImple implements Estudianteinter {
 
         List<Estudiante> resultado = query.getResultList();
 
-        em.getTransaction().commit();
         em.close();
 
         return resultado;

@@ -32,7 +32,6 @@ public class CarreraImple implements CarreraInter {
 
         List<Carrera> resultado = carrerasConInscriptos.getResultList();
 
-        em.getTransaction().commit();
         em.close();
 
         return resultado;
