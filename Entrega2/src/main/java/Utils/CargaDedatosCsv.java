@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import java.io.FileReader;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.List;
 
 public class CargaDedatosCsv {
     public void insertarEstudianteCarreraDesdeCSV(String rutaArchivo) {
@@ -22,34 +23,52 @@ public class CargaDedatosCsv {
 
             while ((linea = reader.readNext()) != null) {
                 try {
-                    EstudianteCarrera ec = new EstudianteCarrera();
+//                    System.out.println("Procesando línea: " + String.join(",", linea));
+//                    System.out.println("Buscando estudiante con DNI: " + linea[1]);
+//                    System.out.println("Buscando carrera con ID: " + linea[2]);
 
-                    System.out.println("Procesando línea: " + String.join(",", linea));
-                    System.out.println("Buscando estudiante con DNI: " + linea[1]);
-                    System.out.println("Buscando carrera con ID: " + linea[2]);
-
-                    Estudiante est = em.find(Estudiante.class, linea[1]);
-                    if (est == null) {
-                        System.out.println("ERROR: No se encontró estudiante con DNI: " + linea[1]);
+//                    Long libreta = Long.valueOf(linea[6].trim());
+//                    Estudiante est = em.find(Estudiante.class, libreta);
+//                    if (est == null) {
+//                        System.out.println("ERROR: No se encontró estudiante con Num_libreta: " + linea[1]);
+//                    }
+                    int dni = Integer.parseInt(linea[1].trim());
+                    List<Estudiante> resultado = em
+                            .createQuery("SELECT e FROM Estudiante e WHERE e.dni = :dni", Estudiante.class)
+                            .setParameter("dni", dni)
+                            .getResultList();
+                    if (resultado.isEmpty()) {
+                        System.out.println("ERROR: No se encontró estudiante con DNI: " + dni);
+                        continue;
                     }
-
-                    Carrera carrera = em.find(Carrera.class, Integer.parseInt(linea[2]));
+                    Estudiante est = resultado.get(0);
+                    Long idCarrera = Long.valueOf(linea[0].trim());
+                    Carrera carrera = em.find(Carrera.class, idCarrera);
                     if (carrera == null) {
-                        System.out.println("ERROR: No se encontró carrera con ID: " + linea[2]);
+                        System.out.println("ERROR: No se encontró carrera con ID: " + linea[0]);
                     }
-
+                    EstudianteCarrera ec = new EstudianteCarrera();
                     ec.setEstudiante(est);
                     ec.setCarrera(carrera);
-                    int anio1 =  Integer.parseInt(linea[4]);
+
+                    int anio1 =  Integer.parseInt(linea[3]);
                     LocalDate fecha1= LocalDate.of(anio1, 1, 1);
-
                     ec.setFechaDeinscripcion(fecha1);
-                    int anio = Integer.parseInt(linea[5]) ;
 
-                    LocalDate fecha = LocalDate.of(anio, 1, 1);
+//
+                    int anioGraduacion = Integer.parseInt(linea[4]) ;
+                    LocalDate fecha = LocalDate.of(anioGraduacion, 1, 1);
                     ec.setFechaGraduacion(fecha);
 
-                    em.persist(ec);
+//                    String campoGraduacion = linea[4].trim();
+//                    if (!campoGraduacion.isEmpty()) {
+//                        int anioGrad = Integer.parseInt(campoGraduacion);
+//                        ec.setFechaGraduacion(LocalDate.of(anioGrad, 1, 1));
+//                    } else {
+//                        ec.setFechaGraduacion(null); // sigue cursando
+//                    }
+//                    em.persist(ec);
+                    em.merge(ec);//Se usa para entidades con ID asignado manualmente:
                     System.out.println("EstudianteCarrera persistido correctamente");
 
                 } catch (Exception lineException) {
@@ -80,7 +99,7 @@ public class CargaDedatosCsv {
 
             while ((linea = reader.readNext()) != null) {
                 Estudiante est = new Estudiante();
-                est.setNum_libreta((Long.valueOf(linea[0])));
+                est.setNum_libreta((Long.valueOf(linea[6])));
                 est.setNombre(linea[1]);
                 est.setApellido(linea[2]);
 
@@ -90,7 +109,7 @@ public class CargaDedatosCsv {
                 est.setFechaNacimiento(fechaPasada);
                 est.setGenero(linea[4]);
                 est.setCiudadResidencia(linea[5]);
-                est.setDni(Integer.parseInt(linea[6]));
+                est.setDni(Integer.parseInt(linea[0]));
                 em.persist(est);
             }
             em.getTransaction().commit();

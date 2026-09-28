@@ -3,7 +3,7 @@
              xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
 
-    <persistence-unit name="RegistroEstudiantes">
+    <persistence-unit name="Example">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <class>Entity.Estudiante</class>
@@ -15,7 +15,7 @@
             <!-- Propiedades de configuracion de JDBC para MySQL -->
             <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver" />
             <!--            Cambiar nombre la base-->
-            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/Nombre_de_la_base" />
+            <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/mi_base_de_datos" />
             <property name="javax.persistence.jdbc.user" value="root" />
             <!--            cambiar contraseña-->
             <property name="javax.persistence.jdbc.password" value="mi_password_secreto" />

@@ -8,7 +8,8 @@ import java.util.List;
 @Entity
 public class Estudiante {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column (name="num_libreta")
+    //@GeneratedValue(strategy = GenerationType.AUTO) Preguntar en clase como implementarlo
     private Long num_libreta;
 
     @Column(length = 30, nullable = false)
@@ -20,7 +21,7 @@ public class Estudiante {
     @Column(nullable = false)
     private LocalDate fechaNacimiento;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 30, nullable = false)
     private String genero;
 
     @Column(nullable = false)
@@ -30,7 +31,7 @@ public class Estudiante {
     private String ciudadResidencia;
 
     @OneToMany(mappedBy = "estudiante")
-    private List<Carrera> carreras = new ArrayList<>();
+    private List<EstudianteCarrera> carreras = new ArrayList<>();
 
     public Estudiante() {
     }
@@ -102,11 +103,11 @@ public class Estudiante {
         this.ciudadResidencia = ciudadResidencia;
     }
 
-    public List<Carrera> getCarreras() {
+    public List<EstudianteCarrera> getCarreras() {
         return carreras;
     }
 
-    public void setCarreras(List<Carrera> carreras) {
+    public void setCarreras(List<EstudianteCarrera> carreras) {
         this.carreras = carreras;
     }
 }
