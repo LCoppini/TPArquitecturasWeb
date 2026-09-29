@@ -1,14 +1,15 @@
 package Repository;
 
+import DTO.EstudianteDTO;
 import Entity.Estudiante;
 
 import java.util.List;
 
 public interface Estudianteinter {
-    public List<Estudiante> getEstudiantesInOrder();
+    List<EstudianteDTO> getEstudiantesInOrder();
     void insertEstudiante(Estudiante estudiante);
     void matricularEstudiante(Long idEstudiante, Long idCarrera);
-    Estudiante getEstudiantePorNumLibreta(Long numLibreta);
-    List<Estudiante> getEstudiantesPorGenero(String generoSolicitado);
-    List<Estudiante> getEstudiantesPorCarreraYCiudad(Long idCarrera, String ciudad);
+    EstudianteDTO getEstudiantePorNumLibreta(Long numLibreta);
+    List<EstudianteDTO> getEstudiantesPorGenero(String generoSolicitado);
+    List<EstudianteDTO> getEstudiantesPorCarreraYCiudad(Long idCarrera, String ciudad);
 }
