@@ -1,5 +1,6 @@
 package org.example;
 
+import Repository.CarreraImple;
 import Repository.EstudianteImple;
 import Utils.CargaDedatosCsv;
 
@@ -23,5 +24,8 @@ public class Main {
 
         System.out.println("\n--- g) Estudiantes por carrera y ciudad ---");
         estudianteRepo.getEstudiantesPorCarreraYCiudad(15L, "Jiaoyuan").forEach(System.out::println);
+
+        System.out.println("\n--- f) Carreras por cantidad de inscriptos ---");
+        new CarreraImple().getCarrerasPorCantidadInscriptos().forEach(System.out::println);
     }
 }
