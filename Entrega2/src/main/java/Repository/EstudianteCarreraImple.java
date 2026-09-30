@@ -22,7 +22,6 @@ public class EstudianteCarreraImple implements EstudianteCarreraInter {
 
     // 3) reporte de carreras: inscriptos y egresados por año, carreras ordenadas alfabéticamente
 
-    // NO vaaa esta malll
 
     @Override
     public List<ReporteCarreraDTO> getReporteInscriptosYEgresadosPorAnio() {
