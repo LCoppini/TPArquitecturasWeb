@@ -1,6 +1,7 @@
 package org.example;
 
 import Repository.CarreraImple;
+import Repository.EstudianteCarreraImple;
 import Repository.EstudianteImple;
 import Utils.CargaDedatosCsv;
 
@@ -15,17 +16,23 @@ public class Main {
 //        carga.insertarCarreraDesdeCSV("Entrega2/src/main/resources/data/carreras.csv");
 //        carga.insertarEstudianteCarreraDesdeCSV("Entrega2/src/main/resources/data/estudianteCarrera.csv");
 
-        System.out.println("Carga Inicial");
+//        System.out.println("Carga Inicial");
+//
+//        EstudianteImple estudianteRepo = new EstudianteImple();
+//
+//        System.out.println("\n--- d) Estudiante por libreta ---");
+//        System.out.println(estudianteRepo.getEstudiantePorNumLibreta(34978L));
+//
+//        System.out.println("\n--- g) Estudiantes por carrera y ciudad ---");
+//        estudianteRepo.getEstudiantesPorCarreraYCiudad(15L, "Jiaoyuan").forEach(System.out::println);
+//
+//        System.out.println("\n--- f) Carreras por cantidad de inscriptos ---");
+//        new CarreraImple().getCarrerasPorCantidadInscriptos().forEach(System.out::println);
 
-        EstudianteImple estudianteRepo = new EstudianteImple();
-
-        System.out.println("\n--- d) Estudiante por libreta ---");
-        System.out.println(estudianteRepo.getEstudiantePorNumLibreta(34978L));
-
-        System.out.println("\n--- g) Estudiantes por carrera y ciudad ---");
-        estudianteRepo.getEstudiantesPorCarreraYCiudad(15L, "Jiaoyuan").forEach(System.out::println);
-
-        System.out.println("\n--- f) Carreras por cantidad de inscriptos ---");
-        new CarreraImple().getCarrerasPorCantidadInscriptos().forEach(System.out::println);
+        System.out.println("\n--- 3) Reporte de inscriptos y egresados por año ---");
+        new EstudianteCarreraImple().getReporteInscriptosYEgresadosPorAnio().forEach(rep ->
+                System.out.println(rep.getNombreCarrera() + " - " + rep.getAnio() +
+                        ": " + rep.getCantInscriptos() + " inscriptos, " + rep.getCantEgresados() + " egresados")
+        );
     }
 }
