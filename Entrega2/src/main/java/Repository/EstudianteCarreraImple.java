@@ -1,25 +1,23 @@
 package Repository;
 
-
 import DTO.ReporteCarreraDTO;
-import Entity.Carrera;
-import Entity.EstudianteCarrera;
 import Factory.JPAutil;
 
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import java.util.*;
+import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EstudianteCarreraImple implements EstudianteCarreraInter {
-    //Singleton
+
+    // Singleton
     private static EstudianteCarreraImple instance = new EstudianteCarreraImple();
+
+    public EstudianteCarreraImple() {
+    }
 
     private EstudianteCarreraImple getInstance() {
         return instance;
-    }
-
-    public EstudianteCarreraImple() {
-
     }
 
     // 3) reporte de carreras: inscriptos y egresados por año, carreras ordenadas alfabéticamente
@@ -28,55 +26,49 @@ public class EstudianteCarreraImple implements EstudianteCarreraInter {
 
     @Override
     public List<ReporteCarreraDTO> getReporteInscriptosYEgresadosPorAnio() {
+
+        String sql = """
+            SELECT
+                c.nombreCarrera,
+                a.anio,
+                SUM(a.inscriptos) AS cantidad_inscriptos,
+                SUM(a.egresados)  AS cantidad_egresados
+            FROM (
+                SELECT id_carrera, CAST(YEAR(fecha_inscripcion) AS SIGNED) AS anio, 1 AS inscriptos, 0 AS egresados
+                FROM EstudianteCarrera
+    
+                UNION ALL
+    
+                SELECT id_carrera, CAST(YEAR(fecha_graduacion) AS SIGNED) AS anio, 0 AS inscriptos, 1 AS egresados
+                FROM EstudianteCarrera
+                WHERE fecha_graduacion IS NOT NULL
+            ) a
+            JOIN Carrera c ON c.idCarrera = a.id_carrera
+            GROUP BY c.idCarrera, c.nombreCarrera, a.anio
+            ORDER BY c.nombreCarrera ASC, a.anio ASC
+        """;
+
         EntityManager em = JPAutil.getEntityManager();
         em.getTransaction().begin();
 
-        TypedQuery<EstudianteCarrera> query = em.createQuery(
-                "SELECT ec FROM EstudianteCarrera ec " +
-                        "ORDER BY ec.carrera.nombreCarrera ASC", EstudianteCarrera.class);
+        Query query = em.createNativeQuery(sql);
 
-        List<EstudianteCarrera> matriculas = query.getResultList();
+        @SuppressWarnings("unchecked")
+        List<Object[]> filas = query.getResultList();
+
         em.getTransaction().commit();
         em.close();
 
-        // carrera -> (anio -> [inscriptos, egresados])
-        Map<Carrera, TreeMap<Integer, long[]>> acumulado = new LinkedHashMap<>();
+        List<ReporteCarreraDTO> resultado = new ArrayList<>();
+        for (Object[] fila : filas) {
+            String nombreCarrera = (String) fila[0];
+            int anio = ((Number) fila[1]).intValue();
+            long cantInscriptos = ((Number) fila[2]).longValue();
+            long cantEgresados = ((Number) fila[3]).longValue();
 
-        for (EstudianteCarrera ec : matriculas) {
-            Carrera carrera = ec.getCarrera();
-            int anioInscripcion = ec.getFechaDeinscripcion().getYear();
-
-            if (!acumulado.containsKey(carrera)) {
-                acumulado.put(carrera, new TreeMap<>());
-            }
-            Map<Integer, long[]> porAnio = acumulado.get(carrera);
-
-            if (!porAnio.containsKey(anioInscripcion)) {
-                porAnio.put(anioInscripcion, new long[2]);
-            }
-            porAnio.get(anioInscripcion)[0]++;
-
-            if (ec.estaGraduado()) {
-                int anioGraduacion = ec.getFechaGraduacion().getYear();
-                if (!porAnio.containsKey(anioGraduacion)) {
-                    porAnio.put(anioGraduacion, new long[2]);
-                }
-                porAnio.get(anioGraduacion)[1]++;
-            }
+            resultado.add(new ReporteCarreraDTO(nombreCarrera, anio, cantInscriptos, cantEgresados));
         }
 
-        List<ReporteCarreraDTO> reporte = new ArrayList<>();
-        for (Map.Entry<Carrera, TreeMap<Integer, long[]>> entradaCarrera : acumulado.entrySet()) {
-            String nombreCarrera = entradaCarrera.getKey().getNombreCarrera();
-
-            for (Map.Entry<Integer, long[]> entradaAnio : entradaCarrera.getValue().entrySet()) {
-                int anio = entradaAnio.getKey();
-                long inscriptos = entradaAnio.getValue()[0];
-                long egresados = entradaAnio.getValue()[1];
-
-                reporte.add(new ReporteCarreraDTO(nombreCarrera, anio, inscriptos, egresados));
-            }
-        }
-        return reporte;
+        return resultado;
     }
 }

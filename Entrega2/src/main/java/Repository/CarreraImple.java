@@ -1,5 +1,6 @@
 package Repository;
 
+import DTO.CarreraDTO;
 import Entity.Carrera;
 import Factory.JPAutil;
 
@@ -21,21 +22,21 @@ public class CarreraImple implements CarreraInter {
 
     // f) recuperar las carreras con estudiantes inscriptos, y ordenar por cantidad de inscriptos
     @Override
-    public List<Carrera> getCarrerasPorCantidadInscriptos() {
+    public List<CarreraDTO> getCarrerasPorCantidadInscriptos() {
         EntityManager em = JPAutil.getEntityManager();
         em.getTransaction().begin();
 
-        TypedQuery<Carrera> carrerasConInscriptos = em.createQuery(
-                "SELECT ec.carrera FROM EstudianteCarrera ec " +
-                        "GROUP BY ec.carrera " +
-                        "ORDER BY COUNT(ec) DESC", Carrera.class);
+        TypedQuery<CarreraDTO> query = em.createQuery(
+                "SELECT new DTO.CarreraDTO(ec.carrera.idCarrera, ec.carrera.nombreCarrera, ec.carrera.duracion, COUNT(ec)) " +
+                        "FROM EstudianteCarrera ec " +
+                        "GROUP BY ec.carrera.idCarrera, ec.carrera.nombreCarrera, ec.carrera.duracion " +
+                        "ORDER BY COUNT(ec) DESC", CarreraDTO.class);
 
-        List<Carrera> resultado = carrerasConInscriptos.getResultList();
+        List<CarreraDTO> resultado = query.getResultList();
 
         em.close();
 
         return resultado;
     }
-
 
 }
