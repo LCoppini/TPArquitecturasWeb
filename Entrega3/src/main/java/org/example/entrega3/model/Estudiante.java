@@ -1,15 +1,14 @@
 package org.example.entrega3.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
+import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@Setter
 @Entity
 public class Estudiante {
     @Id
@@ -34,6 +33,7 @@ public class Estudiante {
 
     @Column(name = "ciudad_residencia", length = 30, nullable = false)
     private String ciudadResidencia;
+
     @JsonIgnoreProperties("estudiante")
     @OneToMany(mappedBy = "estudiante")
     private List<EstudianteCarrera> carreras = new ArrayList<>();
@@ -80,39 +80,8 @@ public class Estudiante {
         return ciudadResidencia;
     }
 
-    public void setNum_libreta(Long num_libreta) {
-        this.num_libreta = num_libreta;
-    }
-
-    public void setApellido(String apellido) {
-        this.apellido = apellido;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public void setFechaNacimiento(LocalDate fechaNacimiento) {
-        this.fechaNacimiento = fechaNacimiento;
-    }
-
-    public void setGenero(String genero) {
-        this.genero = genero;
-    }
-
-    public void setDni(Long dni) {
-        this.dni = dni;
-    }
-
-    public void setCiudadResidencia(String ciudadResidencia) {
-        this.ciudadResidencia = ciudadResidencia;
-    }
-
     public List<EstudianteCarrera> getCarreras() {
         return carreras;
     }
 
-    public void setCarreras(List<EstudianteCarrera> carreras) {
-        this.carreras = carreras;
-    }
 }
