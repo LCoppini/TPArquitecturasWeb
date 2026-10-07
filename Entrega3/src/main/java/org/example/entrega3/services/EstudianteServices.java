@@ -7,6 +7,7 @@ import org.example.entrega3.model.Estudiante;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service("Estudiante servicio")
@@ -20,6 +21,19 @@ public class EstudianteServices {
     public List<EstudianteDTO> findAll() throws Exception {
         return estudianteRepositorio.findAll().stream().map(EstudianteDTO::new).toList(); //por cada est crea un new DTO
     }
+    @Transactional(readOnly = true)
+    public List<EstudianteDTO> findAll(String order) throws Exception {
+        List<EstudianteDTO> estudiantes = null;
+
+        if (order == null)
+            estudiantes =  this.findAll();
+
+
+
+        return estudiantes.stream().map(EstudianteDTO::new).toList();
+    }
+
+
 
     @Transactional(readOnly = true)
     public Estudiante findById(Long id) throws Exception {
