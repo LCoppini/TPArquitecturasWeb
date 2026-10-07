@@ -17,11 +17,12 @@ public class EstudianteController {
 
     private final EstudianteServices estudianteServicio;
 
-    @GetMapping
-    public List<EstudianteDTO> getEstudiantes(@RequestParam(name = "orderBy", required = false) String orderBy) throws Exception {
-        return estudianteServicio.findAll(orderBy); //url?=orderBY
+    @GetMapping()
+    public List<EstudianteDTO> getEstudianteBy(
+            @RequestParam(required = false) String orderBy,
+            @RequestParam(required = false) String genero,
+            @RequestParam(required = false) String ciudad) throws Exception {
+        return estudianteServicio.search(orderBy, genero, ciudad);
     }
-
-
 
 }
