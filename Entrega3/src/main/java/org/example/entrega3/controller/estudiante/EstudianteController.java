@@ -1,7 +1,7 @@
 package org.example.entrega3.controller.estudiante;
 
 import lombok.RequiredArgsConstructor;
-import org.example.entrega3.DTOs.EstudianteDTO;
+import org.example.entrega3.DTOs.Request.EstudianteDTO;
 import org.example.entrega3.services.EstudianteServices;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

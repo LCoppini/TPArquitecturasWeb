@@ -1,4 +1,4 @@
-package org.example.entrega3.DTOs;
+package org.example.entrega3.DTOs.Request;
 
 import org.example.entrega3.model.Estudiante;
 
