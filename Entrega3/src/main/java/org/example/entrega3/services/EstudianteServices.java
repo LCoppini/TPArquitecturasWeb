@@ -1,7 +1,7 @@
 package org.example.entrega3.services;
 
 import lombok.RequiredArgsConstructor;
-import org.example.entrega3.DTOs.Request.EstudianteDTO;
+import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
 import org.example.entrega3.Repository.EstudianteRepository;
 import org.example.entrega3.model.Estudiante;
 import org.springframework.data.domain.Sort;
@@ -27,17 +27,17 @@ public class EstudianteServices {
     //g-recuperar los estudiantes de una determinada carrera filtrado por ciudades de residencia
 
     @Transactional(readOnly = true)
-    public List<EstudianteDTO> findAll() throws Exception {
-        return estudianteRepositorio.findAll().stream().map(EstudianteDTO::new).toList(); //por cada est crea un new DTO
+    public List<EstudianteResponseDTO> findAll() throws Exception {
+        return estudianteRepositorio.findAll().stream().map(EstudianteResponseDTO::new).toList(); //por cada est crea un new DTO
     }
     //c
     @Transactional(readOnly = true)
-    public List<EstudianteDTO> findAll(String order) throws Exception {
+    public List<EstudianteResponseDTO> findAll(String order) throws Exception {
         if (order == null)
             return this.findAll();
 
         Sort sort = Sort.by(order);
-        return estudianteRepositorio.findAll(sort).stream().map(EstudianteDTO::new).toList();
+        return estudianteRepositorio.findAll(sort).stream().map(EstudianteResponseDTO::new).toList();
     }
 
     @Transactional(readOnly = true)
