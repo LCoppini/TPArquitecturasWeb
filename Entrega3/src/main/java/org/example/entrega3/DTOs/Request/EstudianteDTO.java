@@ -12,7 +12,7 @@ import java.util.List;
 public record EstudianteDTO
         (
                 @NotNull(message = "EL numero de libreta no puede ser null")
-                Long num_libreta,
+                Long num_liobreta,
                 @NotNull(message = "EL nombre no puede ser null")
                 String nombre,
                 @NotNull(message = "El apellido no puede ser null")
@@ -23,7 +23,7 @@ public record EstudianteDTO
                 String genero,
                 @NotNull(message = "No puede ser null el Dni")
                 @NotEmpty(message = "No puede ser vacio")
-                Long dni,
+                Long Dni,
                 @NotNull(message = "No puede ser null la ciudad")
                 String ciudad_residencia,
                 @NotNull(message = "La lista no puede tener valores nulos")

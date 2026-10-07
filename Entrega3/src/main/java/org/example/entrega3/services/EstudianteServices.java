@@ -1,6 +1,8 @@
 package org.example.entrega3.services;
 
 import lombok.RequiredArgsConstructor;
+import org.example.entrega3.DTOs.Request.EstudianteDTO;
+import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
 import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
 import org.example.entrega3.Repository.EstudianteRepository;
 import org.example.entrega3.model.Estudiante;
@@ -30,15 +32,20 @@ public class EstudianteServices {
     public List<EstudianteResponseDTO> findAll() throws Exception {
         return estudianteRepositorio.findAll().stream().map(EstudianteResponseDTO::new).toList(); //por cada est crea un new DTO
     }
+
     //c
     @Transactional(readOnly = true)
-    public List<EstudianteResponseDTO> findAll(String order) throws Exception {
-        if (order == null)
-            return this.findAll();
+    public List<EstudianteDTO> search(EstudianteSearchDTO request, Sort orden){
+        if (request.getGenero() == null || request.getGenero().isEmpty()){
+            request.setGenero(null);
+        }
+        if (request.getCiudad() == null || request.getCiudad().isEmpty())
+            request.setCiudad(null);
 
-        Sort sort = Sort.by(order);
-        return estudianteRepositorio.findAll(sort).stream().map(EstudianteResponseDTO::new).toList();
+        return estudianteRepositorio.search(request.getGenero(),orden);
+
     }
+
 
     @Transactional(readOnly = true)
     public Estudiante findById(Long id) throws Exception {

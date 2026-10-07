@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 
 
-public record EstudianteCarreraDTO(
+public class EstudianteCarreraDTO(
         @NotNull(message = "No puede ser nul el numero de libreta")
         @NotEmpty(message = "No puede ser vacio el num_libreta")
         Long num_libreta,
