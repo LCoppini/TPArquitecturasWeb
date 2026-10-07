@@ -2,8 +2,6 @@ package org.example.entrega3.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.EstudianteDTO;
-import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
-import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
 import org.example.entrega3.Repository.EstudianteRepository;
 import org.example.entrega3.model.Estudiante;
 import org.springframework.data.domain.Sort;
@@ -29,23 +27,18 @@ public class EstudianteServices {
     //g-recuperar los estudiantes de una determinada carrera filtrado por ciudades de residencia
 
     @Transactional(readOnly = true)
-    public List<EstudianteResponseDTO> findAll() throws Exception {
-        return estudianteRepositorio.findAll().stream().map(EstudianteResponseDTO::new).toList(); //por cada est crea un new DTO
+    public List<EstudianteDTO> findAll() throws Exception {
+        return estudianteRepositorio.findAll().stream().map(EstudianteDTO::new).toList(); //por cada est crea un new DTO
     }
-
     //c
     @Transactional(readOnly = true)
-    public List<EstudianteDTO> search(EstudianteSearchDTO request, Sort orden){
-        if (request.getGenero() == null || request.getGenero().isEmpty()){
-            request.setGenero(null);
-        }
-        if (request.getCiudad() == null || request.getCiudad().isEmpty())
-            request.setCiudad(null);
+    public List<EstudianteDTO> findAll(String order) throws Exception {
+        if (order == null)
+            return this.findAll();
 
-        return estudianteRepositorio.search(request.getGenero(),orden);
-
+        Sort sort = Sort.by(order);
+        return estudianteRepositorio.findAll(sort).stream().map(EstudianteDTO::new).toList();
     }
-
 
     @Transactional(readOnly = true)
     public Estudiante findById(Long id) throws Exception {
