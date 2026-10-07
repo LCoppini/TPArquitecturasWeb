@@ -21,6 +21,7 @@ public class Carrera {
 
     @Column(nullable = false)
     private int duracion;
+
     @JsonIgnoreProperties("carrera")
     @OneToMany(mappedBy = "carrera")
 
