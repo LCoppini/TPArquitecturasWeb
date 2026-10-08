@@ -68,6 +68,10 @@ public class Estudiante {
         return fechaNacimiento;
     }
 
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
     public Long getDni() {
         return dni;
     }
