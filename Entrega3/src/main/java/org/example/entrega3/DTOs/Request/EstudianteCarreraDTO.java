@@ -8,14 +8,14 @@ import java.time.LocalDate;
 public record EstudianteCarreraDTO(
         @NotNull(message = "No puede ser nul el numero de libreta")
         @NotEmpty(message = "No puede ser vacio el num_libreta")
-        Long num_libreta,
+        Long numLibreta,
         @NotNull(message = "No puede ser null el idCarrera")
         @NotEmpty(message = "No puede ser vacio el idCarrera")
         Long idCarrera,
         @NotNull(message = "No puede ser null")
-        LocalDate fecha_incripcion,
+        LocalDate fechaInscripcion,
         @NotNull(message = "No puede ser null")
-        LocalDate facha_graduacion
+        LocalDate fechaGraduacion
 
 ){
 }
