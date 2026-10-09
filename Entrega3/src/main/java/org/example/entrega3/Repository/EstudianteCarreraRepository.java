@@ -1,6 +1,7 @@
 package org.example.entrega3.Repository;
 
 
+import org.example.entrega3.DTOs.Response.ReporteResponseDTO;
 import org.example.entrega3.model.EstudianteCarrera;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,5 +37,5 @@ public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCar
             GROUP BY c.idCarrera, c.nombreCarrera, a.anio
             ORDER BY c.nombreCarrera ASC, a.anio ASC
             """, nativeQuery = true)
-    List<EstudianteCarrera> reporteCarreras();
+    List<ReporteProjetion> reporteCarreras();
 }
