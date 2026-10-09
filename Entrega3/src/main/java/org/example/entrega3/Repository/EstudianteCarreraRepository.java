@@ -1,4 +1,4 @@
-package org.example.entrega3.Repository;
+package org.example.entrega3.repository;
 
 
 import org.example.entrega3.DTOs.Response.ReporteResponseDTO;
@@ -37,5 +37,5 @@ public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCar
             GROUP BY c.idCarrera, c.nombreCarrera, a.anio
             ORDER BY c.nombreCarrera ASC, a.anio ASC
             """, nativeQuery = true)
-    List<ReporteProjetion> reporteCarreras();
+    List<ReporteProjection> reporteCarreras();
 }

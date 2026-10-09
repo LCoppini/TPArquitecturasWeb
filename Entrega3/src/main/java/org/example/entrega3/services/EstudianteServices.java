@@ -1,10 +1,12 @@
 package org.example.entrega3.services;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.EstudianteDTO;
 import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
 import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
-import org.example.entrega3.Repository.EstudianteRepository;
+import org.example.entrega3.Exception.EstudianteException;
+import org.example.entrega3.repository.EstudianteRepository;
 import org.example.entrega3.model.Estudiante;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -21,8 +23,8 @@ public class EstudianteServices {
 
     //CRUD
     //a-dar de alta un estudiante
+    //d-recuperar un estudiante en base a su num_libreta(Ya realizado)
 
-    //d-recuperar un estudiante en base a su num_libreta
 
     //e-recuperar todos los estudiante en base a su genero
 
@@ -44,8 +46,15 @@ public class EstudianteServices {
         return estudianteRepositorio.search(request.getGenero(),orden);
 
     }
-
-
+    //d-recuperar un estudiante en base a su num_libreta
+    @Transactional(readOnly = true)
+    public EstudianteResponseDTO findByNumLibreta(Long numLibreta) {
+        Estudiante e = estudianteRepositorio.findByNumLibreta(numLibreta);
+        if (e == null) {
+            throw new EstudianteException("Estudiante no encontrado");
+        }
+        return new EstudianteResponseDTO(e);
+    }
 
     @Transactional(readOnly = true)
     public Estudiante findById(Long id) throws Exception {

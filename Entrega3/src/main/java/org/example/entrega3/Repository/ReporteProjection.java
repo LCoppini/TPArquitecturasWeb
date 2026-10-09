@@ -1,6 +1,6 @@
 package org.example.entrega3.Repository;
 
-public interface ReporteProjetion {
+public interface ReporteProjection {
     String getNombreCarrera();
     Integer getAnio();
     Long getCantidadDeInscriptos();
