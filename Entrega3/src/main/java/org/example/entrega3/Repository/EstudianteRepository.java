@@ -2,6 +2,7 @@ package org.example.entrega3.Repository;
 
 import org.example.entrega3.DTOs.Request.EstudianteDTO;
 import org.example.entrega3.model.Estudiante;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -23,6 +24,12 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
                 """
             )
     List<EstudianteDTO> filterEstudiante(String genero, String orden);
+
+    @Query("""
+        SELECT e FROM Estudiante e
+        WHERE (:genero IS NULL OR e.genero = :genero)
+        """)
+    List<EstudianteDTO> search(String genero, Sort orden);
 
 
 }
