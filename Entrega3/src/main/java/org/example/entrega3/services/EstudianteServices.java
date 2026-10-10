@@ -26,7 +26,7 @@ public class EstudianteServices {
     //d-recuperar un estudiante en base a su num_libreta(Ya realizado)
 
 
-    //e-recuperar todos los estudiante en base a su genero
+    //e-recuperar todos los estudiante en base a su genero(Realizado)
 
     //g-recuperar los estudiantes de una determinada carrera filtrado por ciudades de residencia
 

@@ -3,13 +3,14 @@ package org.example.entrega3.services;
 import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.CarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteCarreraDTO;
+import org.example.entrega3.DTOs.Response.CarreraInscriptosResponseDTO;
 import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
 import org.example.entrega3.DTOs.Response.EstudianteCarreraResponseDTO;
 import org.example.entrega3.Exception.CarreraException;
 import org.example.entrega3.Exception.NotFoundException;
-import org.example.entrega3.Repository.CarreraRepository;
-import org.example.entrega3.Repository.EstudianteCarreraRepository;
-import org.example.entrega3.Repository.EstudianteRepository;
+import org.example.entrega3.repository.CarreraRepository;
+import org.example.entrega3.repository.EstudianteCarreraRepository;
+import org.example.entrega3.repository.EstudianteRepository;
 import org.example.entrega3.model.Carrera;
 import org.example.entrega3.model.Estudiante;
 import org.example.entrega3.model.EstudianteCarrera;
@@ -97,4 +98,12 @@ public class CarreraServices {
         return this.carreraRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("La carrera con id " + id + " no existe."));
     }
+
+    //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
+    @Transactional(readOnly = true)
+    public List<CarreraInscriptosResponseDTO> getCarreraConCantInscriptos() {
+        return carreraRepository.getCarreraConCantInscriptos();
+    }
+
+
 }

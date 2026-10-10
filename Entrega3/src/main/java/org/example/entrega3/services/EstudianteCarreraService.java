@@ -3,7 +3,7 @@ package org.example.entrega3.services;
 
 import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Response.ReporteResponseDTO;
-import org.example.entrega3.Repository.EstudianteCarreraRepository;
+import org.example.entrega3.repository.EstudianteCarreraRepository;
 import org.example.entrega3.model.Carrera;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +17,7 @@ public class EstudianteCarreraService {
 
     EstudianteCarreraRepository estudianteCarreraRepository;
 
-    //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
+    //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos(Realizado en carrera)
 
     //h
     //generar un reporte de las carreras, que para cada carrera incluya información de los

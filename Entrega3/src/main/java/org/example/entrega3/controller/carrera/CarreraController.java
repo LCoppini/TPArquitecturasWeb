@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.CarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteCarreraDTO;
+import org.example.entrega3.DTOs.Response.CarreraInscriptosResponseDTO;
 import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
 import org.example.entrega3.DTOs.Response.EstudianteCarreraResponseDTO;
 import org.example.entrega3.services.CarreraServices;
@@ -51,5 +52,11 @@ public class CarreraController {
     public ResponseEntity<EstudianteCarreraResponseDTO> matricular(@PathVariable Long id,
                                                                   @RequestBody @Valid EstudianteCarreraDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.carreraServices.matricular(id, request));
+    }
+
+    //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
+    @GetMapping("/inscriptos")
+    public List<CarreraInscriptosResponseDTO> getCarreraConCantInscriptos() {
+        return carreraServices.getCarreraConCantInscriptos();
     }
 }
