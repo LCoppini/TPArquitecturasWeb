@@ -1,7 +1,7 @@
 package org.example.entrega3.repository;
 
 
-import org.example.entrega3.DTOs.Response.ReporteResponseDTO;
+import org.example.entrega3.DTOs.Response.CarrreraInscriptosResponseDTO;
 import org.example.entrega3.model.EstudianteCarrera;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,7 +15,6 @@ public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCar
     //h- generar un reporte de las carreras, que para cada carrera incluya información de los
     //inscriptos y egresados por año. Se deben ordenar las carreras alfabéticamente, y
     //presentar los años de manera cronológica.
-
 
     @Query( value = """
             SELECT
@@ -38,4 +37,20 @@ public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCar
             ORDER BY c.nombreCarrera ASC, a.anio ASC
             """, nativeQuery = true)
     List<ReporteProjection> reporteCarreras();
+
+
+    //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
+    @Query("""
+            SELECT new org.example.entrega3.DTOs.Response.CarrreraInscriptosResponseDTO(
+                        c.nombreCarrera,
+                        COUNT(ec)
+                  )
+                  FROM EstudianteCarrera ec
+                  JOIN ec.carrera c 
+                  GROUP BY c.idCarrera, c.nombreCarrera
+                  ORDER BY COUNT(ec) DESC 
+
+            """)
+    List<CarrreraInscriptosResponseDTO> carreraPorEstudinateInscriptos();
+
 }

@@ -1,4 +1,4 @@
-package org.example.entrega3.Repository;
+package org.example.entrega3.repository;
 
 import org.example.entrega3.model.Carrera;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,4 +1,4 @@
-package org.example.entrega3.Repository;
+package org.example.entrega3.repository;
 
 public interface ReporteProjection {
     String getNombreCarrera();

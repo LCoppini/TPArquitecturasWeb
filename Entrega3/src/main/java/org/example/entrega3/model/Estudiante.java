@@ -2,14 +2,20 @@ package org.example.entrega3.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-@Setter
+
 @Entity
+@Setter
+@Getter
+@NoArgsConstructor
 public class Estudiante {
     @Id
     @Column(name="num_libreta")
@@ -38,10 +44,9 @@ public class Estudiante {
     @OneToMany(mappedBy = "estudiante")
     private List<EstudianteCarrera> carreras = new ArrayList<>();
 
-    public Estudiante() {
-    }
-
-    public Estudiante(Long num_libreta, String nombre, String apellido, LocalDate fechaNacimiento, String genero, Long dni, String ciudadResidencia) {
+    public Estudiante(Long num_libreta, String nombre, String apellido,
+                      LocalDate fechaNacimiento, String genero, Long dni,
+                      String ciudadResidencia) {
         this.num_libreta = num_libreta;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -51,41 +56,7 @@ public class Estudiante {
         this.ciudadResidencia = ciudadResidencia;
     }
 
-    public Long getNum_libreta() {
-        return num_libreta;
-    }
 
-    public String getNombre() {
-        return nombre;
-    }
 
-    public String getApellido() {
-        return apellido;
-    }
-
-    public LocalDate getEdad() {
-
-        return fechaNacimiento;
-    }
-
-    public LocalDate getFechaNacimiento() {
-        return fechaNacimiento;
-    }
-
-    public Long getDni() {
-        return dni;
-    }
-
-    public String getGenero() {
-        return genero;
-    }
-
-    public String getCiudadResidencia() {
-        return ciudadResidencia;
-    }
-
-    public List<EstudianteCarrera> getCarreras() {
-        return carreras;
-    }
 
 }
