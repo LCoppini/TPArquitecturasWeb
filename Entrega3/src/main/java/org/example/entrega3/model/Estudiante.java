@@ -28,7 +28,7 @@ public class Estudiante {
     @Column(length = 30, nullable = false)
     private String apellido;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "fecha_nacimiento")
     private LocalDate fechaNacimiento;
 
     @Column(length = 30, nullable = false)
