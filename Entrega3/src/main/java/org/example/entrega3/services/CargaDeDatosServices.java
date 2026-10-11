@@ -77,20 +77,18 @@ public class CargaDeDatosServices {
     @Transactional
     public void cargarEstudianteCarrera(Reader reader) throws IOException, CsvValidationException {
         try (CSVReader csv = new CSVReader(reader)) {
-            csv.readNext();
+            csv.readNext(); // header
             String[] linea;
+            int cargadas = 0, noEncontradas = 0;
 
             while ((linea = csv.readNext()) != null) {
                 try {
                     Long dni = Long.valueOf(linea[1].trim());
-                    if (dni < 1000) {
-                        System.out.println("DNI no existe: " + dni);
-                        continue;
-                    }
 
-                    Optional<Estudiante> estudiante = estudianteRepo.findById(dni);
+                    Optional<Estudiante> estudiante = estudianteRepo.findByDni(dni);
                     if (estudiante.isEmpty()) {
-                        System.out.println("No se encontró estudiante con  dni: " + dni);
+                        System.out.println("No se encontró estudiante con DNI: " + dni);
+                        noEncontradas++;
                         continue;
                     }
 
@@ -109,12 +107,14 @@ public class CargaDeDatosServices {
                             ? null
                             : LocalDate.of(Integer.parseInt(grad), 1, 1));
 
-                    estudianteCarreraRepo.save(ec); // con ID asignado a mano hace merge
+                    estudianteCarreraRepo.save(ec);
+                    cargadas++;
 
                 } catch (NumberFormatException | DateTimeException e) {
                     System.out.println("Línea inválida: " + String.join(",", linea));
                 }
             }
+            System.out.println("Inscripciones cargadas: " + cargadas + " | sin estudiante: " + noEncontradas);
         }
     }
 }
