@@ -1,7 +1,6 @@
 package org.example.entrega3.repository;
 
 
-import org.example.entrega3.DTOs.Response.CarrreraInscriptosResponseDTO;
 import org.example.entrega3.model.EstudianteCPK;
 import org.example.entrega3.model.EstudianteCarrera;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,18 +39,5 @@ public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCar
     List<ReporteProjection> reporteCarreras();
 
 
-    //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
-    @Query("""
-            SELECT new org.example.entrega3.DTOs.Response.CarrreraInscriptosResponseDTO(
-                        c.nombreCarrera,
-                        COUNT(ec)
-                  )
-                  FROM EstudianteCarrera ec
-                  JOIN ec.carrera c 
-                  GROUP BY c.idCarrera, c.nombreCarrera
-                  ORDER BY COUNT(ec) DESC 
-
-            """)
-    List<CarrreraInscriptosResponseDTO> carreraPorEstudinateInscriptos();
 
 }

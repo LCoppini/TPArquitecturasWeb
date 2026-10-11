@@ -2,9 +2,11 @@ package org.example.entrega3.controller.estudiante;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.entrega3.DTOs.Request.CarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteCarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteDTO;
 import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
+import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
 import org.example.entrega3.DTOs.Response.EstudianteCarreraResponseDTO;
 import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
 import org.example.entrega3.model.EstudianteCarrera;
@@ -43,12 +45,20 @@ public class EstudianteController {
     }
 
     // b) matricular un estudiante en una carrera
-    @PostMapping("/{idCarrera}/matricular")
+    @PostMapping("/{id}/matricular")
     public void matricular(@PathVariable Long id, @RequestBody @Valid EstudianteCarreraDTO request) {
         this.estudianteCarreraService.matricular(id, request);
     }
 
+    @PutMapping("/{id}")
+    public EstudianteResponseDTO update(@PathVariable Long id, @RequestBody @Valid EstudianteDTO request) throws Exception {
+        return this.estudianteService.update(id, request);
+    }
 
+    @DeleteMapping("/{id}")
+    public EstudianteResponseDTO delete(@PathVariable Long id) throws Exception {
+        return this.estudianteService.delete(id);
+    }
 
 
 

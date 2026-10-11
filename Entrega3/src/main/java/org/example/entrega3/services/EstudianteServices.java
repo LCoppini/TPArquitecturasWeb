@@ -5,8 +5,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.EstudianteCarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteDTO;
 import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
+import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
 import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
+import org.example.entrega3.Exception.CarreraException;
 import org.example.entrega3.Exception.EstudianteException;
+import org.example.entrega3.Exception.NotFoundException;
 import org.example.entrega3.model.Carrera;
 import org.example.entrega3.model.EstudianteCarrera;
 import org.example.entrega3.repository.CarreraRepository;
@@ -62,8 +65,12 @@ public class EstudianteServices {
     }
 
     @Transactional(readOnly = true)
-    public Estudiante findById(Long id) throws Exception {
-        return null;
+    public EstudianteResponseDTO findById(Long id) throws Exception {
+        Estudiante c = this.estudianteRepositorio.findById(id).orElse(null);
+        if (c == null) {
+            throw new EstudianteException("Estudiante no encontrado");
+        }
+        return new EstudianteResponseDTO(c);
     }
 
     public void save(EstudianteDTO entity) throws Exception {
@@ -83,11 +90,27 @@ public class EstudianteServices {
         estudianteRepositorio.save(estudiante);
     }
 
-    public Estudiante update(Long id, Estudiante entity) throws Exception {
-        return null;
+    public EstudianteResponseDTO update(Long id, EstudianteDTO entity) throws Exception {
+        Estudiante estudiante = estudianteRepositorio.findById(id).orElse(null);
+        if(estudiante == null)
+            throw new NotFoundException("El id de la carrera no existe.");
+        estudiante.setNum_libreta(entity.num_libreta());
+        estudiante.setNombre(entity.nombre());
+        estudiante.setApellido(entity.apellido());
+        estudiante.setFechaNacimiento(entity.fecha_nacimiento());
+        estudiante.setGenero(entity.genero());
+        estudiante.setDni(entity.dni());
+        estudiante.setCiudadResidencia(entity.ciudad_residencia());
+        return new EstudianteResponseDTO((this.estudianteRepositorio.save(estudiante)));
     }
 
-    public boolean delete(Long id) throws Exception {
-        return false;
+    public EstudianteResponseDTO delete(Long id) throws Exception {
+        Estudiante estudiante = estudianteRepositorio.findById(id).orElse(null);
+
+        if (estudiante == null) {
+            throw new EstudianteException("No se puede eliminar el estudiante " + id + " porque esta inscriptos a carrerar.");
+        }
+        this.estudianteRepositorio.delete(estudiante);
+        return new EstudianteResponseDTO(estudiante);
     }
 }
