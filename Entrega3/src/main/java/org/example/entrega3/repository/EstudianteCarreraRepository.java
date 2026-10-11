@@ -2,6 +2,7 @@ package org.example.entrega3.repository;
 
 
 import org.example.entrega3.DTOs.Response.CarrreraInscriptosResponseDTO;
+import org.example.entrega3.model.EstudianteCPK;
 import org.example.entrega3.model.EstudianteCarrera;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCarrera, Long> {
+public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCarrera, EstudianteCPK> {
 
     //h- generar un reporte de las carreras, que para cada carrera incluya información de los
     //inscriptos y egresados por año. Se deben ordenar las carreras alfabéticamente, y

@@ -4,9 +4,11 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.CarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteCarreraDTO;
+import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
 import org.example.entrega3.DTOs.Response.CarreraInscriptosResponseDTO;
 import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
 import org.example.entrega3.DTOs.Response.EstudianteCarreraResponseDTO;
+import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
 import org.example.entrega3.services.CarreraServices;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,25 +40,24 @@ public class CarreraController {
 
     @PutMapping("/{id}")
     public CarreraResponseDTO update(@PathVariable Long id, @RequestBody @Valid CarreraDTO request) {
-        return this.carreraServices.update(id, request);
+       return this.carreraServices.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        this.carreraServices.delete(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // b) matricular un estudiante en una carrera
-    @PostMapping("/{id}/matricular")
-    public ResponseEntity<EstudianteCarreraResponseDTO> matricular(@PathVariable Long id,
-                                                                  @RequestBody @Valid EstudianteCarreraDTO request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.carreraServices.matricular(id, request));
+    public CarreraResponseDTO delete(@PathVariable Long id) {
+        return this.carreraServices.delete(id);
     }
 
     //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
     @GetMapping("/inscriptos")
     public List<CarreraInscriptosResponseDTO> getCarreraConCantInscriptos() {
         return carreraServices.getCarreraConCantInscriptos();
+    }
+    //g- recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia.
+    @GetMapping("/{id}/estudiantes")
+    public List<EstudianteResponseDTO> getEstudiantesByCiudad(
+            @PathVariable Long idCarrera,
+            EstudianteSearchDTO request){
+        return carreraServices.getEstudianteByCiudad(idCarrera,request);
     }
 }
