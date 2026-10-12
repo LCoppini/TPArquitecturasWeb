@@ -33,17 +33,10 @@ public interface CarreraRepository extends JpaRepository<Carrera, Long> {
     //g) recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia
     @Query("""
         SELECT new org.example.entrega3.DTOs.Response.EstudianteResponseDTO(e)  FROM Carrera c
-              JOIN EstudianteCarrera ec ON :idCarrera = ec.carrera
+              JOIN EstudianteCarrera ec ON :idCarrera = ec.estudianteCPK.idCarrera
                     JOIN Estudiante e ON e.num_libreta = ec.estudianteCPK.idEstudiante
                           WHERE (:ciudad IS NULL OR e.ciudadResidencia = :ciudad )
                     
-      """
-)
-
-//    "SELECT new DTO.EstudianteDTO(e.num_libreta, e.nombre, e.apellido, e.fechaNacimiento, " +
-//                        "e.genero, e.dni, e.ciudadResidencia) " +
-//                        "FROM EstudianteCarrera ec JOIN ec.estudiante e " +
-//                        "WHERE ec.carrera.idCarrera = :idCarrera AND e.ciudadResidencia = :ciudad",
-//                EstudianteDTO.class);
+      """)
     List<EstudianteResponseDTO> getEstudianteByCiudad(Long idCarrera, String ciudad);
 }

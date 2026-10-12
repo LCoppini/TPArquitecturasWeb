@@ -88,9 +88,10 @@ public class CarreraServices {
     }
 
     //g- recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia.
-    public List<EstudianteResponseDTO> getEstudianteByCiudad(Long idCarrera, EstudianteSearchDTO request) {
-        if (request.getCiudad() == null || request.getCiudad().isEmpty())
+    public List<EstudianteResponseDTO> getEstudianteByCiudad(Long idCarrera, EstudianteSearchDTO request) throws Exception {
+        if (request.getCiudad() == null || request.getCiudad().isEmpty()){
             request.setCiudad(null);
+        }
         return carreraRepository.getEstudianteByCiudad(idCarrera,request.getCiudad());
 
     }

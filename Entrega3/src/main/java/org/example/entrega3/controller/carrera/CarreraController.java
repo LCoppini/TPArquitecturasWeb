@@ -57,10 +57,10 @@ public class CarreraController {
         return ResponseEntity.ok(carreras);  // ← 200 OK
     }
     //g- recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia.
-    @GetMapping("/{id}/estudiantes")
+    @GetMapping("/{idCarrera}/estudiantes")
     public ResponseEntity<List<EstudianteResponseDTO>> getEstudiantesByCiudad(
             @PathVariable Long idCarrera,
-            EstudianteSearchDTO request) {
+            EstudianteSearchDTO request) throws Exception {
         List<EstudianteResponseDTO> estudiantes = carreraServices.getEstudianteByCiudad(idCarrera, request);
         return ResponseEntity.ok(estudiantes);  // ← 200 OK
     }
