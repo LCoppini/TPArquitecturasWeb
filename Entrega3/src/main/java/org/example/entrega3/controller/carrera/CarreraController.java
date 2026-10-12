@@ -39,25 +39,29 @@ public class CarreraController {
     }
 
     @PutMapping("/{id}")
-    public CarreraResponseDTO update(@PathVariable Long id, @RequestBody @Valid CarreraDTO request) {
-       return this.carreraServices.update(id, request);
+    public ResponseEntity<CarreraResponseDTO> update(@PathVariable Long id, @RequestBody @Valid CarreraDTO request) {
+        CarreraResponseDTO carreraActualizada = this.carreraServices.update(id, request);
+        return ResponseEntity.ok(carreraActualizada);  // ← 200 OK
     }
 
     @DeleteMapping("/{id}")
-    public CarreraResponseDTO delete(@PathVariable Long id) {
-        return this.carreraServices.delete(id);
+    public ResponseEntity<CarreraResponseDTO> delete(@PathVariable Long id) {
+        CarreraResponseDTO carreraEliminada = this.carreraServices.delete(id);
+        return ResponseEntity.ok(carreraEliminada);  // ← 200 OK
     }
 
     //f-REcuperar carreras con estudiantes incriptos y ordernar por cantdiad de inscriptos
     @GetMapping("/inscriptos")
-    public List<CarreraInscriptosResponseDTO> getCarreraConCantInscriptos() {
-        return carreraServices.getCarreraConCantInscriptos();
+    public ResponseEntity<List<CarreraInscriptosResponseDTO>> getCarreraConCantInscriptos() {
+        List<CarreraInscriptosResponseDTO> carreras = carreraServices.getCarreraConCantInscriptos();
+        return ResponseEntity.ok(carreras);  // ← 200 OK
     }
     //g- recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia.
     @GetMapping("/{id}/estudiantes")
-    public List<EstudianteResponseDTO> getEstudiantesByCiudad(
+    public ResponseEntity<List<EstudianteResponseDTO>> getEstudiantesByCiudad(
             @PathVariable Long idCarrera,
-            EstudianteSearchDTO request){
-        return carreraServices.getEstudianteByCiudad(idCarrera,request);
+            EstudianteSearchDTO request) {
+        List<EstudianteResponseDTO> estudiantes = carreraServices.getEstudianteByCiudad(idCarrera, request);
+        return ResponseEntity.ok(estudiantes);  // ← 200 OK
     }
 }

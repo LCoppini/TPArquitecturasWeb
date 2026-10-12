@@ -43,7 +43,7 @@ public class CarreraServices {
     public CarreraResponseDTO findById(Long id) {
         Carrera c = this.carreraRepository.findById(id).orElse(null);
         if (c == null) {
-            throw new EstudianteException("Estudiante no encontrado");
+            throw new CarreraException("Carrera no encontrada"); //CAMBIO
         }
         return new CarreraResponseDTO(c);
     }

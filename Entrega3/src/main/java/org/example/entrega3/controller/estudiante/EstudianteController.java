@@ -40,24 +40,28 @@ public class EstudianteController {
     }
 
     @PostMapping
-    public void saveEstudiante(@RequestBody @Valid EstudianteDTO request) throws Exception {
-         this.estudianteService.save(request);
+    public ResponseEntity<Void> saveEstudiante(@RequestBody @Valid EstudianteDTO request) throws Exception {
+        this.estudianteService.save(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();  // ← 201 CREADO
     }
 
     // b) matricular un estudiante en una carrera
     @PostMapping("/{id}/matricular")
-    public void matricular(@PathVariable Long id, @RequestBody @Valid EstudianteCarreraDTO request) {
+    public ResponseEntity<Void> matricular(@PathVariable Long id, @RequestBody @Valid EstudianteCarreraDTO request) {
         this.estudianteCarreraService.matricular(id, request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();  // ← 201 CREADO
     }
 
     @PutMapping("/{id}")
-    public EstudianteResponseDTO update(@PathVariable Long id, @RequestBody @Valid EstudianteDTO request) throws Exception {
-        return this.estudianteService.update(id, request);
+    public ResponseEntity<EstudianteResponseDTO>  update(@PathVariable Long id, @RequestBody @Valid EstudianteDTO request) throws Exception {
+        EstudianteResponseDTO estudianteActualizado = this.estudianteService.update(id, request);
+        return ResponseEntity.ok(estudianteActualizado);  // ← 200 OK
     }
 
     @DeleteMapping("/{id}")
-    public EstudianteResponseDTO delete(@PathVariable Long id) throws Exception {
-        return this.estudianteService.delete(id);
+    public ResponseEntity<EstudianteResponseDTO> delete(@PathVariable Long id) throws Exception {
+        EstudianteResponseDTO estudianteEliminado = this.estudianteService.delete(id);
+        return ResponseEntity.ok(estudianteEliminado);  // ← 200 OK
     }
 
 
