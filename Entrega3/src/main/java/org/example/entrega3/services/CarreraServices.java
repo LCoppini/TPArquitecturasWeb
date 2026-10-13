@@ -73,7 +73,7 @@ public class CarreraServices {
     public CarreraResponseDTO delete(Long id) {
         Carrera carrera = carreraRepository.findById(id).orElse(null);
 
-        if (!carrera.getEstudiantes().isEmpty() ){
+       if (!carrera.getEstudiantes().isEmpty() ){
             throw new CarreraException("No se puede eliminar la carrera " + id + " porque tiene estudiantes inscriptos.");
         }
         this.carreraRepository.delete(carrera);

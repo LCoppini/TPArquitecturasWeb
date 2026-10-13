@@ -45,14 +45,15 @@ public class EstudianteServices {
     }
     //c
     @Transactional(readOnly = true)
-    public List<EstudianteDTO> search(EstudianteSearchDTO request, Sort orden){
+    public List<EstudianteResponseDTO> search(EstudianteSearchDTO request, Sort orden){
         if (request.getGenero() == null || request.getGenero().isEmpty()){
             request.setGenero(null);
         }
         if (request.getCiudad() == null || request.getCiudad().isEmpty())
             request.setCiudad(null);
 
-        return estudianteRepositorio.search(request.getGenero(),orden);
+        return estudianteRepositorio.search(request.getGenero(),orden).
+                stream().map(EstudianteResponseDTO::new).toList();
 
     }
     //d-recuperar un estudiante en base a su num_libreta

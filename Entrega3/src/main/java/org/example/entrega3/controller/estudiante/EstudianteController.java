@@ -30,14 +30,14 @@ public class EstudianteController {
 
     //CRUD
     @GetMapping()
-    public List<EstudianteDTO> getEstudianteBy(EstudianteSearchDTO request, Sort sort ) throws Exception {
+    public List<EstudianteResponseDTO> getEstudianteBy(EstudianteSearchDTO request, Sort sort ) throws Exception {
         return estudianteService.search( request, sort );
-    }
+    }  //200 ok
     //d-recuperar un estudiante en base a su num_libreta
     @GetMapping("/{numLibreta}")
     public EstudianteResponseDTO getEstudianteByNumLibreta(@PathVariable Long numLibreta) throws Exception {
         return estudianteService.findByNumLibreta(numLibreta);
-    }
+    }// 200 ok
 
     @PostMapping
     public ResponseEntity<Void> saveEstudiante(@RequestBody @Valid EstudianteDTO request) throws Exception {

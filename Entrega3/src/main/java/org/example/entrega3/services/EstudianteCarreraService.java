@@ -69,6 +69,7 @@ public class EstudianteCarreraService {
     public List<ReporteResponseDTO> getReporte() {
         return estudianteCarreraRepository.reporteCarreras().stream()
                 .map(p-> new ReporteResponseDTO(
+                        p.getIdCarrera(),
                         p.getNombreCarrera(),
                         p.getAnio(),
                         p.getCantidadDeInscriptos(),

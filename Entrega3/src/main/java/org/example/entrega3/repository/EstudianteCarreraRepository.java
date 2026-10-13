@@ -18,23 +18,24 @@ public interface EstudianteCarreraRepository extends JpaRepository<EstudianteCar
 
     @Query( value = """
             SELECT
-                c.nombreCarrera,
-                a.anio  As anio,
-                SUM(a.inscriptos) AS cantidadInscriptos,
-                SUM(a.egresados)  AS cantidadEgresados
-            FROM (
-                SELECT id_carrera, CAST(YEAR(fecha_inscripcion) AS SIGNED) AS anio, 1 AS inscriptos, 0 AS egresados
-                FROM EstudianteCarrera
-    
-                UNION ALL
-    
-                SELECT id_carrera, CAST(YEAR(fecha_graduacion) AS SIGNED) AS anio, 0 AS inscriptos, 1 AS egresados
-                FROM EstudianteCarrera
-                WHERE fecha_graduacion IS NOT NULL
-            ) a
-            JOIN Carrera c ON c.idCarrera = a.id_carrera
-            GROUP BY c.idCarrera, c.nombreCarrera, a.anio
-            ORDER BY c.nombreCarrera ASC, a.anio ASC
+                    c.nombre_carrera,
+                            c.id_carrera,
+                            a.anio  As anio,
+                            CAST(SUM(a.inscriptos) AS SIGNED) AS cantidadDeInscriptos,
+                            CAST(SUM(a.egresados) AS SIGNED)  AS cantidadDeEgresados
+                        FROM (
+                            SELECT id_carrera, CAST(YEAR(fecha_inscripcion) AS SIGNED) AS anio, 1 AS inscriptos, 0 AS egresados
+                            FROM estudiante_carrera
+
+                            UNION ALL
+
+                            SELECT id_carrera, CAST(YEAR(fecha_graduacion) AS SIGNED) AS anio, 0 AS inscriptos, 1 AS egresados
+                            FROM estudiante_carrera
+                            WHERE fecha_graduacion IS NOT NULL
+                        ) a
+                        JOIN carrera c ON c.id_carrera = a.id_carrera
+                        GROUP BY c.id_carrera, c.nombre_carrera, a.anio
+                        ORDER BY c.nombre_carrera ASC, a.anio ASC
             """, nativeQuery = true)
     List<ReporteProjection> reporteCarreras();
 

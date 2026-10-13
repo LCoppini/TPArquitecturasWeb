@@ -21,11 +21,13 @@ public interface EstudianteRepository extends JpaRepository<Estudiante, Long> {
     @Query("SELECT e FROM Estudiante e WHERE e.dni = :dni")
     Optional<Estudiante> findByDni(Long dni);
 
+
+    //Esta query es la que no deja que se genere el path
     @Query("""
         SELECT e FROM Estudiante e
         WHERE (:genero IS NULL OR e.genero = :genero)
         """)
-    List<EstudianteDTO> search(String genero, Sort orden);
+    List<Estudiante> search(String genero, Sort orden);
 
 
 }

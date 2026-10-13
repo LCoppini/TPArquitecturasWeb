@@ -5,11 +5,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.entrega3.DTOs.Request.CarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteCarreraDTO;
 import org.example.entrega3.DTOs.Request.EstudianteSearchDTO;
-import org.example.entrega3.DTOs.Response.CarreraInscriptosResponseDTO;
-import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
-import org.example.entrega3.DTOs.Response.EstudianteCarreraResponseDTO;
-import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
+import org.example.entrega3.DTOs.Response.*;
 import org.example.entrega3.services.CarreraServices;
+import org.example.entrega3.services.EstudianteCarreraService;
+import org.example.entrega3.services.EstudianteServices;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +21,7 @@ import java.util.List;
 public class CarreraController {
 
     private final CarreraServices carreraServices;
+    private final EstudianteCarreraService estudiantecarreraServices;
 
     @GetMapping
     public List<CarreraResponseDTO> findAll() {
@@ -63,5 +63,13 @@ public class CarreraController {
             EstudianteSearchDTO request) throws Exception {
         List<EstudianteResponseDTO> estudiantes = carreraServices.getEstudianteByCiudad(idCarrera, request);
         return ResponseEntity.ok(estudiantes);  // ← 200 OK
+    }
+    //h //generar un reporte de las carreras, que para cada carrera incluya información de los
+    //    //inscriptos y egresados por año. Se deben ordenar las carreras alfabéticamente, y
+    //    //presentar los años de manera cronológica.
+    @GetMapping("/reporte")
+    public ResponseEntity<List<ReporteResponseDTO>> getReporteGeneral(){
+        List<ReporteResponseDTO> carreras = estudiantecarreraServices.getReporte();
+        return ResponseEntity.ok(carreras);
     }
 }
