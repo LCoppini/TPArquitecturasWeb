@@ -31,13 +31,7 @@ public class EstudianteServices {
     private final CarreraRepository carreraRepositorio;
 
     //CRUD
-    //a-dar de alta un estudiante
-    //d-recuperar un estudiante en base a su num_libreta(Ya realizado)
 
-
-    //e-recuperar todos los estudiante en base a su genero(Realizado)
-
-    //g-recuperar los estudiantes de una determinada carrera filtrado por ciudades de residencia
 
     @Transactional(readOnly = true)
     public List<EstudianteResponseDTO> findAll() throws Exception {
@@ -110,7 +104,7 @@ public class EstudianteServices {
         Estudiante estudiante = estudianteRepositorio.findById(id).orElse(null);
 
         if (estudiante == null) {
-            throw new EstudianteException("No se puede eliminar el estudiante " + id + " porque esta inscriptos a carrerar.");
+            throw new EstudianteException("No se puede eliminar el estudiante " + id + " porque esta inscriptos a carreras.");
         }
         this.estudianteRepositorio.delete(estudiante);
         return new EstudianteResponseDTO(estudiante);
