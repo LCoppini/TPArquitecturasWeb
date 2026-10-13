@@ -1,0 +1,22 @@
+$kind: http-request
+order: 3000
+url: "{{base_url}}/carreras"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "nombreCarrera": "Informatica",
+      "id": 1,
+      "duracion": 5,
+      "estudiantes": [
+        {
+          "idCarrera": 1,
+          "numLibreta": 1,
+          "fechaInscripcion": "2020-03-01",
+          "fechaGraduacion": null
+        }
+      ]
+    }

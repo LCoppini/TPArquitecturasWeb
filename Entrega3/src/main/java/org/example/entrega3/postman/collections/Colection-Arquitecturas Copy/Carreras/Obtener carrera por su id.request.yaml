@@ -1,0 +1,6 @@
+$kind: http-request
+order: 2000
+url: "{{base_url}}/carreras/:id"
+method: GET
+pathVariables:
+  id: "1"

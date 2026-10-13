@@ -1,0 +1,17 @@
+$kind: http-request
+order: 4000
+url: "{{base_url}}/estudiantes/:id/matricular"
+method: POST
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "idCarrera": 1,
+      "numLibreta": 1,
+      "fechaInscripcion": "2024-03-01",
+      "fechaGraduacion": null
+    }

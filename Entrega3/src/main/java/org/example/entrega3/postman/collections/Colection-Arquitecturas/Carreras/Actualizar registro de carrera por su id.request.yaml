@@ -1,0 +1,24 @@
+$kind: http-request
+order: 4000
+url: "{{base_url}}/carreras/:id"
+method: PUT
+headers:
+  Content-Type: application/json
+pathVariables:
+  id: "1"
+body:
+  type: json
+  content: |-
+    {
+      "nombreCarrera": "Informatica Actualizada",
+      "id": 1,
+      "duracion": 6,
+      "estudiantes": [
+        {
+          "idCarrera": 1,
+          "numLibreta": 1,
+          "fechaInscripcion": "2020-03-01",
+          "fechaGraduacion": null
+        }
+      ]
+    }

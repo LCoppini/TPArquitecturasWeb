@@ -1,0 +1,362 @@
+{
+  "info": {
+    "_postman_id": "186814f2-ad32-4f5e-acf6-cfeae0a34c98",
+    "name": "Arquitecturas-Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58931344"
+  },
+  "item": [
+    {
+      "name": "Carreras",
+      "item": [
+        {
+          "name": "Obtener todas las carreras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carreras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener carrera por su id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carreras/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener carrera con cantidad de inscriptos en orden",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carreras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener estudiante por carrera y ciudad",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carreras/:id/estudiantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras",
+                ":id",
+                "estudiantes"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener reporte de carreras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carreras/reporte",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras",
+                "reporte"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear una carrera",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nombreCarrera\": \"Informatica\",\r\n  \"id\": 1,\r\n  \"duracion\": 5,\r\n  \"estudiantes\": [\r\n    {\r\n      \"idCarrera\": 1,\r\n      \"numLibreta\": 1,\r\n      \"fechaInscripcion\": \"2020-03-01\",\r\n      \"fechaGraduacion\": null\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/carreras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar registro de carrera por su id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"nombreCarrera\": \"Informatica Actualizada\",\r\n  \"id\": 1,\r\n  \"duracion\": 6,\r\n  \"estudiantes\": [\r\n    {\r\n      \"idCarrera\": 1,\r\n      \"numLibreta\": 1,\r\n      \"fechaInscripcion\": \"2020-03-01\",\r\n      \"fechaGraduacion\": null\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/carreras/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar carrera por id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/carreras/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "carreras",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Estudiantes",
+      "item": [
+        {
+          "name": "Obtener todos los estudiantes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": ""
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener estudiante por su n° libreta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estudiantes/:numLibreta",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiantes",
+                ":numLibreta"
+              ],
+              "variable": [
+                {
+                  "key": "numLibreta",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear estudiante",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"num_libreta\": 1,\r\n  \"nombre\": \"Juan\",\r\n  \"apellido\": \"Perez\",\r\n  \"fecha_nacimiento\": \"2000-01-15\",\r\n  \"genero\": \"M\",\r\n  \"dni\": 40000001,\r\n  \"ciudad_residencia\": \"La Plata\",\r\n  \"carreras\": [\r\n    {\r\n      \"idCarrera\": 1,\r\n      \"numLibreta\": 1,\r\n      \"fechaInscripcion\": \"2020-03-01\",\r\n      \"fechaGraduacion\": null\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/estudiantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiantes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Matricular estudiante a una carrera",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"idCarrera\": 1,\r\n  \"numLibreta\": 1,\r\n  \"fechaInscripcion\": \"2024-03-01\",\r\n  \"fechaGraduacion\": null\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/estudiantes/:idCarrera/matricular",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiantes",
+                ":idCarrera",
+                "matricular"
+              ],
+              "variable": [
+                {
+                  "key": "idCarrera",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar registro de estudiante por su id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"num_libreta\": 1,\r\n  \"nombre\": \"Juan\",\r\n  \"apellido\": \"Perez\",\r\n  \"fecha_nacimiento\": \"2000-01-15\",\r\n  \"genero\": \"M\",\r\n  \"dni\": 40000001,\r\n  \"ciudad_residencia\": \"Buenos Aires\",\r\n  \"carreras\": [\r\n    {\r\n      \"idCarrera\": 1,\r\n      \"numLibreta\": 1,\r\n      \"fechaInscripcion\": \"2020-03-01\",\r\n      \"fechaGraduacion\": null\r\n    }\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/estudiantes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiantes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar estudiante por id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estudiantes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiantes",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": ""
+    }
+  ]
+}

@@ -22,9 +22,9 @@ public class CargaInicial implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Poné los CSV en src/main/resources/csv/
-        service.cargarCarreras(leer("data/carreras.csv"));
-        service.cargarEstudiantes(leer("data/estudiantes.csv"));
-        service.cargarEstudianteCarrera(leer("data/estudianteCarrera.csv"));
+//        service.cargarCarreras(leer("data/carreras.csv"));
+//        service.cargarEstudiantes(leer("data/estudiantes.csv"));
+//        service.cargarEstudianteCarrera(leer("data/estudianteCarrera.csv"));
     }
 
     private Reader leer(String ruta) throws IOException {
