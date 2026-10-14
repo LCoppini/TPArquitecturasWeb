@@ -43,7 +43,7 @@ public class CarreraServices {
     public CarreraResponseDTO findById(Long id) {
         Carrera c = this.carreraRepository.findById(id).orElse(null);
         if (c == null) {
-            throw new CarreraException("Carrera no encontrada"); //CAMBIO
+            throw new CarreraException("Carrera con id: " + id +" no encontrada"); //CAMBIO
         }
         return new CarreraResponseDTO(c);
     }
@@ -63,7 +63,7 @@ public class CarreraServices {
     public CarreraResponseDTO update(Long id, CarreraDTO request) {
         Carrera carrera = carreraRepository.findById(id).orElse(null);
         if(carrera == null)
-            throw new NotFoundException("El id de la carrera no existe.");
+            throw new NotFoundException("El id: " + id +" de la carrera no existe.");
         carrera.setNombreCarrera(request.nombreCarrera());
         carrera.setDuracion(request.duracion());
         return new CarreraResponseDTO(this.carreraRepository.save(carrera));

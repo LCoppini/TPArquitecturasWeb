@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service("Estudiante servicio")
 @RequiredArgsConstructor
@@ -55,7 +56,7 @@ public class EstudianteServices {
     public EstudianteResponseDTO findByNumLibreta(Long numLibreta) {
         Estudiante e = estudianteRepositorio.findByNumLibreta(numLibreta);
         if (e == null) {
-            throw new EstudianteException("Estudiante no encontrado");
+            throw new EstudianteException("Estudiante con n° libreta: " +numLibreta+" no encontrado");
         }
         return new EstudianteResponseDTO(e);
     }
@@ -64,7 +65,7 @@ public class EstudianteServices {
     public EstudianteResponseDTO findById(Long id) throws Exception {
         Estudiante c = this.estudianteRepositorio.findById(id).orElse(null);
         if (c == null) {
-            throw new EstudianteException("Estudiante no encontrado");
+            throw new EstudianteException("Estudiante con id: "+ id+" no encontrado");
         }
         return new EstudianteResponseDTO(c);
     }
@@ -76,7 +77,7 @@ public class EstudianteServices {
 
         for (EstudianteCarreraDTO ecDto : entity.carreras()) {
             Carrera carrera = carreraRepositorio.findById(ecDto.idCarrera())
-                    .orElseThrow(() -> new EntityNotFoundException(
+                    .orElseThrow(() -> new NotFoundException(
                             "No existe la carrera " + ecDto.idCarrera()));
 
             EstudianteCarrera ec = new EstudianteCarrera(estudiante, carrera, ecDto.fechaInscripcion());
@@ -89,7 +90,11 @@ public class EstudianteServices {
     public EstudianteResponseDTO update(Long id, EstudianteDTO entity) throws Exception {
         Estudiante estudiante = estudianteRepositorio.findById(id).orElse(null);
         if(estudiante == null)
-            throw new NotFoundException("El id de la carrera no existe.");
+            throw new NotFoundException("El estudiante de la carrera con id: " + id+" no puede ser nulo.");
+        Optional<Carrera> c = carreraRepositorio.findById(id);
+        if (c == null)
+            throw new NotFoundException("La carrera con id: " + id+" no existe.");
+
         estudiante.setNum_libreta(entity.num_libreta());
         estudiante.setNombre(entity.nombre());
         estudiante.setApellido(entity.apellido());
@@ -104,7 +109,7 @@ public class EstudianteServices {
         Estudiante estudiante = estudianteRepositorio.findById(id).orElse(null);
 
         if (estudiante == null) {
-            throw new EstudianteException("No se puede eliminar el estudiante " + id + " porque esta inscriptos a carreras.");
+            throw new EstudianteException("El estudiante " + id + " no existe.");
         }
         this.estudianteRepositorio.delete(estudiante);
         return new EstudianteResponseDTO(estudiante);
