@@ -1,4 +1,0 @@
-$kind: collection
-description: Colección de endpoints para el TP Entrega 3 - Arquitecturas Web.
-variables:
-  base_url: http://localhost:8080

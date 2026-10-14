@@ -1,6 +1,0 @@
-$kind: http-request
-order: 6000
-url: "{{base_url}}/estudiantes/:id"
-method: DELETE
-pathVariables:
-  id: "1"

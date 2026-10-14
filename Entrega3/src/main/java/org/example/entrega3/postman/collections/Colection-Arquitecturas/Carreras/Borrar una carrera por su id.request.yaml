@@ -1,6 +1,0 @@
-$kind: http-request
-order: 5000
-url: "{{base_url}}/carreras/:id"
-method: DELETE
-pathVariables:
-  id: "1"

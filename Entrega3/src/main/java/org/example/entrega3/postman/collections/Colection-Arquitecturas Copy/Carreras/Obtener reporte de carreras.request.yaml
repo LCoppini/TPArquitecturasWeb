@@ -1,4 +1,0 @@
-$kind: http-request
-order: 8000
-url: "{{base_url}}/carreras/reporte"
-method: GET
