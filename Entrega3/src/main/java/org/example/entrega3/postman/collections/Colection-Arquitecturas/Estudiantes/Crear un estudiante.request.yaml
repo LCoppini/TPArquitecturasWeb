@@ -16,11 +16,6 @@ body:
       "dni": 40000001,
       "ciudad_residencia": "La Plata",
       "carreras": [
-        {
-          "idCarrera": 1,
-          "numLibreta": 1,
-          "fechaInscripcion": "2020-03-01",
-          "fechaGraduacion": null
-        }
+        
       ]
     }

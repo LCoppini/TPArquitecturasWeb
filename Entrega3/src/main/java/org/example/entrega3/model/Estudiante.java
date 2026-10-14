@@ -41,7 +41,7 @@ public class Estudiante {
     private String ciudadResidencia;
 
     @JsonIgnoreProperties("estudiante")
-    @OneToMany(mappedBy = "estudiante")
+    @OneToMany(mappedBy = "estudiante", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<EstudianteCarrera> carreras = new ArrayList<>();
 
     public Estudiante(Long num_libreta, String nombre, String apellido,
