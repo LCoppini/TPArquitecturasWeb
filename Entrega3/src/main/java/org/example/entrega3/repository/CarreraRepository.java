@@ -9,6 +9,7 @@ import org.example.entrega3.DTOs.Response.EstudianteResponseDTO;
 import org.example.entrega3.model.Carrera;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.w3c.dom.stylesheets.LinkStyle;
 
@@ -32,11 +33,12 @@ public interface CarreraRepository extends JpaRepository<Carrera, Long> {
 
     //g) recuperar los estudiantes de una determinada carrera, filtrado por ciudad de residencia
     @Query("""
-        SELECT new org.example.entrega3.DTOs.Response.EstudianteResponseDTO(e)  FROM Carrera c
-              JOIN EstudianteCarrera ec ON :idCarrera = ec.estudianteCPK.idCarrera
-                    JOIN Estudiante e ON e.num_libreta = ec.estudianteCPK.idEstudiante
-                          WHERE (:ciudad IS NULL OR e.ciudadResidencia = :ciudad )
-                    
-      """)
-    List<EstudianteResponseDTO> getEstudianteByCiudad(Long idCarrera, String ciudad);
+    SELECT new org.example.entrega3.DTOs.Response.EstudianteResponseDTO(e)
+    FROM EstudianteCarrera ec
+    JOIN Estudiante e ON e.num_libreta = ec.estudianteCPK.idEstudiante
+    WHERE ec.estudianteCPK.idCarrera = :idCarrera
+      AND (:ciudad IS NULL OR e.ciudadResidencia = :ciudad)
+    """)
+    List<EstudianteResponseDTO> getEstudianteByCiudad(@Param("idCarrera") Long idCarrera,
+                                                      @Param("ciudad") String ciudad);
 }
