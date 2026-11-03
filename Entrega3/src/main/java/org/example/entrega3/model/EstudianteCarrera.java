@@ -3,6 +3,7 @@ package org.example.entrega3.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.example.entrega3.DTOs.Response.CarreraResponseDTO;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -41,6 +42,7 @@ public class EstudianteCarrera {
     public EstudianteCarrera() {
 
     }
+
 
     public boolean estaGraduado() {
         return fechaGraduacion != null;
