@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: msvc-evento
+  config:
+    # Todo el resto de la configuracion se lee de msvc-config (puerto 8888).
+    import: optional:configserver:http://localhost:8888

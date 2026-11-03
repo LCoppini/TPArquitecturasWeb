@@ -1,0 +1,32 @@
+# Entrega 1: solo las bases de datos en Docker; los microservicios se ejecutan localmente.
+# Entrega 2: agregar un servicio por microservicio (build: ./msvc-xxx) + gateway + eureka + config.
+services:
+  postgres:
+    image: postgres:16
+    container_name: ticketya-postgres
+    environment:
+      POSTGRES_USER: ticketya
+      POSTGRES_PASSWORD: ticketya
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d   # crea una base por microservicio
+
+  # E2 - NoSQL (justificar en docs/decisiones): catalogo de eventos o preferencias
+  # mongo:
+  #   image: mongo:7
+  #   ports: ["27017:27017"]
+
+  # E2 - mensajeria (EDA)
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   ports: ["5672:5672", "15672:15672"]
+
+  # E2 - reservas temporales / fila virtual / cache
+  # redis:
+  #   image: redis:7
+  #   ports: ["6379:6379"]
+
+volumes:
+  postgres-data:

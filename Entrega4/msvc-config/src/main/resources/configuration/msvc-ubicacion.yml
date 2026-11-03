@@ -1,0 +1,29 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: msvc-ubicacion
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/ticketya_ubicacion
+    username: ${DB_USER:ticketya}
+    password: ${DB_PASSWORD:ticketya}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update   # solo desarrollo; luego migrar a Flyway/Liquibase si el grupo lo decide
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  cloud:
+    openfeign:
+      httpclient:
+        enabled: true
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

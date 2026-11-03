@@ -1,0 +1,16 @@
+schema: spec-driven
+
+context: |
+  TPE TicketYa (Arquitectura Web, TUDAI): ticketera en microservicios Spring Boot.
+  Servicios: msvc-usuarios, msvc-ubicacion, msvc-evento, msvc-entrada (incluye pagos).
+  Cada servicio tiene su base y no hay foreign keys entre servicios (se referencian por id).
+  Entrega 1: sin autenticación (usuario por header X-User-Id) y pasarela de pagos mock.
+  Reglas clave: una entrada nunca se vende dos veces, ni con varias instancias ni con reintentos.
+  Escribir todos los artefactos en español.
+
+rules:
+  proposal:
+    - Indicar siempre qué queda fuera del alcance
+  specs:
+    - Escribir los requisitos con notación EARS y escenarios verificables
+    - Marcar en cada requisito si es de la Entrega 1 o la 2
