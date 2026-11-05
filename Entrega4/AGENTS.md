@@ -12,8 +12,9 @@ Java 21 - Spring Boot 3.5.6 - Spring Cloud 2025.0.0 (Config, Eureka, Gateway MVC
 ## Arquitectura
 - Microservicios independientes: msvc-usuarios (8081), msvc-ubicacion (8082), msvc-evento (8083), msvc-entrada (8084). Entrada incluye pagos.
 - Cada servicio: base propia, SIN foreign keys entre servicios (se referencian por id).
-- DDD por capas dentro de cada servicio: `domain` / `application` / `infrastructure`. Las reglas de negocio van en `domain`.
-- EDA: eventos de dominio en `domain/event`, publishers/listeners en `infrastructure/messaging`.
+- Arquitectura en CAPAS dentro de cada servicio: `controller` -> `service` (+ `service/impl`) -> `repository` / `entity`. Las reglas de negocio van en `service` (y en las entidades cuando son propias de un solo objeto).
+- El controller solo habla con el service; solo el service usa los repositories; no se exponen entidades en la API (DTOs en `dto/request` y `dto/response`).
+- EDA (Entrega 2): eventos en `event`, publishers/listeners en `messaging`.
 - Los clientes externos entran SOLO por msvc-gateway.
 
 ## Spec-driven development (OpenSpec)

@@ -20,15 +20,30 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 2. Arrancar en orden: msvc-config -> msvc-eureka -> msvc-usuarios / ubicacion / evento / entrada -> msvc-gateway
 3. Swagger de cada servicio: `http://localhost:<puerto>/swagger-ui.html`
 
-## Estructura de cada servicio
+## Arquitectura de cada servicio: capas
+
+Cada microservicio de dominio sigue la **arquitectura en capas**; las dependencias van siempre hacia abajo:
+
+```
+Cliente -> controller -> service -> repository -> Base de datos
+           (presentacion)  (negocio)   (persistencia)
+```
 
 ```
 src/main/java/com/ticketya/<servicio>/
-  domain/          model, event, repository, service, exception
-  application/     service (casos de uso), dto/request, dto/response, mapper
-  infrastructure/  web (controller, exception), client (Feign), messaging (publisher, listener), config
-src/test/java/...  domain, application, infrastructure/web, integration
+  controller/             presentacion: recibe HTTP, valida y delega (sin logica de negocio)
+  service/ , service/impl/  negocio: reglas, transacciones, llamadas a otros servicios
+  repository/ , entity/   persistencia: Spring Data JPA y entidades
+  dto/request, dto/response, dto/interservice
+  mapper/                 entidad <-> DTO (MapStruct)
+  exception/              excepciones de negocio + GlobalExceptionHandler
+  client/                 clients Feign hacia otros microservicios
+  config/                 configuracion Spring
+  event/, messaging/      (E2) eventos y mensajeria asincrona
+src/test/java/...         service (unitarios), controller (@WebMvcTest), integration
 ```
+
+Reglas: el controller solo habla con el service; el service es el unico que usa los repositories; las entidades nunca se exponen en la API (se usan DTOs).
 Cada paquete tiene un `package-info.java` que explica que va ahi.
 
 ## Metodologia: OpenSpec
