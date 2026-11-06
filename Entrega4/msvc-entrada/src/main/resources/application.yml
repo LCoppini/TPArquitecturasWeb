@@ -1,6 +1,32 @@
 spring:
   application:
     name: msvc-entrada
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/ticketya_entrada
+    username: ${DB_USER:ticketya}
+    password: ${DB_PASSWORD:ticketya}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
   config:
     # Todo el resto de la configuracion se lee de msvc-config (puerto 8888).
     import: optional:configserver:http://localhost:8888
+
+server:
+  port: 8084
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+ticketya:
+  entrada:
+    limite-por-cliente: ${ENTRADA_LIMITE_POR_CLIENTE:6}
+  pasarela:
+    resultado: ${PASARELA_RESULTADO:APRUEBA}

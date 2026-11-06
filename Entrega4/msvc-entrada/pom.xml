@@ -57,16 +57,17 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
-
-    <!--
-      E2 (agregar segun se justifique):
-        - Mensajeria asincrona (EDA): spring-boot-starter-amqp (RabbitMQ) o spring-kafka
-        - Resiliencia: spring-cloud-starter-circuitbreaker-resilience4j
-        - Cache: spring-boot-starter-cache (+ Redis)
-        - Mongo: spring-boot-starter-data-mongodb (solo en el servicio que lo justifique)
-        - Tests de integracion: org.testcontainers:postgresql
-    -->
 
     <build>
         <plugins>

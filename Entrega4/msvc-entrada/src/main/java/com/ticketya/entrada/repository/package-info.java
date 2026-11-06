@@ -1,5 +1,4 @@
 /**
- * CAPA DE PERSISTENCIA. Repositories (interfaces Spring Data JPA). Un repository por entidad raiz.
- * Solo acceso a datos: consultas y busquedas. Nada de reglas de negocio.
+ * Repositorios Spring Data JPA para persistir las entidades del servicio.
  */
 package com.ticketya.entrada.repository;
