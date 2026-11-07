@@ -21,7 +21,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -181,22 +183,36 @@ public class PagoService {
                 idEvento,
                 List.of("EN_REINTEGRO")
         );
+        if (entradas.isEmpty()) {
+            return;
+        }
         // Los IDs de entrada ya son únicos y el repositorio acepta una colección; no hace falta convertir ni castear.
         List<Long> idsEntradas = entradas.stream()
                 .map(Entrada::getId)
                 .toList();
         List<Pago> pagos = pagoRepository.findByIdEntradaIn(idsEntradas);
+        Set<Long> entradasReintegradas = new HashSet<>();
         for (Pago pago : pagos) {
+            if ("REEMBOLSADO".equals(pago.getEstado())) {
+                entradasReintegradas.add(pago.getIdEntrada());
+                continue;
+            }
+            // Solo se reintegran cobros aprobados o previamente pendientes de reintegro.
+            if (!"APROBADO".equals(pago.getEstado()) && !"REINTEGRO_PENDIENTE".equals(pago.getEstado())) {
+                continue;
+            }
             if ("FALLA".equals(resultadoPasarela)) {
                 pago.setEstado("REINTEGRO_PENDIENTE");
             } else {
                 pago.setEstado("REEMBOLSADO");
                 pago.setReferenciaPasarela("refund-" + UUID.randomUUID());
+                entradasReintegradas.add(pago.getIdEntrada());
             }
         }
-        if (!"FALLA".equals(resultadoPasarela)) {
-            entradas.forEach(entrada -> entrada.setEstado("DEVUELTA"));
-        }
+        // No cerrar entradas si no tienen un pago reintegrado o el reintegro sigue fallando.
+        entradas.stream()
+                .filter(entrada -> entradasReintegradas.contains(entrada.getId()))
+                .forEach(entrada -> entrada.setEstado("DEVUELTA"));
     }
 
     @Transactional

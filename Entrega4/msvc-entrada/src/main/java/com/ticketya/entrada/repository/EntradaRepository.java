@@ -111,4 +111,12 @@ public interface EntradaRepository extends JpaRepository<Entrada, Long> {
             """)
     int marcarEntradasDeEventoEnReintegro(@Param("idEvento") Long idEvento);
 
+    @Modifying
+    @Query("""
+            update Entrada e
+            set e.estado = 'CANCELADA', e.expiraEn = null
+            where e.idEvento = :idEvento and e.estado = 'RESERVADA'
+            """)
+    int cancelarReservasDeEvento(@Param("idEvento") Long idEvento);
+
 }

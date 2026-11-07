@@ -185,6 +185,9 @@ public class EntradaService {
     @Transactional
     public void cancelarEvento(Long idEvento) {
         entradaRepository.vencerReservas(Instant.now());
+        // Las reservas aún no pagadas se invalidan sin generar un reintegro.
+        entradaRepository.cancelarReservasDeEvento(idEvento);
+        // Las entradas emitidas dejan de ser válidas y pasan al flujo de reintegro.
         entradaRepository.marcarEntradasDeEventoEnReintegro(idEvento);
     }
 

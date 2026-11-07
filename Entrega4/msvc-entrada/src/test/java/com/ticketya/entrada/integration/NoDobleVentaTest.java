@@ -7,8 +7,10 @@ import com.ticketya.entrada.dto.request.EntradaRequest;
 import com.ticketya.entrada.dto.response.EventoResponse;
 import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
+import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.repository.EntradaRepository;
 import com.ticketya.entrada.service.EntradaService;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @DataJpaTest(properties = {
@@ -51,6 +54,9 @@ class NoDobleVentaTest {
 
     @Autowired
     private EntradaRepository entradaRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @MockitoBean
     private UsuarioClient usuarioClient;
@@ -103,6 +109,27 @@ class NoDobleVentaTest {
         }
     }
 
+    @Test
+    void cancelarEventoCancelaReservasYDesactivaEntradasEmitidas() {
+        Entrada reservada = guardarEntrada(11L, "reserva-pendiente", "RESERVADA");
+        Entrada valida = guardarEntrada(12L, "entrada-valida", "VALIDA");
+        Entrada usada = guardarEntrada(13L, "entrada-usada", "USADA");
+
+        entradaService.cancelarEvento(20L);
+
+        entityManager.clear();
+        Entrada reservaCancelada = entradaRepository.findById(reservada.getId()).orElseThrow();
+        Entrada entradaValida = entradaRepository.findById(valida.getId()).orElseThrow();
+        Entrada entradaUsada = entradaRepository.findById(usada.getId()).orElseThrow();
+
+        // La reserva se libera sin reintegro; las emitidas se invalidan para que no se use su QR.
+        assertEquals("CANCELADA", reservaCancelada.getEstado());
+        assertNull(reservaCancelada.getExpiraEn());
+        assertEquals("EN_REINTEGRO", entradaValida.getEstado());
+        assertEquals("EN_REINTEGRO", entradaUsada.getEstado());
+        assertEquals(0, entradaRepository.contarActivasDeSector(20L, 30L, Instant.now()));
+    }
+
     private boolean reservarAlMismoTiempo(CountDownLatch inicio, String clave) throws Exception {
         inicio.await();
         try {
@@ -123,5 +150,17 @@ class NoDobleVentaTest {
         request.setPrecio(new BigDecimal("100.00"));
         request.setClaveIdempotencia(clave);
         return request;
+    }
+
+    private Entrada guardarEntrada(Long idUsuario, String clave, String estado) {
+        Entrada entrada = new Entrada();
+        entrada.setIdEvento(20L);
+        entrada.setIdUsuario(idUsuario);
+        entrada.setIdSector(30L);
+        entrada.setEstado(estado);
+        entrada.setPrecio(new BigDecimal("100.00"));
+        entrada.setClaveIdempotencia(clave);
+        entrada.setExpiraEn("RESERVADA".equals(estado) ? Instant.now().plusSeconds(600) : null);
+        return entradaRepository.saveAndFlush(entrada);
     }
 }
