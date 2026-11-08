@@ -7,6 +7,7 @@
  *  - Usuarios y roles (CLIENTE, ORGANIZADOR, ADMINISTRADOR, PERSONAL_ACCESO). Fuente de verdad de la identidad: el resto de los servicios solo guarda id_usuario.
  *
  * Notas:
- *  - E2: autenticacion (login -> JWT) vive en msvc-gateway; aca solo se expone la consulta de credenciales/roles
+ *  - E1: no hay autenticacion ni autorizacion por rol.
+ *  - E2: autenticacion JWT y autorizacion viven en msvc-gateway.
  */
 package com.ticketya.usuarios.service;
