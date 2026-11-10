@@ -4,8 +4,9 @@ import com.ticketya.entrada.client.EventoClient;
 import com.ticketya.entrada.client.SectorClient;
 import com.ticketya.entrada.client.UsuarioClient;
 import com.ticketya.entrada.dto.request.EntradaRequest;
-import com.ticketya.entrada.dto.response.EventoResponse;
 import com.ticketya.entrada.dto.response.EntradaResponse;
+import com.ticketya.entrada.dto.response.EventoResponse;
+import com.ticketya.entrada.dto.response.EventoSectorResponse;
 import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
 import com.ticketya.entrada.entity.Entrada;
@@ -72,6 +73,15 @@ public class EntradaService {
                 "Eventos no devolvió el evento solicitado");
         validarRespuestaRemota(sector == null || !request.getIdSector().equals(sector.idSector()),
                 "Ubicación no devolvió el sector solicitado");
+        EventoSectorResponse precioSector = eventoClient.obtenerPrecioSector(
+                request.getIdEvento(),
+                request.getIdSector()
+        );
+        validarRespuestaRemota(precioSector == null
+                        || !request.getIdSector().equals(precioSector.idSector())
+                        || precioSector.precio() == null
+                        || precioSector.precio().signum() < 0,
+                "Eventos no devolvió un precio válido para el sector del evento");
         validarReserva(request, evento, sector);
         Instant ahora = Instant.now();
         entradaRepository.vencerReservas(ahora);
@@ -102,6 +112,8 @@ public class EntradaService {
 
         Entrada entrada = new Entrada();
         aplicarDatos(entrada, request);
+        // El precio enviado por el cliente no es confiable; se guarda el precio oficial como snapshot de la reserva.
+        entrada.setPrecio(precioSector.precio());
         entrada.setEstado("RESERVADA");
         entrada.setExpiraEn(ahora.plus(10, ChronoUnit.MINUTES));
         entrada.setClaveIdempotencia(request.getClaveIdempotencia());
@@ -240,7 +252,6 @@ public class EntradaService {
         entrada.setIdSector(request.getIdSector());
         entrada.setFila(request.getFila());
         entrada.setAsiento(request.getAsiento());
-        entrada.setPrecio(request.getPrecio());
         if (entrada.getEstado() == null) {
             entrada.setCodigoQr(null);
         }

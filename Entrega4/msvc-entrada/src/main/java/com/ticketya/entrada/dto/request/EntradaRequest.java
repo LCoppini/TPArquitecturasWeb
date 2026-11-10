@@ -20,7 +20,7 @@ public class EntradaRequest {
     @NotNull
     private Long idSector;
 
-    @NotNull
+    // Se conserva para compatibilidad con clientes existentes, pero el precio se obtiene de msvc-evento.
     private BigDecimal precio;
 
     private String codigoQr;

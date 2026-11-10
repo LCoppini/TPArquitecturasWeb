@@ -4,8 +4,9 @@ import com.ticketya.entrada.client.EventoClient;
 import com.ticketya.entrada.client.SectorClient;
 import com.ticketya.entrada.client.UsuarioClient;
 import com.ticketya.entrada.dto.request.EntradaRequest;
-import com.ticketya.entrada.dto.response.EventoResponse;
 import com.ticketya.entrada.dto.response.EntradaResponse;
+import com.ticketya.entrada.dto.response.EventoResponse;
+import com.ticketya.entrada.dto.response.EventoSectorResponse;
 import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
 import com.ticketya.entrada.entity.Entrada;
@@ -71,8 +72,10 @@ class EntradaServiceTest {
         verify(entradaRepository).save(captor.capture());
         assertEquals(2, captor.getValue().getFila());
         assertEquals(4, captor.getValue().getAsiento());
+        assertEquals(new BigDecimal("250.00"), captor.getValue().getPrecio());
         assertEquals(2, respuesta.getFila());
         assertEquals(4, respuesta.getAsiento());
+        assertEquals(new BigDecimal("250.00"), respuesta.getPrecio());
     }
 
     @Test
@@ -114,6 +117,8 @@ class EntradaServiceTest {
                 .thenReturn(Optional.empty());
         when(usuarioClient.obtenerPorId(10L)).thenReturn(new UsuarioResponse(10L));
         when(eventoClient.obtenerPorId(20L)).thenReturn(eventoPublicado());
+        when(eventoClient.obtenerPrecioSector(20L, 30L))
+                .thenReturn(new EventoSectorResponse(30L, new BigDecimal("250.00")));
         when(sectorClient.obtenerPorId(30L)).thenReturn(
                 new SectorResponse(30L, 30, null, null, "NO_NUMERADO")
         );
@@ -129,6 +134,8 @@ class EntradaServiceTest {
                 .thenReturn(Optional.empty());
         when(usuarioClient.obtenerPorId(10L)).thenReturn(new UsuarioResponse(10L));
         when(eventoClient.obtenerPorId(20L)).thenReturn(eventoPublicado());
+        when(eventoClient.obtenerPrecioSector(20L, 30L))
+                .thenReturn(new EventoSectorResponse(30L, new BigDecimal("250.00")));
         when(sectorClient.obtenerPorId(30L)).thenReturn(
                 new SectorResponse(30L, 30, 3, 10, "NUMERADO")
         );
