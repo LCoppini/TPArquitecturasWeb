@@ -3,10 +3,10 @@
 ## Contexto
 
 `msvc-entrada` persiste las entradas y pagos en su propia base. El endpoint de
-cancelación existente delega el cambio de estado de las entradas a
-`EntradaService` y el procesamiento de reintegros a `PagoService`. No se
-agregan dependencias entre bases ni se cambia el propietario del estado del
-evento.
+cancelación delega el proceso completo a `CancelacionEventoService`, que
+coordina el cambio de estado de las entradas y el procesamiento de reintegros.
+No se agregan dependencias entre bases ni se cambia el propietario del estado
+del evento.
 
 ## Flujo propuesto
 
@@ -24,6 +24,12 @@ evento.
    `REEMBOLSADO`, se guarda una referencia y la entrada pasa a `DEVUELTA`.
 6. Una nueva ejecución ignora entradas `DEVUELTA`; por tanto, el mock no vuelve
    a emitir un reintegro para ese procesamiento ya completado.
+7. El mock solo acepta `APRUEBA` y `FALLA` como resultados de reintegro. Otro
+   valor produce un error y no se considera un reintegro exitoso.
+
+La coordinación de los cambios locales se ejecuta en una única transacción.
+Si falla el procesamiento de pagos, también se revierten los cambios de
+estado de las entradas.
 
 ## Decisiones
 

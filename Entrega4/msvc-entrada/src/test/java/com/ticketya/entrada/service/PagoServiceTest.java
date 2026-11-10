@@ -88,6 +88,20 @@ class PagoServiceTest {
         assertEquals("EN_REINTEGRO", entrada.getEstado());
     }
 
+    @Test
+    void rechazaUnResultadoDePasarelaDesconocidoDuranteElReintegro() {
+        Entrada entrada = entrada(100L, "EN_REINTEGRO");
+        Pago pago = pago(200L, 100L, "APROBADO");
+        when(entradaRepository.findByIdEventoAndEstadoIn(20L, List.of("EN_REINTEGRO")))
+                .thenReturn(List.of(entrada));
+        when(pagoRepository.findByIdEntradaIn(List.of(100L))).thenReturn(List.of(pago));
+
+        assertThrows(IllegalStateException.class, () -> servicio("DESCONOCIDO").cancelarEvento(20L));
+
+        assertEquals("APROBADO", pago.getEstado());
+        assertEquals("EN_REINTEGRO", entrada.getEstado());
+    }
+
     private PagoService servicio(String resultadoPasarela) {
         return new PagoService(pagoRepository, entradaRepository, registroPagoRepository, resultadoPasarela);
     }

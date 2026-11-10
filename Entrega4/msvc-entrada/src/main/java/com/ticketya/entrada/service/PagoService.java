@@ -168,7 +168,7 @@ public class PagoService {
         }
         Pago pago = pagoRepository.findFirstByIdEntradaOrderByIdPagoDesc(entrada.getId())
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró el pago de la entrada " + idEntrada));
-        if ("FALLA".equals(resultadoPasarela)) {
+        if (reintegroFalla()) {
             pago.setEstado("REINTEGRO_PENDIENTE");
             return;
         }
@@ -201,7 +201,7 @@ public class PagoService {
             if (!"APROBADO".equals(pago.getEstado()) && !"REINTEGRO_PENDIENTE".equals(pago.getEstado())) {
                 continue;
             }
-            if ("FALLA".equals(resultadoPasarela)) {
+            if (reintegroFalla()) {
                 pago.setEstado("REINTEGRO_PENDIENTE");
             } else {
                 pago.setEstado("REEMBOLSADO");
@@ -213,6 +213,19 @@ public class PagoService {
         entradas.stream()
                 .filter(entrada -> entradasReintegradas.contains(entrada.getId()))
                 .forEach(entrada -> entrada.setEstado("DEVUELTA"));
+    }
+
+    private boolean reintegroFalla() {
+        if ("FALLA".equals(resultadoPasarela)) {
+            return true;
+        }
+        if ("APRUEBA".equals(resultadoPasarela)) {
+            return false;
+        }
+        // Un resultado desconocido o propio de un pago no confirma un reintegro exitoso.
+        throw new IllegalStateException(
+                "Configuración PASARELA_RESULTADO inválida para reintegros: se esperaba APRUEBA o FALLA"
+        );
     }
 
     @Transactional

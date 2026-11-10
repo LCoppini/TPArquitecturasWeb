@@ -2,6 +2,7 @@ package com.ticketya.entrada.controller;
 
 import com.ticketya.entrada.dto.request.EntradaRequest;
 import com.ticketya.entrada.dto.response.EntradaResponse;
+import com.ticketya.entrada.service.CancelacionEventoService;
 import com.ticketya.entrada.service.EntradaService;
 import com.ticketya.entrada.service.PagoService;
 import jakarta.validation.Valid;
@@ -27,10 +28,16 @@ public class EntradaController {
 
     private final EntradaService entradaService;
     private final PagoService pagoService;
+    private final CancelacionEventoService cancelacionEventoService;
 
-    public EntradaController(EntradaService entradaService, PagoService pagoService) {
+    public EntradaController(
+            EntradaService entradaService,
+            PagoService pagoService,
+            CancelacionEventoService cancelacionEventoService
+    ) {
         this.entradaService = entradaService;
         this.pagoService = pagoService;
+        this.cancelacionEventoService = cancelacionEventoService;
     }
 
     @PostMapping
@@ -134,8 +141,7 @@ public class EntradaController {
             @RequestHeader("X-User-Role") String rol
     ) {
         exigirRol(rol, "ADMINISTRADOR");
-        entradaService.cancelarEvento(idEvento);
-        pagoService.cancelarEvento(idEvento);
+        cancelacionEventoService.cancelarEvento(idEvento);
         return ResponseEntity.accepted().build();
     }
 

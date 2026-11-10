@@ -20,6 +20,20 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 2. Arrancar en orden: msvc-config -> msvc-eureka -> msvc-usuarios / ubicacion / evento / entrada -> msvc-gateway
 3. Swagger de cada servicio: `http://localhost:<puerto>/swagger-ui.html`
 
+### Gateway
+
+Las llamadas externas se realizan por `http://localhost:8080`. El gateway
+resuelve los servicios con Eureka y enruta `/api/usuarios` y `/api/roles` a
+usuarios; `/api/lugares` y `/api/sectores` a ubicación; `/api/eventos` y
+`/api/artistas` a evento; y `/api/entradas` y `/api/pagos` a entrada.
+
+Las operaciones de devolución están incluidas en `/api/entradas/**`; no hay una
+ruta pública para `/api/registros-pago`. En la Entrega 1, `X-User-Id` y
+`X-User-Role` se propagan como headers, pero no constituyen autenticación.
+Rutas inexistentes responden 404 y destinos no disponibles 503 con el formato
+JSON uniforme del gateway. Los errores de negocio devueltos por un servicio se
+mantienen sin modificaciones.
+
 Los clientes consultan `msvc-config` durante el arranque. Sus imports son opcionales para tolerar indisponibilidad temporal, y cada `application.yml` local conserva valores de respaldo para poder iniciar sin el servidor. La configuración central se sirve desde los YAML empaquetados en `msvc-config/src/main/resources/configuration/`.
 
 ## Arquitectura de cada servicio: capas

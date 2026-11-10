@@ -44,9 +44,9 @@ class ConfiguracionCentralizadaTest {
     @Test
     void publicaRutasDelGateway() throws Exception {
         JsonNode source = sourceFor("msvc-gateway");
-        assertEquals("usuarios-route", property(source, "spring.cloud.gateway.mvc.routes[0].id").asText());
-        assertEquals("lb://msvc-usuarios", property(source, "spring.cloud.gateway.mvc.routes[0].uri").asText());
-        assertEquals("pagos-route", property(source, "spring.cloud.gateway.mvc.routes[7].id").asText());
+        assertEquals("usuarios-route", property(source, "spring.cloud.gateway.server.webmvc.routes[0].id").asText());
+        assertEquals("lb://msvc-usuarios", property(source, "spring.cloud.gateway.server.webmvc.routes[0].uri").asText());
+        assertEquals("pagos-route", property(source, "spring.cloud.gateway.server.webmvc.routes[7].id").asText());
     }
 
     @Test

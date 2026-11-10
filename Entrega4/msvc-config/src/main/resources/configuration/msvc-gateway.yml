@@ -1,46 +1,56 @@
 server:
+  # El gateway es el único puerto público del sistema en la Entrega 1.
   port: 8080
+  error:
+    # No incluir mensajes de excepción ni stack traces en respuestas HTTP.
+    include-message: never
+    include-stacktrace: never
 
 spring:
   application:
     name: msvc-gateway
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: usuarios-route
-            uri: lb://msvc-usuarios
-            predicates:
-              - Path=/api/usuarios/**
-          - id: roles-route
-            uri: lb://msvc-usuarios
-            predicates:
-              - Path=/api/roles/**
-          - id: lugares-route
-            uri: lb://msvc-ubicacion
-            predicates:
-              - Path=/api/lugares/**
-          - id: sectores-route
-            uri: lb://msvc-ubicacion
-            predicates:
-              - Path=/api/sectores/**
-          - id: eventos-route
-            uri: lb://msvc-evento
-            predicates:
-              - Path=/api/eventos/**
-          - id: artistas-route
-            uri: lb://msvc-evento
-            predicates:
-              - Path=/api/artistas/**
-          - id: entradas-route
-            uri: lb://msvc-entrada
-            predicates:
-              - Path=/api/entradas/**
-          - id: pagos-route
-            uri: lb://msvc-entrada
-            predicates:
-              - Path=/api/pagos/**
+      server:
+        webmvc:
+          # lb:// usa Eureka para elegir una instancia; no fija host ni puerto del servicio.
+          routes:
+            - id: usuarios-route
+              uri: lb://msvc-usuarios
+              predicates:
+                - Path=/api/usuarios/**
+            - id: roles-route
+              uri: lb://msvc-usuarios
+              predicates:
+                - Path=/api/roles/**
+            - id: lugares-route
+              uri: lb://msvc-ubicacion
+              predicates:
+                - Path=/api/lugares/**
+            - id: sectores-route
+              uri: lb://msvc-ubicacion
+              predicates:
+                - Path=/api/sectores/**
+            - id: eventos-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/eventos/**
+            - id: artistas-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/artistas/**
+            - id: entradas-route
+              uri: lb://msvc-entrada
+              predicates:
+                # Incluye reservas, acceso y devoluciones bajo /api/entradas.
+                - Path=/api/entradas/**
+            - id: pagos-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/pagos/**
 
+# En Entrega 1 los headers de usuario se propagan como headers HTTP normales.
+# No representan identidad autenticada; JWT pertenece a Entrega 2.
 eureka:
   client:
     fetch-registry: true
@@ -50,4 +60,6 @@ eureka:
   instance:
     hostname: localhost
 
-# E2: jwt.secret / jwt.expiration (inyectar por variable de entorno, no commitear secretos)
+# Las APIs de registros de pago no se exponen públicamente en el gateway.
+# Los errores de negocio de los servicios destino se conservan; el gateway solo
+# normaliza los errores que genera él mismo, como ruta desconocida o backend caído.

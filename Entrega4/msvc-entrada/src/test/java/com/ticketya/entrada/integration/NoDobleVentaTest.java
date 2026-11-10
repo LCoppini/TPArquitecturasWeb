@@ -9,7 +9,9 @@ import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
 import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.service.CancelacionEventoService;
 import com.ticketya.entrada.service.EntradaService;
+import com.ticketya.entrada.service.PagoService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +37,8 @@ import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @DataJpaTest(properties = {
@@ -42,7 +46,7 @@ import static org.mockito.Mockito.when;
         "eureka.client.enabled=false"
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(EntradaService.class)
+@Import({EntradaService.class, CancelacionEventoService.class})
 @Testcontainers
 class NoDobleVentaTest {
 
@@ -51,6 +55,9 @@ class NoDobleVentaTest {
 
     @Autowired
     private EntradaService entradaService;
+
+    @Autowired
+    private CancelacionEventoService cancelacionEventoService;
 
     @Autowired
     private EntradaRepository entradaRepository;
@@ -66,6 +73,9 @@ class NoDobleVentaTest {
 
     @MockitoBean
     private SectorClient sectorClient;
+
+    @MockitoBean
+    private PagoService pagoService;
 
     @DynamicPropertySource
     static void configurarPostgres(DynamicPropertyRegistry registry) {
@@ -128,6 +138,19 @@ class NoDobleVentaTest {
         assertEquals("EN_REINTEGRO", entradaValida.getEstado());
         assertEquals("EN_REINTEGRO", entradaUsada.getEstado());
         assertEquals(0, entradaRepository.contarActivasDeSector(20L, 30L, Instant.now()));
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void revierteLaCancelacionDeEntradasSiFallaElProcesamientoDePagos() {
+        Entrada valida = guardarEntrada(12L, "entrada-valida", "VALIDA");
+        doThrow(new IllegalStateException("Fallo simulado en el procesamiento de pagos"))
+                .when(pagoService).cancelarEvento(20L);
+
+        assertThrows(IllegalStateException.class, () -> cancelacionEventoService.cancelarEvento(20L));
+
+        entityManager.clear();
+        assertEquals("VALIDA", entradaRepository.findById(valida.getId()).orElseThrow().getEstado());
     }
 
     private boolean reservarAlMismoTiempo(CountDownLatch inicio, String clave) throws Exception {
