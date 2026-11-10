@@ -1,6 +1,8 @@
 spring:
   application:
     name: msvc-entrada
+  config:
+    import: optional:configserver:http://localhost:8888
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/ticketya_entrada
     username: ${DB_USER:ticketya}
@@ -9,18 +11,21 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
-  config:
-    # Todo el resto de la configuracion se lee de msvc-config (puerto 8888).
-    import: optional:configserver:http://localhost:8888
+  cloud:
+    openfeign:
+      httpclient:
+        enabled: true
 
 server:
   port: 8084
 
 eureka:
+  instance:
+    hostname: localhost
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/

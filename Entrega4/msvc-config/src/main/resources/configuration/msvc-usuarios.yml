@@ -4,6 +4,7 @@ server:
 spring:
   application:
     name: msvc-usuarios
+
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/ticketya_usuarios
     username: ${DB_USER:ticketya}

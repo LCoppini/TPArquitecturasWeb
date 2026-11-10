@@ -20,6 +20,8 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 2. Arrancar en orden: msvc-config -> msvc-eureka -> msvc-usuarios / ubicacion / evento / entrada -> msvc-gateway
 3. Swagger de cada servicio: `http://localhost:<puerto>/swagger-ui.html`
 
+Los clientes consultan `msvc-config` durante el arranque. Sus imports son opcionales para tolerar indisponibilidad temporal, y cada `application.yml` local conserva valores de respaldo para poder iniciar sin el servidor. La configuración central se sirve desde los YAML empaquetados en `msvc-config/src/main/resources/configuration/`.
+
 ## Arquitectura de cada servicio: capas
 
 Cada microservicio de dominio sigue la **arquitectura en capas**; las dependencias van siempre hacia abajo:
@@ -69,3 +71,4 @@ Despues de actualizar la CLI: `openspec update`.
 4. **Reserva temporal y devoluciones**: no figuran en el diagrama; definir si son entidades propias en msvc-entrada.
 5. **Evento -> organizador**: se guarda solo `id_organizador`; se valida contra msvc-usuarios (rol ORGANIZADOR).
 6. Typos del diagrama: `apellido` figura como INTEGER; `dni` como INTEGER/Long.
+7. **Zona horaria al conectar a PostgreSQL:** en el entorno local probado, la JVM usa `America/Buenos_Aires`, que el servidor PostgreSQL rechazó al abrir la conexión (`invalid value for parameter "TimeZone": "America/Buenos_Aires"`). No es un requisito universal de la aplicación: depende de la zona horaria que reporte la JVM y de los nombres aceptados por el servidor, pero puede afectar a cualquier servicio que use el driver PostgreSQL (`msvc-usuarios`, `msvc-ubicacion`, `msvc-evento` y `msvc-entrada`) al ejecutar ambos en esa misma combinación de entorno. Para ese caso, iniciar la JVM con `-Duser.timezone=UTC`; por ejemplo, en IntelliJ agregarlo a **VM options**, al ejecutar un JAR usar `java -Duser.timezone=UTC -jar <jar>`, o con Maven usar `mvn -pl msvc-usuarios -Dspring-boot.run.jvmArguments="-Duser.timezone=UTC" spring-boot:run`. No hace falta modificar `application.yml` ni `docker-compose.yml`; en un entorno donde la JVM ya use una zona aceptada por PostgreSQL no se necesita el flag.

@@ -2,5 +2,16 @@ spring:
   application:
     name: msvc-eureka
   config:
-    # Todo el resto de la configuracion se lee de msvc-config (puerto 8888).
     import: optional:configserver:http://localhost:8888
+
+server:
+  port: 8761
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
