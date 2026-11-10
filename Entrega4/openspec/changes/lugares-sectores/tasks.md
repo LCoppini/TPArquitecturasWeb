@@ -20,6 +20,6 @@
 ## 4. Integración y documentación
 
 - [x] 4.1 Ejecutar `msvc-ubicacion` contra PostgreSQL, crear un lugar y consultarlo; verificado manualmente (alta con sector numerado y no numerado, capacidades 200 y 5000, y persistencia tras reiniciar el servicio).
-- [ ] 4.1b Consumir el lugar desde Evento (configurar sectores y publicar) para verificar el flujo extremo a extremo.
+- [x] 4.1b Consumir el lugar desde Evento para verificar el flujo extremo a extremo; verificado con una colección de Postman (alta de organizador, lugar con sectores, evento en ese lugar, configuración de sectores con precio, y rechazo de sector inexistente y de sector de otro lugar).
 - [x] 4.2 Documentar la API, los contratos y las decisiones pendientes en este change (`proposal.md` y `design.md`) y en la documentación OpenAPI del servicio (Swagger UI).
 - [ ] 4.3 Revisar el change con el grupo antes de archivarlo y resolver la baja de sectores y lugares.
