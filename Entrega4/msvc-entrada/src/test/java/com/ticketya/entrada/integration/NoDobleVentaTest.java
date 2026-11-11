@@ -5,6 +5,7 @@ import com.ticketya.entrada.client.SectorClient;
 import com.ticketya.entrada.client.UsuarioClient;
 import com.ticketya.entrada.dto.request.EntradaRequest;
 import com.ticketya.entrada.dto.response.EventoResponse;
+import com.ticketya.entrada.dto.response.EventoSectorResponse;
 import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
 import com.ticketya.entrada.entity.Entrada;
@@ -92,6 +93,9 @@ class NoDobleVentaTest {
         when(eventoClient.obtenerPorId(20L)).thenReturn(
                 new EventoResponse(20L, Instant.now().plusSeconds(86_400), "PUBLICADO")
         );
+        // La reserva consulta el precio oficial del evento; se configura para evitar que el mock devuelva null.
+        when(eventoClient.obtenerPrecioSector(20L, 30L))
+                .thenReturn(new EventoSectorResponse(30L, new BigDecimal("100.00")));
         when(sectorClient.obtenerPorId(30L)).thenReturn(
                 new SectorResponse(30L, 2, 2, 2, "NUMERADO")
         );
@@ -143,7 +147,8 @@ class NoDobleVentaTest {
     @Test
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     void revierteLaCancelacionDeEntradasSiFallaElProcesamientoDePagos() {
-        Entrada valida = guardarEntrada(12L, "entrada-valida", "VALIDA");
+        // Usa otra clave y otro usuario porque NOT_SUPPORTED confirma el fixture y puede persistir entre tests.
+        Entrada valida = guardarEntrada(14L, "entrada-valida-rollback", "VALIDA");
         doThrow(new IllegalStateException("Fallo simulado en el procesamiento de pagos"))
                 .when(pagoService).cancelarEvento(20L);
 
