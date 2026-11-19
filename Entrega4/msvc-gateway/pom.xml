@@ -43,12 +43,31 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- E2 (EP-12): habilita la cadena de filtros de Spring Security en el gateway. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
+        <!-- E2 (EP-12): Resource Server JWT. Aporta el JwtDecoder (Nimbus): valida firma, exp, iss y aud. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <!-- E2 (EP-12): utilidades para testear SecurityFilterChain, 401/403 y @WithMockUser. Solo en tests. -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <!--
-      E2 (seguridad): agregar spring-boot-starter-security + jjwt-api / jjwt-impl / jjwt-jackson.
-      No se agregan en E1 porque Spring Security bloquea todos los endpoints por defecto
-      y en la Entrega 1 el usuario se identifica por header (X-User-Id).
+      E2 (seguridad): se usa el starter oficial de OAuth2 Resource Server en vez de jjwt.
+      jjwt no se agrega: la validacion de JWT ya la resuelve spring-boot-starter-oauth2-resource-server.
+      En E1 no habia security; el usuario se identificaba por el header X-User-Id (no autenticado).
     -->
 
     <build>
