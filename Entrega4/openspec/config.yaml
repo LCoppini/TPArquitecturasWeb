@@ -2,15 +2,124 @@ schema: spec-driven
 
 context: |
   TPE TicketYa (Arquitectura Web, TUDAI): ticketera en microservicios Spring Boot.
-  Servicios: msvc-usuarios, msvc-ubicacion, msvc-evento, msvc-entrada (incluye pagos).
+  Servicios Entrega 1: msvc-usuarios, msvc-ubicacion, msvc-evento, msvc-entrada (incluye pagos).
+  Servicios nuevos Entrega 2: msvc-notificaciones (8085, PostgreSQL), msvc-preferencias (8086, MongoDB).
   Cada servicio tiene su base y no hay foreign keys entre servicios (se referencian por id).
-  Entrega 1: sin autenticación (usuario por header X-User-Id) y pasarela de pagos mock.
-  Reglas clave: una entrada nunca se vende dos veces, ni con varias instancias ni con reintentos.
+
+  Seguridad (Entrega 2): autenticación y autorización con JWT. El grupo decidió no crear un
+  msvc-auth separado: el login (validación de credenciales y emisión del JWT) vive en
+  msvc-usuarios (ej. POST /api/usuarios/login), ya que ahí está la entidad Usuario con sus
+  roles. El token incluye como claims idUsuario y roles. La validación del JWT y la
+  autorización por rol se hacen únicamente en msvc-gateway, mediante una SecurityFilterChain
+  de Spring Security en Java (requestMatchers(...).hasAuthority(...) por ruta), no con config
+  YAML declarativa separada. Los microservicios de dominio no validan el token por sí mismos,
+  y el gateway es el único punto de entrada para clientes externos. El gateway reemplaza el
+  header X-User-Id por el idUsuario del token y descarta el que envíe el cliente; los
+  servicios reciben el usuario solo por ese header. Las llamadas interservicio (Feign) no
+  llevan JWT de usuario y quedan fuera de este control; se documenta como limitación
+  conocida. El rol PERSONAL_ACCESO protege la ruta de escaneo de QR
+  (POST /api/entradas/escanear) en msvc-entrada. Reglas de pertenencia más finas (ej. un
+  organizador solo puede ver reportes de sus propios eventos) no las resuelve el gateway;
+  las valida el microservicio de dominio comparando el idUsuario recibido (por X-User-Id)
+  contra el dueño del recurso. La documentación OpenAPI declara el esquema de seguridad
+  (bearerAuth).
+
+  Usuarios: la entidad Usuario incorpora el atributo email (lo necesita msvc-notificaciones
+  para enviar los correos). Se agrega en msvc-usuarios: entidad, DTOs, validación @Email,
+  pruebas y diagrama ER.
+
+  Preferencias y recomendaciones: microservicio nuevo (msvc-preferencias) con MongoDB (no
+  migra datos existentes). Las preferencias del cliente se registran automáticamente a
+  partir de su historial de compras (no hay marcado manual de favoritos): cada vez que
+  msvc-entrada emite una entrada, este servicio registra el tipo de evento y el/los
+  artista(s) de esa compra para ese cliente, de forma idempotente. El criterio de
+  recomendación es simple: sugerir eventos del mismo tipo y/o con los mismos artistas
+  favoritos del cliente (no se implementa co-compra tipo "quienes compraron esto también
+  compraron aquello"; se justifica como versión simplificada en el diseño).
+
+  Flujo de compra: Saga orquestada, con msvc-entrada como orquestador; define los pasos de
+  compensación (liberar lugar reservado) ante pago rechazado o vencimiento de la reserva.
+
+  Comunicación asíncrona: solo donde se justifica, no en el flujo de compra/reserva/emisión
+  (que sigue siendo síncrono con consistencia fuerte).
+    - Fila virtual: cola (queue) para gestionar el orden de ingreso y habilitar compras por
+      tandas. Vive en msvc-entrada y es una cola persistida en la base de Entrada (orden por
+      secuencia), no una Queue en memoria, para funcionar con varias instancias. La posición
+      es la cantidad de personas esperando antes; las tandas se habilitan por lotes.
+    - Notificaciones: microservicio nuevo msvc-notificaciones, invocado de forma
+      fire-and-forget por msvc-entrada (compra confirmada) y msvc-evento (evento
+      cancelado/modificado, artista favorito publica evento en su ciudad; este último
+      consulta a msvc-preferencias). Envío real por email (SMTP/Mailtrap, no mock).
+      Concentra ahí la configuración SMTP, las plantillas de email, y el Resilience4j
+      (timeout/retry/circuit breaker) sobre el envío. Guarda un historial de envíos en su
+      propia base PostgreSQL (estado PENDIENTE/ENVIADA/FALLIDA e intentos). El envío es
+      asíncrono dentro del servicio: un método @Async de envío (invocado desde otro bean),
+      ejecutado por un ThreadPoolTaskExecutor propio (@EnableAsync) con un TaskDecorator que
+      copia el correlationId del MDC al hilo. La notificación se guarda como PENDIENTE antes
+      de enviarla y las FALLIDA se reintentan, para no perder envíos si el servicio se cae.
+
+  Reportes para organizadores: viven en msvc-evento. Datos consultados: entradas vendidas y
+  devueltas por sector, porcentaje de ocupación y recaudación. Como msvc-evento no tiene esos
+  datos propios (ventas/devoluciones están en msvc-entrada), consulta vía Feign a
+  msvc-entrada para obtenerlos (GET /api/entradas/eventos/{idEvento}/ventas, a crear; lo
+  usan también reportes y la búsqueda por relevancia).
+
+  Cache: catálogo de eventos, detalle de evento y resultados de búsqueda, en memoria
+  (Caffeine) dentro de msvc-evento, con TTL de 30 a 60 segundos e invalidación al
+  publicar/cancelar/modificar un evento. Con varias instancias la invalidación llega solo a
+  la instancia que procesó el cambio; las demás se actualizan al vencer el TTL. Nunca se
+  cachea disponibilidad de asientos/sectores.
+
+  Resiliencia: Resilience4j (timeout + retry + circuit breaker + fallback) en las llamadas
+  Feign hacia la pasarela de pagos y hacia msvc-notificaciones. El retry es seguro porque el
+  pago ya usa clave de idempotencia.
+
+  Trazabilidad: correlationId generado en msvc-gateway si no viene en el header, propagado
+  por interceptor Feign a todos los microservicios, y puesto en el MDC de Logback para que
+  aparezca en cada línea de log (también en los hilos asíncronos). msvc-gateway registra
+  cada request HTTP (endpoint, usuario, código de respuesta y tiempo de procesamiento). Cada
+  operación crítica (compra, devolución, cancelación, ingreso al evento) se registra en el
+  servicio que la ejecuta con el correlationId y debe poder rastrearse de punta a punta.
+  Log centralizado: cada servicio escribe en la carpeta compartida ticketya/logs un archivo
+  por servicio y por día (ticketya-<servicio>-AAAA-MM-DD.log, ej.
+  ticketya-evento-2026-11-19.log). En docker-compose todos los contenedores montan esa
+  carpeta (volumen compartido) y logs/ va en .gitignore. Se rastrea una operación buscando
+  su correlationId entre los archivos. No se usa Loki ni Grafana.
+
+  Control de acceso con QR: vive en msvc-entrada. Valida que la entrada exista, corresponda
+  al evento y no haya sido usada, y la marca como utilizada con una actualización atómica
+  del estado.
+
+  Dockerización: en Entrega 2 cada microservicio, cada base de datos y el gateway se empaquetan
+  en su propio contenedor Docker, y todo el sistema se levanta con un único docker-compose.yml.
+  msvc-entrada debe poder ejecutarse con al menos 2 instancias.
+
+  Pruebas: las pruebas de integración entre microservicios se hacen levantando el entorno con
+  docker-compose (no Testcontainers). Se agregan además pruebas que verifiquen que cada
+  endpoint solo es accesible por los roles correspondientes, y una prueba de carga del flujo
+  de compra (ej. JMeter) con un informe de resultados (usuarios concurrentes, tiempos de
+  respuesta, errores). La prueba de carga se ejecuta con al menos 2 instancias de msvc-entrada.
+
+  Redis: no se usa; la fila virtual usa una cola propia en la base de Entrada. Cualquier uso
+  futuro requiere un ADR.
+
+  Puntos abiertos:
+    - Credencial del login con JWT: Usuario no tiene contraseña (definir el atributo y su
+      almacenamiento, ej. hash BCrypt, al agregar el email).
+
+  Reglas clave: una entrada nunca se vende dos veces, ni con varias instancias ni con
+  reintentos. Un QR nunca ingresa dos veces, ni con varias instancias ni con reintentos.
   Escribir todos los artefactos en español.
 
 rules:
   proposal:
     - Indicar siempre qué queda fuera del alcance
+    - Si la propuesta modifica una capability ya archivada de la Entrega 1, indicar
+      explícitamente qué cambia respecto a esa spec y por qué
   specs:
     - Escribir los requisitos con notación EARS y escenarios verificables
     - Marcar en cada requisito si es de la Entrega 1 o la 2
+  design:
+    - Al elegir un patrón (Circuit Breaker, Saga, BFF, Service Discovery, etc.) o una
+      tecnología nueva (ej. MongoDB, cola persistida, log centralizado), justificar la
+      elección y registrar alternativas descartadas, como ADR si corresponde
