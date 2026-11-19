@@ -40,6 +40,14 @@ spring:
               uri: lb://msvc-entrada
               predicates:
                 - Path=/api/pagos/**
+            - id: preferencias-route
+              uri: lb://msvc-preferencias
+              predicates:
+                - Path=/api/preferencias/**
+            - id: recomendaciones-route
+              uri: lb://msvc-preferencias
+              predicates:
+                - Path=/api/recomendaciones/**
 
 server:
   port: 8080

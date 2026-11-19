@@ -25,6 +25,8 @@
         <module>msvc-ubicacion</module>
         <module>msvc-evento</module>
         <module>msvc-entrada</module>
+        <module>msvc-notificaciones</module>
+        <module>msvc-preferencias</module>
     </modules>
 
     <properties>

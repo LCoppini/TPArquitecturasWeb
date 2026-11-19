@@ -48,6 +48,14 @@ spring:
               uri: lb://msvc-entrada
               predicates:
                 - Path=/api/pagos/**
+            - id: preferencias-route
+              uri: lb://msvc-preferencias
+              predicates:
+                - Path=/api/preferencias/**
+            - id: recomendaciones-route
+              uri: lb://msvc-preferencias
+              predicates:
+                - Path=/api/recomendaciones/**
 
 # En Entrega 1 los headers de usuario se propagan como headers HTTP normales.
 # No representan identidad autenticada; JWT pertenece a Entrega 2.

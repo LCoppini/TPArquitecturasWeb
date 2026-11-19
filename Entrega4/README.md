@@ -13,11 +13,13 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 | msvc-ubicacion | 8082 | ticketya_ubicacion | Lugares y sectores |
 | msvc-evento | 8083 | ticketya_evento | Eventos, artistas, precios por sector, busqueda |
 | msvc-entrada | 8084 | ticketya_entrada | Reserva, pago (mock), entradas con QR, devoluciones, acceso |
+| msvc-notificaciones | 8085 | ticketya_notificaciones (MongoDB) | (E2) Envio de emails: compra, cancelacion/cambio de evento, artista favorito |
+| msvc-preferencias | 8086 | ticketya_preferencias (MongoDB) | (E2) Preferencias de clientes y recomendaciones |
 
 ## Como levantarlo (E1)
 
-1. `docker compose up -d` (PostgreSQL con una base por servicio)
-2. Arrancar en orden: msvc-config -> msvc-eureka -> msvc-usuarios / ubicacion / evento / entrada -> msvc-gateway
+1. `docker compose up -d` (PostgreSQL con una base por servicio y MongoDB para preferencias y notificaciones)
+2. Arrancar en orden: msvc-config -> msvc-eureka -> msvc-usuarios / ubicacion / evento / entrada / notificaciones / preferencias -> msvc-gateway
 3. Swagger de cada servicio: `http://localhost:<puerto>/swagger-ui.html`
 
 ### Gateway
@@ -25,7 +27,7 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 Las llamadas externas se realizan por `http://localhost:8080`. El gateway
 resuelve los servicios con Eureka y enruta `/api/usuarios` y `/api/roles` a
 usuarios; `/api/lugares` y `/api/sectores` a ubicación; `/api/eventos` y
-`/api/artistas` a evento; y `/api/entradas` y `/api/pagos` a entrada.
+`/api/artistas` a evento; y `/api/entradas` y `/api/pagos` a entrada. `/api/preferencias` y `/api/recomendaciones` van a preferencias (E2); notificaciones es de uso interno y no tiene ruta pública.
 
 Las operaciones de devolución están incluidas en `/api/entradas/**`; no hay una
 ruta pública para `/api/registros-pago`. En la Entrega 1, `X-User-Id` y
@@ -86,3 +88,5 @@ Despues de actualizar la CLI: `openspec update`.
 5. **Evento -> organizador**: se guarda solo `id_organizador`; se valida contra msvc-usuarios (rol ORGANIZADOR).
 6. Typos del diagrama: `apellido` figura como INTEGER; `dni` como INTEGER/Long.
 7. **Zona horaria al conectar a PostgreSQL:** en el entorno local probado, la JVM usa `America/Buenos_Aires`, que el servidor PostgreSQL rechazó al abrir la conexión (`invalid value for parameter "TimeZone": "America/Buenos_Aires"`). No es un requisito universal de la aplicación: depende de la zona horaria que reporte la JVM y de los nombres aceptados por el servidor, pero puede afectar a cualquier servicio que use el driver PostgreSQL (`msvc-usuarios`, `msvc-ubicacion`, `msvc-evento` y `msvc-entrada`) al ejecutar ambos en esa misma combinación de entorno. Para ese caso, iniciar la JVM con `-Duser.timezone=UTC`; por ejemplo, en IntelliJ agregarlo a **VM options**, al ejecutar un JAR usar `java -Duser.timezone=UTC -jar <jar>`, o con Maven usar `mvn -pl msvc-usuarios -Dspring-boot.run.jvmArguments="-Duser.timezone=UTC" spring-boot:run`. No hace falta modificar `application.yml` ni `docker-compose.yml`; en un entorno donde la JVM ya use una zona aceptada por PostgreSQL no se necesita el flag.
+8. **Email del destinatario (E2):** `msvc-notificaciones` necesita el email del cliente, pero `Usuario` hoy no lo tiene (dni, nombre, apellido, ciudad, roles). Definir si se agrega `email` a msvc-usuarios o si el email viaja en el evento/solicitud de notificacion.
+9. **Servicios nuevos de la Entrega 2:** solo existe el esqueleto (estructura, pom, configuracion y `package-info.java` con lo previsto). Sin logica; cada integrante la completa con su change de OpenSpec.
