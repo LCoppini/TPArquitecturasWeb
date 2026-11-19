@@ -1,7 +1,7 @@
 # AGENTS.md (constitucion del proyecto)
 
 ## Stack
-Java 21 - Spring Boot 3.5.6 - Spring Cloud 2025.0.0 (Config, Eureka, Gateway MVC, OpenFeign) - Maven multi-modulo - PostgreSQL 16 (MongoDB 7 en msvc-preferencias y msvc-notificaciones) - Lombok - MapStruct - springdoc-openapi
+Java 21 - Spring Boot 3.5.6 - Spring Cloud 2025.0.0 (Config, Eureka, Gateway MVC, OpenFeign) - Maven multi-modulo - PostgreSQL 16 (MongoDB 7 en msvc-preferencias) - Lombok - MapStruct - springdoc-openapi
 
 ## Comandos
 - Bases de datos: `docker compose up -d`
@@ -10,7 +10,7 @@ Java 21 - Spring Boot 3.5.6 - Spring Cloud 2025.0.0 (Config, Eureka, Gateway MVC
 - Tests de un servicio: `mvn -pl msvc-entrada test`
 
 ## Arquitectura
-- Microservicios independientes: msvc-usuarios (8081), msvc-ubicacion (8082), msvc-evento (8083), msvc-entrada (8084). Entrada incluye pagos. Entrega 2: msvc-notificaciones (8085, MongoDB, SMTP) y msvc-preferencias (8086, MongoDB).
+- Microservicios independientes: msvc-usuarios (8081), msvc-ubicacion (8082), msvc-evento (8083), msvc-entrada (8084). Entrada incluye pagos. Entrega 2: msvc-notificaciones (8085, PostgreSQL, SMTP) y msvc-preferencias (8086, MongoDB).
 - Cada servicio: base propia, SIN foreign keys entre servicios (se referencian por id).
 - Arquitectura en CAPAS dentro de cada servicio: `controller` -> `service` (+ `service/impl`) -> `repository` / `entity`. Las reglas de negocio van en `service` (y en las entidades cuando son propias de un solo objeto).
 - El controller solo habla con el service; solo el service usa los repositories; no se exponen entidades en la API (DTOs en `dto/request` y `dto/response`).

@@ -15,16 +15,21 @@ Concentra la configuración SMTP, las plantillas de email y Resilience4j (timeou
 ## Datos
 
 - Puerto: `8085`.
-- Base: **MongoDB** `ticketya_notificaciones` (un documento por aviso, con estado, intentos y `idEventoOrigen` para evitar duplicados). Modelo tomado de `sugerencia.md` del grupo. Sin foreign keys hacia otros servicios.
+- Base: PostgreSQL `ticketya_notificaciones` (historial de envíos). Sin foreign keys hacia otros servicios.
 
 ## Ejecución local
 
-1. Desde la raíz de `Entrega4`: `docker compose up -d` (incluye el contenedor `mongo`).
-2. Iniciar `msvc-config` y `msvc-eureka`, y luego este servicio (`mvn -pl msvc-notificaciones spring-boot:run`). No necesita PostgreSQL.
-3. Swagger UI: `http://localhost:8085/swagger-ui.html`.
+1. Desde la raíz de `Entrega4`: `docker compose up -d`.
+2. **Si el volumen de PostgreSQL ya existía**, la base nueva no se crea sola. Crearla una vez:
+   `docker exec ticketya-postgres psql -U ticketya -c "CREATE DATABASE ticketya_notificaciones;"`
+3. Iniciar `msvc-config` y `msvc-eureka`, y luego este servicio (`mvn -pl msvc-notificaciones spring-boot:run`).
+4. Swagger UI: `http://localhost:8085/swagger-ui.html`.
+
+Si PostgreSQL informa `invalid value for parameter "TimeZone"`, agregar `-Duser.timezone=UTC` a las opciones de VM (ver README de la raíz, punto 7).
 
 ## Puntos abiertos
 
 - `Usuario` no tiene email: definir de dónde sale el destinatario.
 - Mecanismo asincrónico (broker o llamada REST asincrónica): lo decide el grupo y se registra en `docs/decisiones`.
 - `EventoModificado` no figura aún en `docs/eventos.md`.
+- Confirmar con el grupo que el historial de envíos va en PostgreSQL.

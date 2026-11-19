@@ -11,7 +11,7 @@
 ## Datos
 
 - Puerto: `8086`.
-- Base: **MongoDB** `ticketya_preferencias`: documentos `Preferencia` (uno por cliente, `id` = `id_usuario`) y `Recomendacion` (un lote generado por cliente). Modelo tomado de `sugerencia.md` del grupo. Se usa MongoDB porque el documento es anidado, de esquema flexible y se lee por id. El paquete se llama `entity` para mantener la misma estructura que los demás servicios.
+- Base: **MongoDB** `ticketya_preferencias`, un documento por cliente (`id` = `id_usuario`). Se usa MongoDB porque el documento es anidado, de esquema flexible y se lee por id. El paquete se llama `entity` para mantener la misma estructura que los demás servicios.
 
 ## Ejecución local
 

@@ -4,9 +4,18 @@ server:
 spring:
   application:
     name: msvc-notificaciones
-  data:
-    mongodb:
-      uri: mongodb://${MONGO_HOST:localhost}:27017/ticketya_notificaciones
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:5432/ticketya_notificaciones
+    username: ${DB_USER:ticketya}
+    password: ${DB_PASSWORD:ticketya}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update   # solo desarrollo; luego migrar a Flyway/Liquibase si el grupo lo decide
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   cloud:
     openfeign:
       httpclient:

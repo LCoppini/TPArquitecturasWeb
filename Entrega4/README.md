@@ -13,12 +13,12 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 | msvc-ubicacion | 8082 | ticketya_ubicacion | Lugares y sectores |
 | msvc-evento | 8083 | ticketya_evento | Eventos, artistas, precios por sector, busqueda |
 | msvc-entrada | 8084 | ticketya_entrada | Reserva, pago (mock), entradas con QR, devoluciones, acceso |
-| msvc-notificaciones | 8085 | ticketya_notificaciones (MongoDB) | (E2) Envio de emails: compra, cancelacion/cambio de evento, artista favorito |
+| msvc-notificaciones | 8085 | ticketya_notificaciones | (E2) Envio de emails: compra, cancelacion/cambio de evento, artista favorito |
 | msvc-preferencias | 8086 | ticketya_preferencias (MongoDB) | (E2) Preferencias de clientes y recomendaciones |
 
 ## Como levantarlo (E1)
 
-1. `docker compose up -d` (PostgreSQL con una base por servicio y MongoDB para preferencias y notificaciones)
+1. `docker compose up -d` (PostgreSQL con una base por servicio y MongoDB para preferencias)
 2. Arrancar en orden: msvc-config -> msvc-eureka -> msvc-usuarios / ubicacion / evento / entrada / notificaciones / preferencias -> msvc-gateway
 3. Swagger de cada servicio: `http://localhost:<puerto>/swagger-ui.html`
 

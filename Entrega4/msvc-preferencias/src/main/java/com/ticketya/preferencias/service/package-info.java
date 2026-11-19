@@ -9,8 +9,7 @@
  *  - Informar que clientes tienen a un artista como favorito (para las notificaciones).
  *
  * Notas:
- *  - Criterio de recomendacion a definir: sugerencia.md propone afinidad, co-ocurrencia o fallback popular;
- *    el config.yaml contempla solo afinidad (tipo y artistas). Justificar la version simplificada en docs/decisiones.
- *  - El registro de una compra debe ser idempotente (deduplicar por idMensaje).
+ *  - Version simplificada de recomendaciones (sin co-compra "quienes compraron esto tambien compraron"): justificar en docs/decisiones.
+ *  - El registro de una compra debe ser idempotente.
  */
 package com.ticketya.preferencias.service;
