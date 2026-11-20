@@ -15,6 +15,11 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     @EntityGraph(attributePaths = "roles")
     Optional<Usuario> findByIdUsuarioAndActivoTrue(Long idUsuario);
 
+    @EntityGraph(attributePaths = "roles")
+    Optional<Usuario> findByEmailAndActivoTrue(String email);
+
+    boolean existsByEmail(String email);
+
     boolean existsByDni(Long dni);
 
     boolean existsByDniAndIdUsuarioNot(Long dni, Long idUsuario);

@@ -33,6 +33,11 @@ public class GlobalExceptionHandler {
         return respuesta(HttpStatus.BAD_REQUEST, exception.getMessage(), Map.of());
     }
 
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponse> manejarCredencialesInvalidas(CredencialesInvalidasException exception) {
+        return respuesta(HttpStatus.UNAUTHORIZED, exception.getMessage(), Map.of());
+    }
+
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<ErrorResponse> manejarNoEncontrado(RecursoNoEncontradoException exception) {
         return respuesta(HttpStatus.NOT_FOUND, exception.getMessage(), Map.of());

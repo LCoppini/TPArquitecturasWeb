@@ -20,7 +20,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "usuario", uniqueConstraints = @UniqueConstraint(name = "uk_usuario_dni", columnNames = "dni"))
+@Table(name = "usuario", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_usuario_dni", columnNames = "dni"),
+        @UniqueConstraint(name = "uk_usuario_email", columnNames = "email")
+})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,6 +45,14 @@ public class Usuario {
 
     @Column(name = "ciudad", nullable = false)
     private String ciudad;
+
+    /** Unico para login. Usuarios legacy sin email no pueden autenticarse. */
+    @Column(name = "email", length = 255)
+    private String email;
+
+    /** Hash BCrypt. Nunca se expone en DTOs ni en logs. */
+    @Column(name = "password_hash", length = 255)
+    private String passwordHash;
 
     @Column(name = "activo", nullable = false)
     private boolean activo = true;

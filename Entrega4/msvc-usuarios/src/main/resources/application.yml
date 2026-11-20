@@ -29,3 +29,21 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+# E2 (ADR-0003): emision RS256. La privada NO tiene valor por defecto: sin
+# JWT_PRIVATE_KEY el servicio no arranca (fail closed).
+jwt:
+  private-key: ${JWT_PRIVATE_KEY}
+  issuer: ${JWT_ISSUER:ticketya}
+  audience: ${JWT_AUDIENCE:ticketya}
+  expiration-seconds: ${JWT_EXPIRATION_SECONDS:900}
+
+# Primer ADMINISTRADOR opcional cargado por seed. Sin estas variables no se crea.
+seed:
+  admin:
+    email: ${SEED_ADMIN_EMAIL:}
+    password: ${SEED_ADMIN_PASSWORD:}
+    dni: ${SEED_ADMIN_DNI:}
+    nombre: ${SEED_ADMIN_NOMBRE:}
+    apellido: ${SEED_ADMIN_APELLIDO:}
+    ciudad: ${SEED_ADMIN_CIUDAD:}
