@@ -151,16 +151,6 @@ public class EntradaService {
     }
 
     @Transactional
-    public EntradaResponse actualizar(Long id, EntradaRequest datos) {
-        throw new IllegalStateException("Las entradas no se pueden editar por CRUD; use operaciones de negocio");
-    }
-
-    @Transactional
-    public void eliminar(Long id) {
-        throw new IllegalStateException("Las entradas no se pueden eliminar por CRUD");
-    }
-
-    @Transactional
     public void solicitarDevolucion(Long id, Long idUsuario) {
         Entrada entrada = entradaRepository.findByIdAndIdUsuario(id, idUsuario)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró la entrada con id " + id));

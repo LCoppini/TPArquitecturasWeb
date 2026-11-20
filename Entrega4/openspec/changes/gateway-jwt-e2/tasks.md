@@ -78,9 +78,9 @@
       llamada en `EventoServiceImpl`.
 - [x] Quitar `validarRol` / `tieneRol` por Feign en `EventoServiceImpl`;
       conservar la verificación de pertenencia por `X-User-Id`.
-- [ ] Aplicar la separación física de endpoints por rol aprobada. Hecho en
-      `msvc-evento` (`OrganizadorEventoController` y `AdminEventoController`);
-      falta `msvc-entrada`.
+- [x] Aplicar la separación física de endpoints por rol aprobada:
+      `msvc-evento` con `OrganizadorEventoController` y `AdminEventoController`,
+      y `msvc-entrada` con `AdminEntradaController` y `AccesoController`.
 - [ ] Alinear el controller de participantes con `/api/artistas` (GET) y
       `/api/admin/artistas` (alta/edición); verificado que no hay Feign clients
       ni tests HTTP que usen `/api/participantes`.
@@ -92,9 +92,9 @@
       delegar en `EntradaClient.consultarDisponibilidad`; mover el contrato
       interno de Entrada a `/internal/entradas/disponibilidad`, sin ruta en el
       gateway.
-- [ ] Eliminar `PUT/DELETE /api/entradas/{id}` y sus métodos de service si
-      quedan sin uso.
-- [ ] Renombrar el escaneo a `POST /api/accesos/escanear` y quitar
+- [x] Eliminar `PUT/DELETE /api/entradas/{id}` y los métodos `actualizar` y
+      `eliminar` de `EntradaService`, que solo lanzaban `IllegalStateException`.
+- [x] Renombrar el escaneo a `POST /api/accesos/escanear` y quitar
       `POST /api/entradas/accesos/validar`.
 - [ ] Agregar el esquema `bearerAuth` a la documentación OpenAPI de los
       servicios de dominio.
