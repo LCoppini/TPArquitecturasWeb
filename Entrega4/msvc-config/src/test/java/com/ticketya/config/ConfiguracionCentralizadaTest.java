@@ -12,6 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,9 +45,13 @@ class ConfiguracionCentralizadaTest {
     @Test
     void publicaRutasDelGateway() throws Exception {
         JsonNode source = sourceFor("msvc-gateway");
-        assertEquals("usuarios-route", property(source, "spring.cloud.gateway.server.webmvc.routes[0].id").asText());
-        assertEquals("lb://msvc-usuarios", property(source, "spring.cloud.gateway.server.webmvc.routes[0].uri").asText());
-        assertEquals("pagos-route", property(source, "spring.cloud.gateway.server.webmvc.routes[7].id").asText());
+
+        // ADR-0001: los prefijos por rol se declaran antes que los generales.
+        // La asercion no depende del orden, solo de que la ruta exista y apunte
+        // al servicio correcto.
+        assertEquals("lb://msvc-usuarios", uriDeRutaConId(source, "usuarios-route").asText());
+        assertEquals("lb://msvc-usuarios", uriDeRutaConId(source, "admin-usuarios-route").asText());
+        assertEquals("lb://msvc-entrada", uriDeRutaConId(source, "pagos-route").asText());
     }
 
     @Test
@@ -80,6 +85,20 @@ class ConfiguracionCentralizadaTest {
                 .getResponse()
                 .getContentAsString();
         return objectMapper.readTree(response).path("propertySources").get(0).path("source");
+    }
+
+    private JsonNode uriDeRutaConId(JsonNode source, String id) {
+        String prefijo = "spring.cloud.gateway.server.webmvc.routes[";
+        for (int i = 0; i < 100; i++) {
+            JsonNode idRuta = property(source, prefijo + i + "].id");
+            if (idRuta.isMissingNode()) {
+                break;
+            }
+            if (id.equals(idRuta.asText())) {
+                return property(source, prefijo + i + "].uri");
+            }
+        }
+        return fail("No existe la ruta del gateway con id " + id);
     }
 
     private JsonNode property(JsonNode source, String propertyName) {

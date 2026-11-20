@@ -123,6 +123,10 @@
       rol consultado por Feign. Ahora cubren `X-User-Id` inválido, pertenencia del
       organizador y borrado administrativo. El cambio se documenta por ADR-0001:
       la autorización por rol pasó al gateway, no se relajaron aserciones.
+- [x] **Reemplazado** `ConfiguracionCentralizadaTest.publicaRutasDelGateway`:
+      dejó de depender de `routes[0]`/`routes[7]` porque ADR-0001 antepone los
+      prefijos por rol. Ahora busca cada ruta por `id` y verifica su `uri`,
+      incluida `admin-usuarios-route`. Commit separado, sin relajar aserciones.
 - [ ] Planificar pruebas de login/registro: BCrypt, `CLIENTE` forzado en registro
       y roles privilegiados solo por seed o `/api/admin/usuarios`.
 - [ ] Planificar verificación de path único de artistas en gateway, controllers,
