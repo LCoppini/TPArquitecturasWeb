@@ -10,22 +10,46 @@ spring:
   application:
     name: msvc-gateway
   # E2 (EP-12): Resource Server JWT RS256. El emisor es msvc-usuarios (ADR-0001).
-  # Descomentar cuando exista la clave publica. Clave/audiencia por variables de
-  # entorno (nunca valores hardcoded ni .env). Sin estas variables el gateway no
-  # arranca: fail closed.
-  # security:
-  #   oauth2:
-  #     resourceserver:
-  #       jwt:
-  #         public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
-  #         audiences: ${JWT_AUDIENCE}
-  #         issuer: ${JWT_ISSUER}
+  # Clave/audiencia por variables de entorno (nunca valores hardcoded ni .env).
+  # Sin estas variables el JwtDecoder no se construye: fail closed.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
+          audiences: ${JWT_AUDIENCE}
+          issuer: ${JWT_ISSUER}
   cloud:
     gateway:
       server:
         webmvc:
           # lb:// usa Eureka para elegir una instancia; no fija host ni puerto del servicio.
           routes:
+            # Prefijos por rol se declaran antes que los generales.
+            - id: admin-usuarios-route
+              uri: lb://msvc-usuarios
+              predicates:
+                - Path=/api/admin/usuarios/**
+            - id: admin-artistas-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/admin/artistas/**
+            - id: organizador-eventos-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/organizador/eventos/**
+            - id: admin-eventos-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/admin/eventos/**
+            - id: admin-entradas-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/admin/entradas/**
+            - id: accesos-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/accesos/**
             - id: usuarios-route
               uri: lb://msvc-usuarios
               predicates:
@@ -68,8 +92,8 @@ spring:
               predicates:
                 - Path=/api/recomendaciones/**
 
-# En Entrega 1 los headers de usuario se propagan como headers HTTP normales.
-# No representan identidad autenticada; JWT pertenece a Entrega 2.
+# En Entrega 2 la identidad no se toma de headers del cliente: el gateway
+# valida el JWT y fija X-User-Id desde el claim idUsuario (ADR-0001).
 eureka:
   client:
     fetch-registry: true

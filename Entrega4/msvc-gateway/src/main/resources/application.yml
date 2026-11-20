@@ -4,20 +4,45 @@ spring:
   config:
     import: optional:configserver:http://localhost:8888
   # E2 (EP-12): Resource Server JWT RS256. El emisor es msvc-usuarios (ADR-0001).
-  # Descomentar cuando exista la clave publica. Sin estas variables el
-  # gateway no arranca: fail closed, sin volver a la identidad simulada de E1.
-  # security:
-  #   oauth2:
-  #     resourceserver:
-  #       jwt:
-  #         public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
-  #         audiences: ${JWT_AUDIENCE}
-  #         issuer: ${JWT_ISSUER}
+  # Sin estas variables el JwtDecoder no se construye: fail closed, sin volver
+  # a la identidad simulada de Entrega 1.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
+          audiences: ${JWT_AUDIENCE}
+          issuer: ${JWT_ISSUER}
   cloud:
     gateway:
       server:
         webmvc:
           routes:
+            # Prefijos por rol se declaran antes que los generales.
+            - id: admin-usuarios-route
+              uri: lb://msvc-usuarios
+              predicates:
+                - Path=/api/admin/usuarios/**
+            - id: admin-artistas-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/admin/artistas/**
+            - id: organizador-eventos-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/organizador/eventos/**
+            - id: admin-eventos-route
+              uri: lb://msvc-evento
+              predicates:
+                - Path=/api/admin/eventos/**
+            - id: admin-entradas-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/admin/entradas/**
+            - id: accesos-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/accesos/**
             - id: usuarios-route
               uri: lb://msvc-usuarios
               predicates:

@@ -51,16 +51,17 @@
 - [x] Crear `SecurityConfig` en `gateway/config` con `SecurityFilterChain` (MVC),
       `securityMatcher("/api/**")`, `permitAll` para `POST /api/usuarios/login`,
       CSRF off y `STATELESS`.
-- [ ] Agregar `permitAll` para `GET /api/eventos/**` antes de
+- [x] Agregar `permitAll` para `GET /api/eventos/**` antes de
       `GatewayRoleMatrix.apply(...)` y evitar que la matriz vuelva a exigir roles
       sobre ese prefijo.
-- [ ] Agregar `permitAll` para `POST /api/usuarios/registro` y
+- [x] Agregar `permitAll` para `POST /api/usuarios/registro` y
       `GET /api/artistas/**` antes de `GatewayRoleMatrix.apply(...)`.
-- [ ] Agregar la ruta `/api/accesos/**` → `msvc-entrada` en el gateway y en la
+- [x] Agregar la ruta `/api/accesos/**` → `msvc-entrada` en el gateway y en la
       configuración central.
-- [ ] Agregar `ADMINISTRADOR` para `/api/admin/artistas/**` y
+- [x] Agregar `ADMINISTRADOR` para `/api/admin/artistas/**` y
       `/api/admin/usuarios/**`, con sus rutas hacia `msvc-evento` y
       `msvc-usuarios`.
+- [x] `denyAll` para `/internal/**` y fallback `anyRequest().hasRole("CLIENTE")`.
 - [x] Configurar `JwtGrantedAuthoritiesConverter` con claim `roles` y prefijo
       `ROLE_`, y `setPrincipalClaimName("idUsuario")`.
 - [x] Crear `IdentityHeadersFilter`: descartar `X-User-Id` entrante, setearlo
@@ -80,9 +81,10 @@
 - [ ] Alinear el controller de participantes con `/api/artistas` (GET) y
       `/api/admin/artistas` (alta/edición); verificado que no hay Feign clients
       ni tests HTTP que usen `/api/participantes`.
-- [ ] Implementar `POST /api/usuarios/login` con email + BCrypt y emisión RS256;
+- [x] Implementar `POST /api/usuarios/login` con email + BCrypt y emisión RS256;
       `POST /api/usuarios/registro` público solo `CLIENTE`; roles privilegiados
-      por seed o `/api/admin/usuarios`.
+      por seed o `/api/admin/usuarios`. Resta exponer `/api/admin/usuarios` en el
+      controller cuando se haga el refactor de usuarios.
 - [ ] Exponer `GET /api/eventos/{idEvento}/disponibilidad` en `msvc-evento` y
       delegar en `EntradaClient.consultarDisponibilidad`; mover el contrato
       interno de Entrada a `/internal/entradas/disponibilidad`, sin ruta en el
@@ -108,7 +110,9 @@
       `idUsuario`; `X-User-Role` no llega aunque el cliente lo envíe;
       `X-User-Id` del cliente es pisado por el del token; JWT sin `idUsuario`
       → 401; sin token en ruta protegida → 401; ambos con JSON uniforme.
-- [ ] Planificar pruebas de 403 por rol insuficiente y matriz completa.
+- [x] Pruebas de 403 por rol insuficiente, endpoints públicos y matriz completa.
+      `GatewayRoleMatrixTest` falla si aparece una ruta en el YAML sin regla
+      explícita en `GatewayRoleMatrix`.
 - [ ] Planificar pruebas de login/registro: BCrypt, `CLIENTE` forzado en registro
       y roles privilegiados solo por seed o `/api/admin/usuarios`.
 - [ ] Planificar verificación de path único de artistas en gateway, controllers,

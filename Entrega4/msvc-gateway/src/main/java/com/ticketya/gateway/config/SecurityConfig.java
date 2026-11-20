@@ -1,5 +1,6 @@
 package com.ticketya.gateway.config;
 
+import com.ticketya.gateway.security.GatewayRoles;
 import com.ticketya.gateway.security.GatewayRoleMatrix;
 import com.ticketya.gateway.security.GatewaySecurityErrorWriter;
 import org.springframework.context.annotation.Bean;
@@ -48,14 +49,19 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-                .securityMatcher("/api/**")
+                .securityMatcher("/api/**", "/internal/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> {
-                    // El login debe ir antes de la regla general de /api/usuarios/**.
-                    authz.requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll();
+                    // Los contratos internos no se exponen aunque alguien los enrute por error.
+                    authz.requestMatchers("/internal/**").denyAll();
+                    // Publicos antes de la matriz: si no, /api/usuarios/** los exigiria ADMIN.
+                    authz.requestMatchers(HttpMethod.POST, "/api/usuarios/login", "/api/usuarios/registro")
+                            .permitAll();
+                    authz.requestMatchers(HttpMethod.GET, "/api/eventos/**", "/api/artistas/**")
+                            .permitAll();
                     roleMatrix.apply(authz);
-                    authz.anyRequest().authenticated();
+                    authz.anyRequest().hasRole(GatewayRoles.CLIENTE);
                 })
                 .oauth2ResourceServer(oauth -> oauth
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))

@@ -100,17 +100,17 @@ public class SecurityConfig {
     ) throws Exception {
 
         http
-            .securityMatcher("/api/**")
+            .securityMatcher("/api/**", "/internal/**")
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> {
+                // Contratos internos nunca accesibles desde el gateway.
+                authz.requestMatchers("/internal/**").denyAll();
                 // Público: login, registro y consultas de eventos/artistas.
-                authz.requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll();
-                authz.requestMatchers(HttpMethod.POST, "/api/usuarios/registro").permitAll();
-                authz.requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll();
-                authz.requestMatchers(HttpMethod.GET, "/api/artistas/**").permitAll();
+                authz.requestMatchers(HttpMethod.POST, "/api/usuarios/login", "/api/usuarios/registro").permitAll();
+                authz.requestMatchers(HttpMethod.GET, "/api/eventos/**", "/api/artistas/**").permitAll();
                 roleMatrix.apply(authz);
-                authz.anyRequest().authenticated();
+                authz.anyRequest().hasRole(GatewayRoles.CLIENTE);
             })
             .oauth2ResourceServer(oauth -> oauth
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
@@ -141,8 +141,13 @@ Notas:
   usar `jwt.getSubject()` porque el token no trae `sub`.
 - `roles` → `ROLE_CLIENTE`, `ROLE_ADMINISTRADOR`, etc. Se usa `hasRole("CLIENTE")`
   (Spring ya agrega el prefijo `ROLE_`).
-- `securityMatcher("/api/**")` deja `/error` y `/actuator/**` fuera de la cadena,
-  evitando que el `GatewayErrorController` termine devolviendo 401.
+- `securityMatcher("/api/**", "/internal/**")` deja `/error` y `/actuator/**`
+  fuera de la cadena, evitando que el `GatewayErrorController` termine
+  devolviendo 401. `/internal/**` se agrega solo para `denyAll`: aunque alguien
+  enrute un contrato interno, el gateway no lo sirve.
+- El fallback `anyRequest().hasRole(GatewayRoles.CLIENTE)` cubre rutas no
+  declaradas; la prueba de matriz falla si aparece una ruta en el YAML sin una
+  regla explícita en `GatewayRoleMatrix`.
 - No se usa YAML declarativo para autorización: las reglas viven en Java,
   según el `config.yaml`.
 
