@@ -19,7 +19,7 @@ spring:
   #       jwt:
   #         public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
   #         audiences: ${JWT_AUDIENCE}
-  #         # issuer: ${JWT_ISSUER}
+  #         issuer: ${JWT_ISSUER}
   cloud:
     gateway:
       server:

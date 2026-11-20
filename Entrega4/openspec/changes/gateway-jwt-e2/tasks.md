@@ -118,7 +118,11 @@
       `msvc-entrada` e informe de concurrentes/tiempos/errores.
 - [ ] Verificar que `/error` y `/actuator/**` siguen fuera de la cadena de
       seguridad y mantienen el JSON uniforme.
-- [ ] No se ejecutaron pruebas en este paso (Maven no disponible en el PATH).
+- [x] Validar el gateway actual con Maven 3.9.11/JDK 21 (Maven de IntelliJ por
+      ruta completa): `mvn -B -pl msvc-gateway test` → 9 tests, 0 fallos.
+      Confirmado que el `HttpServletRequestWrapper` llega al `RestClient` MVC:
+      backend recibe `X-User-Id=42` del token, el valor del cliente es pisado y
+      `X-User-Role` no se propaga. No hacen falta filtros nativos.
 
 ## Documentacion y cierre
 
@@ -126,6 +130,9 @@
 - [x] Documentar en `design.md` y en el ADR-0001 la diferencia principal con el
       proyecto de referencia: gateway emisor + validador vs gateway solo
       validador Resource Server.
+- [x] ADR-0003: contrato del token (RS256, `iss`/`aud`/`iat`/`exp`,
+      `idUsuario`, `roles`, 900 s, nombre de claim idéntico en usuarios y
+      gateway) y generación de claves PKCS#8 por entorno.
 - [ ] Actualizar README con `Authorization: Bearer <token>` y el supuesto de
       acceso solo por gateway.
 - [ ] Verificar que no haya secretos ni `.env` versionados; `.env.example` solo

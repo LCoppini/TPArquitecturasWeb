@@ -41,6 +41,8 @@ Adoptar **OAuth2 Resource Server con RS256** en `msvc-gateway`.
   no se agrega `spring-security-oauth2-jose`. La audiencia va en
   `${JWT_AUDIENCE}`.
 - `.env.example` documenta las variables; `.env` no se versiona.
+- El contrato completo del token (claims `iss`, `aud`, `exp`, `iat`,
+  `idUsuario` y `roles`, expiración y formato de claves) está en ADR-0003.
 - `JwtAuthenticationConverter` mapea el claim `roles` a authorities con prefijo
   `ROLE_` y toma el principal del claim `idUsuario` (`setPrincipalClaimName`).
   **No se usa `sub`.**
@@ -155,4 +157,4 @@ El detalle completo de la comparación está en `design.md` del change
 - `openspec/changes/gateway-jwt-e2/`
 - `openspec/changes/gateway-entrega1/specs/gateway-ruteo/spec.md`
 - `openspec/config.yaml`, sección "Seguridad (Entrega 2)"
-- Proyecto de referencia analizado: `micro_integrador3/gateway`
+

@@ -40,10 +40,14 @@ La cadena se construye con `HttpSecurity`, no con `ServerHttpSecurity`.
   repositorio ni como valor literal en YAML.
 - El gateway valida con la clave pública configurada con
   `public-key-location: ${JWT_PUBLIC_KEY_LOCATION}` (archivo montado o
-  `classpath:`). **No se usa JWKS**: no se publica `/.well-known/jwks.json` y no
-  se agrega `spring-security-oauth2-jose`.
-- La audiencia se lee de `${JWT_AUDIENCE}` y el issuer de `${JWT_ISSUER}` cuando
-  el token lo incluya.
+  `classpath:`). **No se usa JWKS**: no se publica `/.well-known/jwks.json` y el
+  gateway no agrega `spring-security-oauth2-jose`.
+- El contrato completo (claims `iss`, `aud`, `iat`, `exp`, `idUsuario` y
+  `roles`, duración de 900 segundos y generación PKCS#8 de la clave) está en
+  **ADR-0003**. El claim de roles se llama `roles` en emisor y validador; el
+  prefijo `ROLE_` se agrega solo en el gateway.
+- La audiencia se lee de `${JWT_AUDIENCE}` y el issuer de `${JWT_ISSUER}`,
+  ambos obligatorios.
 - `.env.example` documenta las variables con valores de ejemplo; `.env` sigue
   ignorado por Git y no se versiona.
 
@@ -57,7 +61,7 @@ spring:
         jwt:
           public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
           audiences: ${JWT_AUDIENCE}
-          # issuer: ${JWT_ISSUER}
+          issuer: ${JWT_ISSUER}
 ```
 
 Sin esas variables el `JwtDecoder` no puede construirse y el gateway no arranca.
