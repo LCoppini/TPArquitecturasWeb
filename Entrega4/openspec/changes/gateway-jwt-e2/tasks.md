@@ -86,8 +86,11 @@
       ni tests HTTP que usen `/api/participantes`.
 - [x] Implementar `POST /api/usuarios/login` con email + BCrypt y emisión RS256;
       `POST /api/usuarios/registro` público solo `CLIENTE`; roles privilegiados
-      por seed o `/api/admin/usuarios`. Resta exponer `/api/admin/usuarios` en el
-      controller cuando se haga el refactor de usuarios.
+      por seed o `/api/admin/usuarios` (ADR-0001). El refactor de usuarios
+      expone `POST /api/admin/usuarios` con DTO propio que sí acepta roles,
+      service con validación de roles y password hasheado, y tests nuevos.
+      No se modificaron tests existentes; el registro público sigue sin
+      aceptar roles.
 - [ ] Exponer `GET /api/eventos/{idEvento}/disponibilidad` en `msvc-evento` y
       delegar en `EntradaClient.consultarDisponibilidad`; mover el contrato
       interno de Entrada a `/internal/entradas/disponibilidad`, sin ruta en el
