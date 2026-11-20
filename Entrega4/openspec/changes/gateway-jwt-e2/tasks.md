@@ -73,11 +73,13 @@
 
 - [ ] Quitar `X-User-Role` y los helpers `exigirRol` / `exigirRolCliente` de
       `EntradaController`, `PagoController` y `RegistroPagoController`.
-- [ ] Quitar el parámetro `rol` de `EntradaClient.cancelarEntradas(...)` y de la
+- [x] Quitar el parámetro `rol` de `EntradaClient.cancelarEntradas(...)` y de la
       llamada en `EventoServiceImpl`.
-- [ ] Quitar `validarRol` / `tieneRol` por Feign en `EventoServiceImpl`;
+- [x] Quitar `validarRol` / `tieneRol` por Feign en `EventoServiceImpl`;
       conservar la verificación de pertenencia por `X-User-Id`.
-- [ ] Aplicar la separación física de endpoints por rol aprobada.
+- [ ] Aplicar la separación física de endpoints por rol aprobada. Hecho en
+      `msvc-evento` (`OrganizadorEventoController` y `AdminEventoController`);
+      falta `msvc-entrada`.
 - [ ] Alinear el controller de participantes con `/api/artistas` (GET) y
       `/api/admin/artistas` (alta/edición); verificado que no hay Feign clients
       ni tests HTTP que usen `/api/participantes`.
@@ -113,6 +115,10 @@
 - [x] Pruebas de 403 por rol insuficiente, endpoints públicos y matriz completa.
       `GatewayRoleMatrixTest` falla si aparece una ruta en el YAML sin regla
       explícita en `GatewayRoleMatrix`.
+- [x] Reemplazados los tests de `EventoServiceImplTest` que esperaban el 403 por
+      rol consultado por Feign. Ahora cubren `X-User-Id` inválido, pertenencia del
+      organizador y borrado administrativo. El cambio se documenta por ADR-0001:
+      la autorización por rol pasó al gateway, no se relajaron aserciones.
 - [ ] Planificar pruebas de login/registro: BCrypt, `CLIENTE` forzado en registro
       y roles privilegiados solo por seed o `/api/admin/usuarios`.
 - [ ] Planificar verificación de path único de artistas en gateway, controllers,

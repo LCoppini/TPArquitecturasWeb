@@ -32,6 +32,8 @@ public interface EventoService {
 
     void eliminarFisicamente(Long id, Long idSolicitante);
 
+    void eliminarFisicamenteAdministrativo(Long id, Long idSolicitante);
+
     EventoPaginaResponse buscar(
             String tipo,
             Long idOrganizador,

@@ -1,19 +1,19 @@
 package com.ticketya.evento.controller;
 
-import com.ticketya.evento.dto.request.CambioEstadoRequest;
-import com.ticketya.evento.dto.request.ConfigurarSectoresRequest;
-import com.ticketya.evento.dto.request.EventoRequest;
 import com.ticketya.evento.dto.response.EventoPaginaResponse;
 import com.ticketya.evento.dto.response.EventoResponse;
 import com.ticketya.evento.dto.response.EventoSectorResponse;
 import com.ticketya.evento.service.EventoService;
-import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 
+/** Consultas públicas del catálogo. Las escrituras viven en los controllers por rol. */
 @RestController
 @RequestMapping("/api/eventos")
 public class EventoController {
@@ -24,36 +24,9 @@ public class EventoController {
         this.eventoService = eventoService;
     }
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public EventoResponse crear(
-            @RequestHeader("X-User-Id") Long idSolicitante,
-            @Valid @RequestBody EventoRequest request
-    ) {
-        return eventoService.crear(idSolicitante, request);
-    }
-
     @GetMapping("/{id}")
     public EventoResponse obtenerPorId(@PathVariable Long id) {
         return eventoService.obtenerPorId(id);
-    }
-
-    @PutMapping("/{id}")
-    public EventoResponse actualizar(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante,
-            @Valid @RequestBody EventoRequest request
-    ) {
-        return eventoService.actualizar(id, idSolicitante, request);
-    }
-
-    @PutMapping("/{id}/sectores")
-    public EventoResponse configurarSectores(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante,
-            @Valid @RequestBody ConfigurarSectoresRequest request
-    ) {
-        return eventoService.configurarSectores(id, idSolicitante, request);
     }
 
     @GetMapping("/{id}/sectores/{idSector}")
@@ -62,56 +35,6 @@ public class EventoController {
             @PathVariable Long idSector
     ) {
         return eventoService.obtenerPrecioSector(id, idSector);
-    }
-
-    @PostMapping("/{id}/publicacion")
-    public EventoResponse publicar(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante
-    ) {
-        return eventoService.publicar(id, idSolicitante);
-    }
-
-    @PostMapping("/{id}/suspension")
-    public EventoResponse suspender(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante
-    ) {
-        return eventoService.suspender(id, idSolicitante);
-    }
-
-    @PutMapping("/{id}/estado")
-    public EventoResponse cambiarEstado(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante,
-            @Valid @RequestBody CambioEstadoRequest request
-    ) {
-        return eventoService.cambiarEstadoAdministrativo(id, idSolicitante, request.estado().trim());
-    }
-
-    @PostMapping("/{id}/cancelacion")
-    public EventoResponse cancelar(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante
-    ) {
-        return eventoService.cancelar(id, idSolicitante);
-    }
-
-    @PostMapping("/{id}/cancelacion/reintentar")
-    public EventoResponse reintentarCoordinacionCancelacion(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante
-    ) {
-        return eventoService.reintentarCoordinacionCancelacion(id, idSolicitante);
-    }
-
-    @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminarFisicamente(
-            @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idSolicitante
-    ) {
-        eventoService.eliminarFisicamente(id, idSolicitante);
     }
 
     @GetMapping

@@ -20,7 +20,6 @@ public interface EntradaClient {
     @PostMapping("/eventos/{idEvento}/cancelacion")
     void cancelarEntradas(
             @PathVariable("idEvento") Long idEvento,
-            @RequestHeader("X-User-Id") Long idAdministrador,
-            @RequestHeader("X-User-Role") String rol
+            @RequestHeader("X-User-Id") Long idAdministrador
     );
 }

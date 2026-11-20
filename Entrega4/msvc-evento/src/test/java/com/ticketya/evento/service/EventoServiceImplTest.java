@@ -3,7 +3,6 @@ package com.ticketya.evento.service;
 import com.ticketya.evento.client.EntradaClient;
 import com.ticketya.evento.client.LugarClient;
 import com.ticketya.evento.client.SectorClient;
-import com.ticketya.evento.client.UsuarioClient;
 import com.ticketya.evento.dto.request.ConfigurarSectoresRequest;
 import com.ticketya.evento.dto.request.EventoRequest;
 import com.ticketya.evento.dto.request.EventoSectorRequest;
@@ -52,8 +51,6 @@ class EventoServiceImplTest {
     @Mock
     private ParticipanteRepository participanteRepository;
     @Mock
-    private UsuarioClient usuarioClient;
-    @Mock
     private LugarClient lugarClient;
     @Mock
     private SectorClient sectorClient;
@@ -68,7 +65,6 @@ class EventoServiceImplTest {
                 eventoRepository,
                 eventoSectorRepository,
                 participanteRepository,
-                usuarioClient,
                 lugarClient,
                 sectorClient,
                 entradaClient,
@@ -78,7 +74,6 @@ class EventoServiceImplTest {
 
     @Test
     void crearEventoValidoLoGuardaComoBorradorYAsociaOrganizador() {
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
         when(lugarClient.obtenerPorId(LUGAR_ID)).thenReturn(lugar(LUGAR_ID));
         when(eventoRepository.save(any(Evento.class))).thenAnswer(invocacion -> {
             Evento evento = invocacion.getArgument(0);
@@ -96,7 +91,6 @@ class EventoServiceImplTest {
 
     @Test
     void crearEventoReutilizaParticipanteExistentePorNombreYTipo() {
-        prepararUsuario(ORGANIZADOR_ID, "ROLE_ORGANIZADOR");
         when(lugarClient.obtenerPorId(LUGAR_ID)).thenReturn(lugar(LUGAR_ID));
         Participante participante = participante(5L, "Banda", "Grupo");
         when(participanteRepository.findByNombreIgnoreCaseAndTipoIgnoreCase("Banda", "Grupo"))
@@ -114,12 +108,10 @@ class EventoServiceImplTest {
     }
 
     @Test
-    void crearEventoRechazaUsuarioSinRolOrganizador() {
-        prepararUsuario(ORGANIZADOR_ID, "CLIENTE");
-
+    void crearEventoRechazaIdUsuarioInvalido() {
         assertThrows(
-                AccesoDenegadoException.class,
-                () -> service.crear(ORGANIZADOR_ID, solicitudEvento(List.of()))
+                IllegalArgumentException.class,
+                () -> service.crear(0L, solicitudEvento(List.of()))
         );
 
         verify(lugarClient, never()).obtenerPorId(any());
@@ -130,7 +122,6 @@ class EventoServiceImplTest {
     void actualizarEventoRechazaAOrganizadorQueNoEsPropietario() {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, 11L, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
 
         assertThrows(
                 AccesoDenegadoException.class,
@@ -144,7 +135,6 @@ class EventoServiceImplTest {
     void actualizarEventoRechazaCambiosCuandoNoEstaEnBorrador() {
         Evento evento = evento(1L, EstadosEvento.PUBLICADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
 
         assertThrows(
                 ReglaNegocioException.class,
@@ -160,7 +150,6 @@ class EventoServiceImplTest {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         evento.getSectores().add(new EventoSector(evento, 40L, new BigDecimal("100.00")));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
         when(lugarClient.obtenerPorId(31L)).thenReturn(lugar(31L));
         when(eventoRepository.save(evento)).thenReturn(evento);
         EventoRequest solicitud = new EventoRequest(
@@ -180,7 +169,6 @@ class EventoServiceImplTest {
     void configurarSectoresRechazaSectorDuplicado() {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
         when(sectorClient.obtenerPorId(40L)).thenReturn(new SectorResponse(40L, LUGAR_ID, "Platea", 100));
         ConfigurarSectoresRequest solicitud = new ConfigurarSectoresRequest(List.of(
                 sectorRequest(40L, "100.00"),
@@ -197,7 +185,6 @@ class EventoServiceImplTest {
     void configurarSectoresRechazaSectorDeOtroLugar() {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
         when(sectorClient.obtenerPorId(40L)).thenReturn(new SectorResponse(40L, 999L, "Platea", 100));
 
         assertThrows(
@@ -216,7 +203,6 @@ class EventoServiceImplTest {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         evento.getSectores().add(new EventoSector(evento, 40L, new BigDecimal("100.00")));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
         when(lugarClient.obtenerPorId(LUGAR_ID)).thenReturn(lugar(LUGAR_ID));
         when(sectorClient.obtenerPorId(40L)).thenReturn(new SectorResponse(40L, LUGAR_ID, "Platea", 100));
         when(eventoRepository.save(evento)).thenReturn(evento);
@@ -231,7 +217,6 @@ class EventoServiceImplTest {
     void publicarEventoSinSectoresLoRechaza() {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
         when(lugarClient.obtenerPorId(LUGAR_ID)).thenReturn(lugar(LUGAR_ID));
 
         assertThrows(ReglaNegocioException.class, () -> service.publicar(1L, ORGANIZADOR_ID));
@@ -240,10 +225,9 @@ class EventoServiceImplTest {
     }
 
     @Test
-    void suspenderEventoPublicadoRequiereAdministradorYActualizaEstado() {
+    void suspenderEventoPublicadoActualizaEstado() {
         Evento evento = evento(1L, EstadosEvento.PUBLICADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ADMINISTRADOR_ID, "ADMINISTRADOR");
         when(eventoRepository.save(evento)).thenReturn(evento);
 
         EventoResponse respuesta = service.suspender(1L, ADMINISTRADOR_ID);
@@ -256,7 +240,6 @@ class EventoServiceImplTest {
     void finalizarEventoFuturoLoRechaza() {
         Evento evento = evento(1L, EstadosEvento.PUBLICADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ADMINISTRADOR_ID, "ADMINISTRADOR");
 
         assertThrows(
                 ReglaNegocioException.class,
@@ -270,24 +253,22 @@ class EventoServiceImplTest {
     void cancelarEventoGuardaEstadoYCoordinaConEntrada() {
         Evento evento = evento(1L, EstadosEvento.PUBLICADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ADMINISTRADOR_ID, "ADMINISTRADOR");
         when(eventoRepository.saveAndFlush(evento)).thenReturn(evento);
 
         EventoResponse respuesta = service.cancelar(1L, ADMINISTRADOR_ID);
 
         assertEquals(EstadosEvento.CANCELADO, respuesta.estado());
         verify(eventoRepository).saveAndFlush(evento);
-        verify(entradaClient).cancelarEntradas(1L, ADMINISTRADOR_ID, "ADMINISTRADOR");
+        verify(entradaClient).cancelarEntradas(1L, ADMINISTRADOR_ID);
     }
 
     @Test
     void cancelarConFallaDeEntradaMantieneEventoCanceladoParaPermitirReintento() {
         Evento evento = evento(1L, EstadosEvento.PUBLICADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ADMINISTRADOR_ID, "ADMINISTRADOR");
         when(eventoRepository.saveAndFlush(evento)).thenReturn(evento);
         doThrow(FeignException.class)
-                .when(entradaClient).cancelarEntradas(1L, ADMINISTRADOR_ID, "ADMINISTRADOR");
+                .when(entradaClient).cancelarEntradas(1L, ADMINISTRADOR_ID);
 
         assertThrows(ServicioExternoException.class, () -> service.cancelar(1L, ADMINISTRADOR_ID));
 
@@ -299,21 +280,42 @@ class EventoServiceImplTest {
     void reintentarCoordinacionDeEventoCanceladoVuelveAInvocarEntrada() {
         Evento evento = evento(1L, EstadosEvento.CANCELADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ADMINISTRADOR_ID, "ADMINISTRADOR");
 
         EventoResponse respuesta = service.reintentarCoordinacionCancelacion(1L, ADMINISTRADOR_ID);
 
         assertEquals(EstadosEvento.CANCELADO, respuesta.estado());
-        verify(entradaClient).cancelarEntradas(1L, ADMINISTRADOR_ID, "ADMINISTRADOR");
+        verify(entradaClient).cancelarEntradas(1L, ADMINISTRADOR_ID);
     }
 
     @Test
     void eliminarEventoBorradorPropioEliminaRegistro() {
         Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
 
         service.eliminarFisicamente(1L, ORGANIZADOR_ID);
+
+        verify(eventoRepository).delete(evento);
+    }
+
+    @Test
+    void eliminarEventoDeOtroOrganizadorLoRechaza() {
+        Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
+        when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
+
+        assertThrows(
+                AccesoDenegadoException.class,
+                () -> service.eliminarFisicamente(1L, 11L)
+        );
+
+        verify(eventoRepository, never()).delete(any(Evento.class));
+    }
+
+    @Test
+    void eliminarFisicamenteAdministrativoPermiteBorrarBorradorDeOtroOrganizador() {
+        Evento evento = evento(1L, EstadosEvento.BORRADOR, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
+        when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
+
+        service.eliminarFisicamenteAdministrativo(1L, ADMINISTRADOR_ID);
 
         verify(eventoRepository).delete(evento);
     }
@@ -322,7 +324,6 @@ class EventoServiceImplTest {
     void eliminarEventoPublicadoLoRechaza() {
         Evento evento = evento(1L, EstadosEvento.PUBLICADO, ORGANIZADOR_ID, Instant.now().plusSeconds(3600));
         when(eventoRepository.findById(1L)).thenReturn(Optional.of(evento));
-        prepararUsuario(ORGANIZADOR_ID, "ORGANIZADOR");
 
         assertThrows(ReglaNegocioException.class, () -> service.eliminarFisicamente(1L, ORGANIZADOR_ID));
 
@@ -360,10 +361,6 @@ class EventoServiceImplTest {
         );
 
         verify(eventoRepository, never()).findAll();
-    }
-
-    private void prepararUsuario(Long id, String rol) {
-        when(usuarioClient.obtenerPorId(id)).thenReturn(new UsuarioResponse(id, List.of(rol)));
     }
 
     private EventoRequest solicitudEvento(List<ParticipanteRequest> participantes) {

@@ -3,12 +3,16 @@ package com.ticketya.evento.service.impl;
 import com.ticketya.evento.client.EntradaClient;
 import com.ticketya.evento.client.LugarClient;
 import com.ticketya.evento.client.SectorClient;
-import com.ticketya.evento.client.UsuarioClient;
 import com.ticketya.evento.dto.request.ConfigurarSectoresRequest;
 import com.ticketya.evento.dto.request.EventoRequest;
 import com.ticketya.evento.dto.request.EventoSectorRequest;
 import com.ticketya.evento.dto.request.ParticipanteRequest;
-import com.ticketya.evento.dto.response.*;
+import com.ticketya.evento.dto.response.EventoPaginaResponse;
+import com.ticketya.evento.dto.response.EventoResponse;
+import com.ticketya.evento.dto.response.EventoSectorResponse;
+import com.ticketya.evento.dto.response.LugarResponse;
+import com.ticketya.evento.dto.response.SectorResponse;
+import com.ticketya.evento.dto.response.VentasEventoResponse;
 import com.ticketya.evento.entity.EstadosEvento;
 import com.ticketya.evento.entity.Evento;
 import com.ticketya.evento.entity.EventoSector;
@@ -34,14 +38,11 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class EventoServiceImpl implements EventoService {
 
-    private static final String ROL_ORGANIZADOR = "ORGANIZADOR";
-    private static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
     private static final int TAMANO_MAXIMO_PAGINA = 100;
 
     private final EventoRepository eventoRepository;
     private final EventoSectorRepository eventoSectorRepository;
     private final ParticipanteRepository participanteRepository;
-    private final UsuarioClient usuarioClient;
     private final LugarClient lugarClient;
     private final SectorClient sectorClient;
     private final EntradaClient entradaClient;
@@ -51,7 +52,6 @@ public class EventoServiceImpl implements EventoService {
             EventoRepository eventoRepository,
             EventoSectorRepository eventoSectorRepository,
             ParticipanteRepository participanteRepository,
-            UsuarioClient usuarioClient,
             LugarClient lugarClient,
             SectorClient sectorClient,
             EntradaClient entradaClient,
@@ -60,7 +60,6 @@ public class EventoServiceImpl implements EventoService {
         this.eventoRepository = eventoRepository;
         this.eventoSectorRepository = eventoSectorRepository;
         this.participanteRepository = participanteRepository;
-        this.usuarioClient = usuarioClient;
         this.lugarClient = lugarClient;
         this.sectorClient = sectorClient;
         this.entradaClient = entradaClient;
@@ -70,7 +69,7 @@ public class EventoServiceImpl implements EventoService {
     @Override
     @Transactional
     public EventoResponse crear(Long idSolicitante, EventoRequest request) {
-        validarRol(idSolicitante, ROL_ORGANIZADOR);
+        validarIdUsuario(idSolicitante);
         validarLugar(request.idLugar());
 
         Evento evento = new Evento();
@@ -89,7 +88,7 @@ public class EventoServiceImpl implements EventoService {
     @Transactional
     public EventoResponse actualizar(Long id, Long idSolicitante, EventoRequest request) {
         Evento evento = buscarEvento(id);
-        validarOrganizadorPropietario(evento, idSolicitante);
+        validarPropietario(evento, idSolicitante);
         if (!EstadosEvento.BORRADOR.equals(evento.getEstado())) {
             throw new ReglaNegocioException("Solo se pueden editar eventos en estado BORRADOR");
         }
@@ -109,7 +108,7 @@ public class EventoServiceImpl implements EventoService {
             ConfigurarSectoresRequest request
     ) {
         Evento evento = buscarEvento(id);
-        validarOrganizadorPropietario(evento, idSolicitante);
+        validarPropietario(evento, idSolicitante);
         if (!EstadosEvento.BORRADOR.equals(evento.getEstado())) {
             throw new ReglaNegocioException("Solo se pueden configurar sectores en estado BORRADOR");
         }
@@ -152,7 +151,7 @@ public class EventoServiceImpl implements EventoService {
     @Transactional
     public EventoResponse publicar(Long id, Long idSolicitante) {
         Evento evento = buscarEvento(id);
-        validarOrganizadorPropietario(evento, idSolicitante);
+        validarPropietario(evento, idSolicitante);
         if (!EstadosEvento.BORRADOR.equals(evento.getEstado())
                 && !EstadosEvento.SUSPENDIDO.equals(evento.getEstado())) {
             throw new ReglaNegocioException("Solo se puede publicar un evento en BORRADOR o SUSPENDIDO");
@@ -176,7 +175,7 @@ public class EventoServiceImpl implements EventoService {
     @Override
     @Transactional
     public EventoResponse suspender(Long id, Long idSolicitante) {
-        validarRol(idSolicitante, ROL_ADMINISTRADOR);
+        validarIdUsuario(idSolicitante);
         Evento evento = buscarEvento(id);
         if (!EstadosEvento.PUBLICADO.equals(evento.getEstado())
                 && !EstadosEvento.AGOTADO.equals(evento.getEstado())) {
@@ -189,7 +188,7 @@ public class EventoServiceImpl implements EventoService {
     @Override
     @Transactional
     public EventoResponse cambiarEstadoAdministrativo(Long id, Long idSolicitante, String estado) {
-        validarRol(idSolicitante, ROL_ADMINISTRADOR);
+        validarIdUsuario(idSolicitante);
         Evento evento = buscarEvento(id);
         String estadoNormalizado = estado == null ? "" : estado.trim().toUpperCase(Locale.ROOT);
         if (EstadosEvento.AGOTADO.equals(estadoNormalizado)) {
@@ -215,7 +214,7 @@ public class EventoServiceImpl implements EventoService {
     @Override
     @Transactional(noRollbackFor = ServicioExternoException.class)
     public EventoResponse cancelar(Long id, Long idSolicitante) {
-        validarRol(idSolicitante, ROL_ADMINISTRADOR);
+        validarIdUsuario(idSolicitante);
         Evento evento = buscarEvento(id);
         if (EstadosEvento.CANCELADO.equals(evento.getEstado())
                 || EstadosEvento.FINALIZADO.equals(evento.getEstado())) {
@@ -225,7 +224,7 @@ public class EventoServiceImpl implements EventoService {
         evento.setEstado(EstadosEvento.CANCELADO);
         Evento guardado = eventoRepository.saveAndFlush(evento);
         try {
-            entradaClient.cancelarEntradas(id, idSolicitante, ROL_ADMINISTRADOR);
+            entradaClient.cancelarEntradas(id, idSolicitante);
         } catch (FeignException exception) {
             throw new ServicioExternoException(
                     "El evento quedó CANCELADO, pero Entrada no pudo procesar los reintegros; "
@@ -238,13 +237,13 @@ public class EventoServiceImpl implements EventoService {
 
     @Override
     public EventoResponse reintentarCoordinacionCancelacion(Long id, Long idSolicitante) {
-        validarRol(idSolicitante, ROL_ADMINISTRADOR);
+        validarIdUsuario(idSolicitante);
         Evento evento = buscarEvento(id);
         if (!EstadosEvento.CANCELADO.equals(evento.getEstado())) {
             throw new ReglaNegocioException("Solo se puede reintentar la coordinación de un evento CANCELADO");
         }
         try {
-            entradaClient.cancelarEntradas(id, idSolicitante, ROL_ADMINISTRADOR);
+            entradaClient.cancelarEntradas(id, idSolicitante);
         } catch (FeignException exception) {
             throw new ServicioExternoException(
                     "Entrada no pudo completar la coordinación de cancelación; se puede reintentar",
@@ -258,7 +257,19 @@ public class EventoServiceImpl implements EventoService {
     @Transactional
     public void eliminarFisicamente(Long id, Long idSolicitante) {
         Evento evento = buscarEvento(id);
-        validarPropietarioOAdministrador(evento, idSolicitante);
+        validarPropietario(evento, idSolicitante);
+        eliminarBorrador(evento);
+    }
+
+    @Override
+    @Transactional
+    public void eliminarFisicamenteAdministrativo(Long id, Long idSolicitante) {
+        validarIdUsuario(idSolicitante);
+        Evento evento = buscarEvento(id);
+        eliminarBorrador(evento);
+    }
+
+    private void eliminarBorrador(Evento evento) {
         if (!EstadosEvento.BORRADOR.equals(evento.getEstado())) {
             throw new ReglaNegocioException(
                     "Solo se pueden eliminar físicamente eventos en BORRADOR; los demás deben conservar su historial"
@@ -382,57 +393,16 @@ public class EventoServiceImpl implements EventoService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("No existe el evento con id " + id));
     }
 
-    private void validarOrganizadorPropietario(Evento evento, Long idSolicitante) {
-        validarRol(idSolicitante, ROL_ORGANIZADOR);
+    private void validarPropietario(Evento evento, Long idSolicitante) {
+        validarIdUsuario(idSolicitante);
         if (!evento.getIdOrganizador().equals(idSolicitante)) {
             throw new AccesoDenegadoException("Solo el organizador propietario puede modificar este evento");
         }
     }
 
-    private void validarPropietarioOAdministrador(Evento evento, Long idSolicitante) {
-        UsuarioResponse usuario = obtenerUsuario(idSolicitante);
-        if (!idSolicitante.equals(usuario.idUsuario())) {
-            throw new ServicioExternoException("Usuarios devolvió un identificador distinto al solicitado", null);
-        }
-        if (tieneRol(usuario, ROL_ADMINISTRADOR)) {
-            return;
-        }
-        if (!tieneRol(usuario, ROL_ORGANIZADOR) || !evento.getIdOrganizador().equals(idSolicitante)) {
-            throw new AccesoDenegadoException("Solo el organizador propietario o un administrador puede eliminar");
-        }
-    }
-
-    private void validarRol(Long idSolicitante, String rol) {
+    private void validarIdUsuario(Long idSolicitante) {
         if (idSolicitante == null || idSolicitante <= 0) {
             throw new IllegalArgumentException("X-User-Id debe identificar un usuario válido");
-        }
-        UsuarioResponse usuario = obtenerUsuario(idSolicitante);
-        if (!idSolicitante.equals(usuario.idUsuario())) {
-            throw new ServicioExternoException("Usuarios devolvió un identificador distinto al solicitado", null);
-        }
-        if (!tieneRol(usuario, rol)) {
-            throw new AccesoDenegadoException("El usuario no tiene el rol " + rol);
-        }
-    }
-
-    private boolean tieneRol(UsuarioResponse usuario, String rolRequerido) {
-        return usuario.roles() != null && usuario.roles().stream()
-                .anyMatch(rol -> rolRequerido.equalsIgnoreCase(
-                        rol != null && rol.startsWith("ROLE_") ? rol.substring(5) : rol
-                ));
-    }
-
-    private UsuarioResponse obtenerUsuario(Long id) {
-        try {
-            UsuarioResponse usuario = usuarioClient.obtenerPorId(id);
-            if (usuario == null) {
-                throw new ServicioExternoException("Usuarios devolvió una respuesta vacía", null);
-            }
-            return usuario;
-        } catch (FeignException.NotFound exception) {
-            throw new RecursoNoEncontradoException("No existe el usuario con id " + id);
-        } catch (FeignException exception) {
-            throw new ServicioExternoException("No se pudo validar el usuario en msvc-usuarios", exception);
         }
     }
 
