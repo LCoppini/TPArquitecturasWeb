@@ -1,6 +1,6 @@
 # ADR-0001: Seguridad JWT en el gateway con OAuth2 Resource Server y RS256
 
-- Estado: propuesta
+- Estado: aceptada
 - Fecha: 2026-11-19
 
 ## Contexto
@@ -93,8 +93,26 @@ fuera de este ADR y requiere su propio change.
   para que la matriz por path sea suficiente.
 - `/api/artistas/**` está en el gateway pero el controlador real es
   `/api/participantes`; debe alinearse.
-- El test existente `GatewayErrorHandlingTest` espera `X-User-Role`; dejará de
-  ser válido y debe reemplazarse, no "arreglarse para que pase".
+- El test existente `GatewayErrorHandlingTest` esperaba `X-User-Role`. Fue
+  **reemplazado** en un commit separado: el requisito cambió por decisión de
+  diseño (el header se elimina), así que la aserción estaba obsoleta. No se
+  modificó un test para ocultar un fallo. Se conservaron las aserciones de
+  manejo de errores 404/503 y del backend, y se agregaron las de identidad JWT.
+
+## Registro de reemplazo del test
+
+`msvc-gateway/src/test/java/com/ticketya/gateway/GatewayErrorHandlingTest.java`:
+
+- Se reemplazó la aserción `X-User-Role=CLIENTE` por verificaciones de que el
+  backend recibe `X-User-Id` desde el claim `idUsuario`, que **no** recibe
+  `X-User-Role` aunque el cliente lo envíe y que un `X-User-Id` del cliente es
+  sobrescrito por el del token.
+- Se agregaron casos para JWT sin `idUsuario` → 401 y sin token en ruta
+  protegida → 401, con el formato uniforme de errores.
+- Motivo: con ADR-0001 el gateway ya no propaga roles a los servicios; la
+  aserción anterior verificaba un contrato que dejó de existir.
+- Las aserciones de 404 uniforme, 503 por backend caído, 503 por Eureka sin
+  instancias y conservación del error del servicio destino se mantienen.
 
 ## Referencias
 

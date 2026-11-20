@@ -1,6 +1,7 @@
 /**
  * Filtros transversales:
- *  - Generacion/propagacion del header de correlacion (X-Trace-Id) hacia los microservicios (trazabilidad, E2).
- *  - Log de cada request: endpoint, usuario, codigo de respuesta y tiempo de procesamiento (E2).
+ *  - IdentityHeadersFilter: sobrescribe X-User-Id desde el JWT y elimina
+ *    X-User-Role (E2, ADR-0001).
+ *  - Generation/propagacion de X-Trace-Id y log de requests (E2, pendiente).
  */
 package com.ticketya.gateway.filter;

@@ -3,14 +3,15 @@ spring:
     name: msvc-gateway
   config:
     import: optional:configserver:http://localhost:8888
-  # E2 (EP-12): Resource Server JWT. Plantilla local; se activa junto con la config central.
-  # Descomentar cuando exista el emisor de tokens. Sin esas variables el gateway sigue
-  # funcionando como en E1 (identidad simulada por headers X-User-*).
+  # E2 (EP-12): Resource Server JWT RS256. El emisor es msvc-usuarios (ADR-0001).
+  # Descomentar cuando exista el JWKS o la clave publica. Sin estas variables el
+  # gateway no arranca: fail closed, sin volver a la identidad simulada de E1.
   # security:
   #   oauth2:
   #     resourceserver:
   #       jwt:
   #         jwk-set-uri: ${JWT_JWK_SET_URI}
+  #         # public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
   #         audiences: ${JWT_AUDIENCE}
   cloud:
     gateway:

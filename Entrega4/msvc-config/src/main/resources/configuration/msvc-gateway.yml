@@ -9,13 +9,16 @@ server:
 spring:
   application:
     name: msvc-gateway
-  # E2 (EP-12): Resource Server JWT. Descomentar cuando el grupo defina el emisor de tokens.
-  # La URL JWKS y la audiencia van por variables de entorno (nunca valores hardcoded ni .env).
+  # E2 (EP-12): Resource Server JWT RS256. El emisor es msvc-usuarios (ADR-0001).
+  # Descomentar cuando exista el JWKS o la clave publica. JWKS/audiencia por
+  # variables de entorno (nunca valores hardcoded ni .env). Sin estas variables
+  # el gateway no arranca: fail closed.
   # security:
   #   oauth2:
   #     resourceserver:
   #       jwt:
   #         jwk-set-uri: ${JWT_JWK_SET_URI}
+  #         # public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
   #         audiences: ${JWT_AUDIENCE}
   cloud:
     gateway:

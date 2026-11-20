@@ -1,6 +1,6 @@
 # ADR-0002: Estrategia de pruebas de integracion y carga en Entrega 2
 
-- Estado: propuesta
+- Estado: aceptada
 - Fecha: 2026-11-19
 
 ## Contexto
