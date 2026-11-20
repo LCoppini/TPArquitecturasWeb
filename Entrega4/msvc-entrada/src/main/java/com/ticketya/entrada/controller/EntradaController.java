@@ -6,6 +6,7 @@ import com.ticketya.entrada.service.CancelacionEventoService;
 import com.ticketya.entrada.service.EntradaService;
 import com.ticketya.entrada.service.PagoService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,12 +14,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -43,11 +43,9 @@ public class EntradaController {
     @PostMapping
     public EntradaResponse crear(
             @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol,
             @RequestHeader("Idempotency-Key") String clave,
             @Valid @RequestBody EntradaRequest entrada
     ) {
-        exigirRol(rol, "CLIENTE");
         entrada.setIdUsuario(idUsuario);
         entrada.setClaveIdempotencia(clave);
         return entradaService.crear(entrada);
@@ -62,21 +60,15 @@ public class EntradaController {
     }
 
     @GetMapping
-    public List<EntradaResponse> listar(
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
-    ) {
-        exigirRol(rol, "CLIENTE");
+    public List<EntradaResponse> listar(@RequestHeader("X-User-Id") Long idUsuario) {
         return entradaService.listarDeUsuario(idUsuario);
     }
 
     @GetMapping("/{id}")
     public EntradaResponse buscarPorId(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
+            @RequestHeader("X-User-Id") Long idUsuario
     ) {
-        exigirRol(rol, "CLIENTE");
         return entradaService.buscarPorIdDeUsuario(id, idUsuario);
     }
 
@@ -97,22 +89,18 @@ public class EntradaController {
     @PostMapping("/{id}/devolucion")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public void solicitarDevolucion(
-        @PathVariable Long id,
-        @RequestHeader("X-User-Id") Long idUsuario,
-        @RequestHeader("X-User-Role") String rol
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long idUsuario
     ) {
-        exigirRol(rol, "CLIENTE");
-    entradaService.solicitarDevolucion(id, idUsuario);
+        entradaService.solicitarDevolucion(id, idUsuario);
     }
 
     @PutMapping("/{id}/devolucion")
     public ResponseEntity<Void> resolverDevolucion(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol,
             @RequestBody EntradaRequest request
     ) {
-        exigirRol(rol, "ADMINISTRADOR");
         boolean aprobada = entradaService.resolverDevolucion(
                 id,
                 Boolean.TRUE.equals(request.getAprobarDevolucion())
@@ -126,10 +114,8 @@ public class EntradaController {
     @PostMapping("/{id}/devolucion/reintentar")
     public ResponseEntity<Void> reintentarDevolucion(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
+            @RequestHeader("X-User-Id") Long idUsuario
     ) {
-        exigirRol(rol, "ADMINISTRADOR");
         pagoService.reintegrarEntrada(id);
         return ResponseEntity.accepted().build();
     }
@@ -137,10 +123,8 @@ public class EntradaController {
     @PostMapping("/eventos/{idEvento}/cancelacion")
     public ResponseEntity<Void> cancelarEvento(
             @PathVariable Long idEvento,
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
+            @RequestHeader("X-User-Id") Long idUsuario
     ) {
-        exigirRol(rol, "ADMINISTRADOR");
         cancelacionEventoService.cancelarEvento(idEvento);
         return ResponseEntity.accepted().build();
     }
@@ -148,20 +132,8 @@ public class EntradaController {
     @PostMapping("/accesos/validar")
     public EntradaResponse validarQr(
             @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol,
             @Valid @RequestBody EntradaRequest request
     ) {
-        exigirRol(rol, "PERSONAL_ACCESO");
         return entradaService.validarQr(request.getCodigoQr(), request.getIdEvento());
-    }
-
-    private void exigirRol(String recibido, String requerido) {
-        String rol = recibido.startsWith("ROLE_") ? recibido.substring(5) : recibido;
-        if (!requerido.equalsIgnoreCase(rol)) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "Se requiere el rol " + requerido
-            );
-        }
     }
 }

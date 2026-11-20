@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -30,32 +30,24 @@ public class PagoController {
     @PostMapping
     public PagoResponse crear(
             @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol,
             @RequestHeader("Idempotency-Key") String clave,
             @Valid @RequestBody PagoRequest pago
     ) {
-        exigirRol(rol);
         pago.setIdUsuario(idUsuario);
         pago.setClaveIdempotencia(clave);
         return pagoService.crear(pago);
     }
 
     @GetMapping
-    public List<PagoResponse> listar(
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
-    ) {
-        exigirRol(rol);
+    public List<PagoResponse> listar(@RequestHeader("X-User-Id") Long idUsuario) {
         return pagoService.listarDeUsuario(idUsuario);
     }
 
     @GetMapping("/{id}")
     public PagoResponse buscarPorId(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
+            @RequestHeader("X-User-Id") Long idUsuario
     ) {
-        exigirRol(rol);
         return pagoService.buscarPorIdDeUsuario(id, idUsuario);
     }
 
@@ -71,15 +63,5 @@ public class PagoController {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         pagoService.eliminar(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private void exigirRol(String recibido) {
-        String rol = recibido.startsWith("ROLE_") ? recibido.substring(5) : recibido;
-        if (!"CLIENTE".equalsIgnoreCase(rol)) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN,
-                    "Se requiere el rol CLIENTE"
-            );
-        }
     }
 }

@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 
@@ -33,11 +33,7 @@ public class RegistroPagoController {
     }
 
     @GetMapping
-    public List<RegistroPagoResponse> listar(
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
-    ) {
-        exigirRolCliente(rol);
+    public List<RegistroPagoResponse> listar(@RequestHeader("X-User-Id") Long idUsuario) {
         return registroPagoService.listar(idUsuario);
     }
 
@@ -45,10 +41,8 @@ public class RegistroPagoController {
     public RegistroPagoResponse buscarPorId(
             @PathVariable Long idEntrada,
             @PathVariable Long idPago,
-            @RequestHeader("X-User-Id") Long idUsuario,
-            @RequestHeader("X-User-Role") String rol
+            @RequestHeader("X-User-Id") Long idUsuario
     ) {
-        exigirRolCliente(rol);
         return registroPagoService.buscarPorId(idEntrada, idPago, idUsuario);
     }
 
@@ -65,15 +59,5 @@ public class RegistroPagoController {
     public ResponseEntity<Void> eliminar(@PathVariable Long idEntrada, @PathVariable Long idPago) {
         registroPagoService.eliminar(idEntrada, idPago);
         return ResponseEntity.noContent().build();
-    }
-
-    private void exigirRolCliente(String recibido) {
-        String rol = recibido.startsWith("ROLE_") ? recibido.substring(5) : recibido;
-        if (!"CLIENTE".equalsIgnoreCase(rol)) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                    org.springframework.http.HttpStatus.FORBIDDEN,
-                    "Se requiere el rol CLIENTE"
-            );
-        }
     }
 }

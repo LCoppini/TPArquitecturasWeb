@@ -71,8 +71,9 @@
 
 ## Servicios de dominio
 
-- [ ] Quitar `X-User-Role` y los helpers `exigirRol` / `exigirRolCliente` de
-      `EntradaController`, `PagoController` y `RegistroPagoController`.
+- [x] Quitar `X-User-Role` y los helpers `exigirRol` / `exigirRolCliente` de
+      `EntradaController`, `PagoController` y `RegistroPagoController`. Los tres
+      controllers conservan solo `X-User-Id` (ADR-0001).
 - [x] Quitar el parámetro `rol` de `EntradaClient.cancelarEntradas(...)` y de la
       llamada en `EventoServiceImpl`.
 - [x] Quitar `validarRol` / `tieneRol` por Feign en `EventoServiceImpl`;
