@@ -21,12 +21,22 @@ validar el token Bearer con el algoritmo RS256 antes de reenviarla.
 - Entonces el gateway responde 401
 - Y no reenvía la solicitud al servicio destino
 
-#### Scenario: login publico
+#### Scenario: login y registro publicos
 
-- Dado que un cliente no autenticado llama `POST /api/usuarios/login`
+- Dado que un cliente no autenticado llama `POST /api/usuarios/login` o
+  `POST /api/usuarios/registro`
 - Cuando el gateway evalúa la cadena de seguridad
 - Entonces la solicitud se permite sin token y se enruta a `msvc-usuarios`
 - Y cualquier otra ruta bajo `/api/**` sigue exigiendo autenticación
+
+#### Scenario: consultas publicas
+
+- Dado que un cliente no autenticado llama `GET /api/eventos/**` o
+  `GET /api/artistas/**`
+- Cuando el gateway evalúa la cadena de seguridad
+- Entonces la solicitud se permite sin token
+- Y las operaciones de escritura sobre artistas exigen `ADMINISTRADOR` en
+  `/api/admin/artistas/**`
 
 ### Requirement: Claim idUsuario obligatorio [Entrega 2]
 
@@ -76,8 +86,10 @@ DEBE aplicar `requestMatchers(...).hasRole(...)` por ruta antes de enrutar.
 
 - Dado que existen rutas públicas configuradas en el gateway
 - Cuando se revisa la matriz de seguridad
-- Entonces cada ruta tiene una regla explícita o una declaración de autenticación
-  genérica, excepto el login público
+- Entonces `POST /api/usuarios/login`, `POST /api/usuarios/registro`,
+  `GET /api/eventos/**` y `GET /api/artistas/**` están declaradas como
+  `permitAll` antes de la matriz
+- Y el resto de las rutas tiene una regla explícita o autenticación genérica
 
 ### Requirement: Errores 401 y 403 uniformes [Entrega 2]
 
@@ -93,16 +105,24 @@ responder con la misma estructura JSON usada para 404 y 503.
 
 ### Requirement: Configuracion RS256 sin secretos versionados [Entrega 2]
 
-La configuración JWT del gateway DEBE leer JWKS o la clave pública y la
-audiencia desde variables de entorno, sin valores sensibles en el repositorio.
+La configuración JWT del gateway DEBE usar `public-key-location` con la clave
+pública y la audiencia desde variables de entorno, sin JWKS ni valores sensibles
+en el repositorio.
 
 #### Scenario: no hay secretos en el repositorio
 
 - Dado que se revisan los YAML del gateway y de configuración central
 - Cuando se busca la configuración de `resourceserver.jwt`
-- Entonces los valores se leen de `${JWT_JWK_SET_URI}` o
-  `${JWT_PUBLIC_KEY_LOCATION}` y de `${JWT_AUDIENCE}`
-- Y no aparece ninguna clave privada ni secreto literal
+- Entonces los valores se leen de `${JWT_PUBLIC_KEY_LOCATION}` y
+  `${JWT_AUDIENCE}`
+- Y no aparece `jwk-set-uri`, clave privada ni secreto literal
+
+#### Scenario: claves por entorno
+
+- Dado que `msvc-usuarios` firma el token con `JWT_PRIVATE_KEY`
+- Cuando se revisa `.env.example`
+- Entonces las variables JWT tienen valores de ejemplo y no claves reales
+- Y `.env` no está versionado
 
 #### Scenario: configuracion incompleta
 

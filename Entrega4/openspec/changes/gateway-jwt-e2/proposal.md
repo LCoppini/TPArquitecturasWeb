@@ -16,7 +16,7 @@ necesitan saber **quién** es el usuario.
 - El gateway pasa a ser un **OAuth2 Resource Server** con tokens **RS256**. El
   par de claves se genera en `msvc-usuarios`, que emite el JWT en
   `POST /api/usuarios/login` (endpoint público). El gateway solo valida con la
-  clave pública/JWKS correspondiente.
+  clave pública configurada por `public-key-location`.
 - El token incluye los claims `idUsuario` y `roles`. El gateway mapea `roles` a
   authorities con prefijo `ROLE_` y decide por ruta con
   `requestMatchers(...).hasRole(...)` en una `SecurityFilterChain` de Java.
@@ -77,9 +77,10 @@ entrada y autorización. El ruteo por Eureka y los paths públicos **no cambian*
 - Usar JJWT, HS256 ni secreto compartido versionado.
 - Mantener `X-User-Role` en ningún servicio ni llamada Feign.
 - Implementar el login en `msvc-usuarios` (requiere su propio change: email,
-  password BCrypt, emisión RS256 y JWKS).
-- Definir la separación final de paths por rol dentro de `msvc-entrada` y
-  `msvc-evento` (pendiente de decisión del grupo; ver `design.md`).
+  password BCrypt y emisión RS256 con clave privada por entorno).
+- Aplicar la separación final de paths por rol dentro de `msvc-entrada` y
+  `msvc-evento`; la decisión está aprobada y su implementación queda para el
+  change unificado de pasos 3 y 4.
 - Circuit breaker, caché, fila virtual, notificaciones, trazabilidad,
   dockerización y Swagger agregado en el gateway.
 - Escribir o ejecutar tests en este paso.
@@ -108,15 +109,25 @@ sin tildar. No se agregó código de producción ni de test en este paso.
 1. RS256 con par de claves; no HS256.
 2. Solo `X-User-Id` en los servicios; `X-User-Role` eliminado.
 3. Integración con docker-compose; pruebas de rol y prueba de carga con JMeter.
+4. Separación física de endpoints por rol dentro de `msvc-entrada` y
+   `msvc-evento` (ver lista en `design.md`).
+5. `GET /api/entradas/disponibilidad` se mueve a
+   `GET /api/eventos/{idEvento}/disponibilidad` y queda público dentro de
+   `GET /api/eventos/**`; solo devuelve cantidades y asientos libres.
+6. Se eliminan `PUT/DELETE /api/entradas/{id}`; se verificó que ningún servicio
+   los invoca y las bajas se cubren con devolución y cancelación de evento.
+7. Escaneo QR en `POST /api/accesos/escanear` con `PERSONAL_ACCESO`; el gateway
+   rutea `/api/accesos/**` a `msvc-entrada`.
+8. Clave pública por `public-key-location` / `JWT_PUBLIC_KEY_LOCATION`, sin JWKS.
+   Clave privada solo por `JWT_PRIVATE_KEY`, nunca versionada; se entrega
+   `.env.example`.
+9. Mantener `/api/artistas/**`: `GET` público y alta/edición en
+   `/api/admin/artistas/**` con `ADMINISTRADOR`. “Artista” designa a cualquier
+   participante de un evento y la entidad conserva `tipo` para distinguirlos.
+10. Login con `email` + password BCrypt en `POST /api/usuarios/login`. El registro
+    público crea solo `CLIENTE`; los demás roles se cargan por seed o por
+    `/api/admin/usuarios` protegido.
 
 ## Decisiones pendientes
 
-1. Publicar JWKS desde `msvc-usuarios` vs entregar la clave pública por archivo
-   montado (`public-key-location`).
-2. Separación física de endpoints por rol dentro de `msvc-entrada` y
-   `msvc-evento` (ver lista en `design.md`).
-3. Alinear `/api/artistas/**` con el controlador real `/api/participantes` y la
-   ruta de escaneo de QR (`/api/entradas/accesos/validar` en código vs
-   `/api/entradas/escanear` en el config).
-4. Definir el atributo de password de `Usuario` para el login (punto abierto del
-   config).
+Ninguna por ahora.

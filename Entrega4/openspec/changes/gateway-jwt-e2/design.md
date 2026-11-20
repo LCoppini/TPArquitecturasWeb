@@ -34,20 +34,18 @@ La cadena se construye con `HttpSecurity`, no con `ServerHttpSecurity`.
 
 ## Emisión y validación RS256
 
-- `msvc-usuarios` genera un par de claves RSA y firma el JWT con la privada.
-  La clave privada se entrega por variable de entorno o archivo montado, nunca
-  versionada.
-- El gateway valida con la clave pública. Dos alternativas:
-
-| Opción | Config en el gateway | Requisito en `msvc-usuarios` |
-|---|---|---|
-| A (recomendada) JWKS | `jwk-set-uri: ${JWT_JWK_SET_URI}` | publicar `/.well-known/jwks.json` (nueva dependencia `spring-security-oauth2-jose`, requiere ADR) |
-| B (más simple) clave pública | `public-key-location: ${JWT_PUBLIC_KEY_LOCATION}` | exponer la clave pública como archivo montado en el contenedor |
-
-En ambos casos se configura además `audiences: ${JWT_AUDIENCE}` y, si aplica,
-`issuer-uri` o `issuer`. La decisión A/B queda pendiente; la plantilla de los
-YAML debe reescribirse para RS256 (la actual aún dice `jwk-set-uri` pensada en
-un IdP externo).
+- `msvc-usuarios` genera el par RSA y firma el JWT con la clave privada.
+- La **clave privada se entrega solo por variable de entorno**
+  (`JWT_PRIVATE_KEY`, PEM con saltos de línea escapados), nunca como archivo del
+  repositorio ni como valor literal en YAML.
+- El gateway valida con la clave pública configurada con
+  `public-key-location: ${JWT_PUBLIC_KEY_LOCATION}` (archivo montado o
+  `classpath:`). **No se usa JWKS**: no se publica `/.well-known/jwks.json` y no
+  se agrega `spring-security-oauth2-jose`.
+- La audiencia se lee de `${JWT_AUDIENCE}` y el issuer de `${JWT_ISSUER}` cuando
+  el token lo incluya.
+- `.env.example` documenta las variables con valores de ejemplo; `.env` sigue
+  ignorado por Git y no se versiona.
 
 ## Configuración del gateway
 
@@ -57,11 +55,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Opción A (recomendada):
-          jwk-set-uri: ${JWT_JWK_SET_URI}
-          # Opción B, alternativa:
-          # public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
+          public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
           audiences: ${JWT_AUDIENCE}
+          # issuer: ${JWT_ISSUER}
 ```
 
 Sin esas variables el `JwtDecoder` no puede construirse y el gateway no arranca.
@@ -69,6 +65,10 @@ Es el comportamiento esperado en Entrega 2: **fail closed**, no un fallback a la
 identidad simulada de Entrega 1.
 
 ## `SecurityConfig.java` (esquema)
+
+Ubicación: `com.ticketya.gateway.config.SecurityConfig`, según el `package-info`
+de `gateway/config`. La matriz, el error writer y el filtro siguen en
+`gateway/security`.
 
 ```java
 @Configuration
@@ -100,8 +100,11 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authz -> {
-                // El login debe ser público y va ANTES de la regla de /api/usuarios/**.
+                // Público: login, registro y consultas de eventos/artistas.
                 authz.requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll();
+                authz.requestMatchers(HttpMethod.POST, "/api/usuarios/registro").permitAll();
+                authz.requestMatchers(HttpMethod.GET, "/api/eventos/**").permitAll();
+                authz.requestMatchers(HttpMethod.GET, "/api/artistas/**").permitAll();
                 roleMatrix.apply(authz);
                 authz.anyRequest().authenticated();
             })
@@ -210,24 +213,35 @@ Roles del seed de `msvc-usuarios`: `CLIENTE`, `ORGANIZADOR`, `ADMINISTRADOR`,
 
 | Path | Roles |
 |---|---|
-| `POST /api/usuarios/login` | público (permitAll) |
+| `POST /api/usuarios/login` | público (`permitAll`) |
+| `POST /api/usuarios/registro` | público (`permitAll`) |
 | `/api/usuarios/**`, `/api/roles/**` | `ADMINISTRADOR` |
+| `/api/admin/usuarios/**` | `ADMINISTRADOR` |
 | `/api/lugares/**`, `/api/sectores/**` | `ADMINISTRADOR`, `ORGANIZADOR` |
-| `/api/eventos/**` (consulta) | `ADMINISTRADOR`, `ORGANIZADOR`, `CLIENTE` |
+| `GET /api/eventos/**` (consulta, incluye disponibilidad) | público (`permitAll`) |
 | `/api/organizador/eventos/**` (propuesto) | `ORGANIZADOR` |
 | `/api/admin/eventos/**` (propuesto) | `ADMINISTRADOR` |
-| `/api/artistas/**` | `ADMINISTRADOR`, `ORGANIZADOR`, `CLIENTE` |
+| `GET /api/artistas/**` (consulta) | público (`permitAll`) |
+| `/api/admin/artistas/**` (alta y edición) | `ADMINISTRADOR` |
 | `/api/entradas/**` (propuesto: cliente) | `CLIENTE` |
 | `/api/admin/entradas/**` (propuesto) | `ADMINISTRADOR` |
 | `/api/accesos/**` (propuesto: QR) | `PERSONAL_ACCESO` |
 | `/api/pagos/**` | `CLIENTE` |
 | `/api/preferencias/**`, `/api/recomendaciones/**` | `ADMINISTRADOR`, `CLIENTE` |
 
-Los prefijos nuevos requieren una de dos opciones: (a) mapear ambos paths en el
-`@RequestMapping` del controller, o (b) agregar rutas en el gateway con
-`RewritePath` para quitar el prefijo antes de reenviar. Se prefiere (a) para no
-depender del soporte de filtros de reescritura del starter MVC; decisión
-pendiente.
+Las reglas públicas `POST /api/usuarios/login`, `POST /api/usuarios/registro`,
+`GET /api/eventos/**` y `GET /api/artistas/**` se evalúan **antes** de
+`GatewayRoleMatrix.apply(...)`. `GET /api/eventos/**` cubre también
+`GET /api/eventos/{idEvento}/disponibilidad`; la matriz no debe volver a exigir
+roles sobre esos prefijos.
+
+En la API, **“artista” designa a cualquier participante de un evento** (artista,
+equipo o disertante). La entidad `Participante` conserva el atributo `tipo`
+(texto libre) para distinguirlos. El path público se mantiene como
+`/api/artistas/**`; no se renombra a `/api/participantes`.
+
+Se adopta mapear los prefijos nuevos en el `@RequestMapping` del controller, sin
+depender de `RewritePath` en el gateway.
 
 ### ⚠️ Endpoints con comportamiento distinto por rol dentro del mismo servicio
 
@@ -236,22 +250,35 @@ pueden resolver con una sola regla por path** sin separarlos:
 
 **`msvc-entrada` — hoy todos bajo `/api/entradas/**`:**
 
-| Endpoint | Rol que lo exige hoy (`exigirRol`) |
-|---|---|
-| `POST /api/entradas` | CLIENTE |
-| `GET /api/entradas` | CLIENTE |
-| `GET /api/entradas/{id}` | CLIENTE |
-| `POST /api/entradas/{id}/devolucion` | CLIENTE |
-| `PUT /api/entradas/{id}/devolucion` | ADMINISTRADOR |
-| `POST /api/entradas/{id}/devolucion/reintentar` | ADMINISTRADOR |
-| `POST /api/entradas/eventos/{idEvento}/cancelacion` | ADMINISTRADOR |
-| `POST /api/entradas/accesos/validar` | PERSONAL_ACCESO |
-| `GET /api/entradas/disponibilidad`, `PUT/DELETE /api/entradas/{id}` | sin check de rol |
+| Endpoint | Rol que lo exige hoy (`exigirRol`) | Destino final |
+|---|---|---|
+| `POST /api/entradas` | CLIENTE | `/api/entradas/**` (CLIENTE) |
+| `GET /api/entradas` | CLIENTE | `/api/entradas/**` (CLIENTE) |
+| `GET /api/entradas/{id}` | CLIENTE | `/api/entradas/**` (CLIENTE) |
+| `POST /api/entradas/{id}/devolucion` | CLIENTE | `/api/entradas/**` (CLIENTE) |
+| `PUT /api/entradas/{id}/devolucion` | ADMINISTRADOR | `/api/admin/entradas/**` (ADMINISTRADOR) |
+| `POST /api/entradas/{id}/devolucion/reintentar` | ADMINISTRADOR | `/api/admin/entradas/**` (ADMINISTRADOR) |
+| `POST /api/entradas/eventos/{idEvento}/cancelacion` | ADMINISTRADOR | `/api/admin/entradas/**` (ADMINISTRADOR) |
+| `POST /api/entradas/accesos/validar` | PERSONAL_ACCESO | `POST /api/accesos/escanear` (PERSONAL_ACCESO) |
+| `GET /api/entradas/disponibilidad` | sin check | `GET /api/eventos/{idEvento}/disponibilidad` (público) |
+| `PUT /api/entradas/{id}`, `DELETE /api/entradas/{id}` | sin check | **eliminados** |
 
-Propuesta: `/api/entradas/**` para CLIENTE, `/api/admin/entradas/**` para
-ADMINISTRADOR y `/api/accesos/escanear` para PERSONAL_ACCESO. El config.yaml
-nombra `POST /api/entradas/escanear`, pero el código tiene
-`POST /api/entradas/accesos/validar`: hay que alinearlo.
+Decisiones cerradas:
+
+- `GET /api/eventos/{idEvento}/disponibilidad?idSector=...` expone solo
+  `idEvento`, `idSector`, `capacidad`, `ocupadas` y `disponibles`; no incluye
+  compradores ni datos personales. Verificado en
+  `EntradaService.disponibilidad`.
+- El contrato Feign interno de `msvc-evento` deja de usar
+  `GET /api/entradas/disponibilidad` y pasa a
+  `GET /internal/entradas/disponibilidad` en `msvc-entrada`; el gateway no
+  enruta `/internal/**`.
+- `PUT/DELETE /api/entradas/{id}` se eliminan: se verificó que ningún servicio
+  los invoca y las bajas ya están cubiertas por devolución y cancelación de
+  evento. Si apareciera una compensación, se movería a `/internal/**` sin ruta
+  en el gateway.
+- `POST /api/accesos/escanear` queda con `PERSONAL_ACCESO` y el gateway rutea
+  `/api/accesos/**` a `msvc-entrada`.
 
 **`msvc-evento` — valida roles por Feign a `UsuarioClient` (`validarRol`):**
 
@@ -265,11 +292,26 @@ nombra `POST /api/entradas/escanear`, pero el código tiene
 Propuesta: sacar `validarRol`/`tieneRol` de `EventoServiceImpl` (el gateway ya
 autorizó) y conservar solo la comparación `evento.getIdOrganizador()` contra el
 `X-User-Id` recibido. `EntradaClient.cancelarEntradas(...)` deja de enviar el
-parámetro `rol`.
+parámetro `rol`. El nuevo `GET /api/eventos/{idEvento}/disponibilidad` delega en
+`EntradaClient.consultarDisponibilidad(...)` y se sirve públicamente desde
+`msvc-evento`.
 
 **`msvc-entrada/pagos` y `registros-pago`:** todos los checks son CLIENTE, se
 resuelven con una sola regla `/api/pagos/**`. `registros-pago` no tiene ruta
 pública y sigue igual.
+
+## Usuarios, login y emisión de tokens
+
+- `POST /api/usuarios/login` es público y recibe `email` + `password`. El password
+  se almacena con BCrypt y, si las credenciales son válidas, `msvc-usuarios`
+  emite el JWT RS256 con los claims `idUsuario` y `roles`.
+- `POST /api/usuarios/registro` es público, pero **solo crea usuarios
+  `CLIENTE`**: el DTO no expone `rol` y el servicio fuerza ese rol. Un campo
+  `rol` enviado por el cliente no puede elevar privilegios.
+- `ADMINISTRADOR`, `ORGANIZADOR` y `PERSONAL_ACCESO` se cargan por seed o por
+  `POST /api/admin/usuarios`, protegido con `ADMINISTRADOR` en el gateway.
+- La clave privada de firma vive solo en `JWT_PRIVATE_KEY`; la pública se
+  entrega al gateway mediante `JWT_PUBLIC_KEY_LOCATION`.
 
 ## Cambios en los servicios de dominio
 
@@ -282,21 +324,37 @@ pública y sigue igual.
   verificación de pertenencia por `idUsuario`.
 - Mantener `@RequestHeader("X-User-Id") Long idUsuario` en los endpoints que
   hoy lo usan.
-- No se tocan DTOs, reglas de negocio ni paths de las APIs públicas salvo la
-  separación de endpoints por rol pendiente de decisión.
+- Alinear el controller de participantes con `/api/artistas` para consultas y con
+  `/api/admin/artistas` para alta y edición, conservando `tipo` para distinguir
+  artista, equipo o disertante. No renombrar el path a `/api/participantes`.
+- No se tocan DTOs, reglas de negocio ni paths de las APIs públicas salvo los
+  cambios aprobados: disponibilidad bajo `/api/eventos/**`, baja de
+  `PUT/DELETE /api/entradas/{id}`, escaneo bajo `/api/accesos/**`,
+  consulta de artistas bajo `/api/artistas/**` y administración bajo
+  `/api/admin/artistas/**` y `/api/admin/usuarios/**`.
 
 ## Diferencias con el proyecto de referencia
 
-| Referencia | TicketYa |
-|---|---|
-| JJWT + `SECRET` hardcodeado | OAuth2 Resource Server + RS256 por entorno |
-| Base MySQL `auth` en el gateway | Sin base; identidad en `msvc-usuarios` |
-| `/api/authenticate` en el gateway | `POST /api/usuarios/login` en `msvc-usuarios` |
-| `X-User-Role` propagado | `X-User-Role` eliminado |
-| Roles `ADMIN/PROFESOR/ALUMNO` | roles del seed de TicketYa, con prefijo `ROLE_` |
-| `498` para expirado | 401 con `GatewayErrorResponse` |
-| `SecurityWebFilterChain` (si fuera reactivo) | `SecurityFilterChain` (MVC) |
-| `spring-cloud-starter-gateway-mvc` | `spring-cloud-starter-gateway-server-webmvc` |
+La diferencia principal **no es el tipo de cadena**: ambos usan
+`SecurityFilterChain` con `HttpSecurity`, `securityMatcher("/api/**")`, CSRF
+deshabilitado, `STATELESS` y `requestMatchers(...)`. La diferencia es la
+**responsabilidad**: en el proyecto de referencia el gateway **emite y valida**
+el token; en TicketYa el gateway **solo valida** un token emitido por
+`msvc-usuarios`.
+
+| Referencia | TicketYa | Motivo |
+|---|---|---|
+| `/api/authenticate` + `TokenProvider.createToken(...)` | `POST /api/usuarios/login` en `msvc-usuarios` | No se crea `msvc-auth`; la entidad `Usuario` ya vive ahí |
+| JJWT + `SECRET` hardcodeado, HS256 | OAuth2 Resource Server + RS256 con claves por entorno | Prohíbe secretos versionados; separa firma y verificación |
+| `JwtFilter` artesanal + `TokenProvider.validateToken(...)` | `oauth2ResourceServer().jwt()` con el `JwtDecoder` estándar | Se usa el starter oficial en vez de parseo manual |
+| `PasswordEncoder` bean en el gateway | BCrypt en `msvc-usuarios` | El gateway no autentica credenciales ni tiene base de usuarios |
+| `httpBasic(Customizer.withDefaults())` | Solo `Authorization: Bearer <token>` | No hay `UserDetailsService` en el gateway |
+| `hasAuthority(AuthotityConstant._ALUMNO)` | `hasRole(...)` usando `GatewayRoleMatrix` | El claim `roles` se mapea a authorities `ROLE_*` |
+| `principal = claims.getSubject()` | `setPrincipalClaimName("idUsuario")` | El token de TicketYa no trae `sub` |
+| Sin control anti-spoofing explícito | `IdentityHeadersFilter` fija `X-User-Id` y elimina `X-User-Role` | El cliente no puede suplantar la identidad |
+| `498` para token expirado | 401/403 con `GatewayErrorResponse` | Contrato uniforme de errores del gateway |
+| `@EnableMethodSecurity` | Matriz centralizada por path | La autorización vive solo en el gateway |
+| `spring-cloud-starter-gateway-mvc` | `spring-cloud-starter-gateway-server-webmvc` | El gateway de TicketYa es MVC/servlet |
 
 ## Pruebas previstas (documentadas, no implementadas en este paso)
 
@@ -313,11 +371,12 @@ pública y sigue igual.
 
 ## Riesgos y pendientes
 
-- Dependencia del login y la emisión en `msvc-usuarios`, que hoy no tiene password
-  (punto abierto del config).
+- La emisión RS256, el password BCrypt y el alta de roles privilegiados todavía
+  deben implementarse en `msvc-usuarios`; la decisión está aprobada y se ejecuta
+  en su change.
 - La regla "acceso solo por gateway" requiere red/bind, no solo código.
 - `openspec/changes/gateway-entrega1` no está archivado todavía; cuando se
   archive, la spec `gateway-ruteo` debe quedar reemplazada por esta.
-- El test existente `GatewayErrorHandlingTest` asume propagación de
-  `X-User-Role`; con este cambio dejará de ser válido. No se modifica en este
-  paso (AGENTS.md: no modificar tests para que pasen).
+- `GatewayErrorHandlingTest` fue reemplazado en un commit separado porque el
+  requisito cambió por ADR-0001: ya no asume `X-User-Role` y pasó a verificar
+  identidad desde el claim `idUsuario` y anti-spoofing.

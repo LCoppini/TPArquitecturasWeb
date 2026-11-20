@@ -1,5 +1,7 @@
-package com.ticketya.gateway.security;
+package com.ticketya.gateway.config;
 
+import com.ticketya.gateway.security.GatewayRoleMatrix;
+import com.ticketya.gateway.security.GatewaySecurityErrorWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

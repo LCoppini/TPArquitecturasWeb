@@ -2,6 +2,7 @@
 
 - Estado: aceptada
 - Fecha: 2026-11-19
+- Actualizado: 2026-11-20
 
 ## Contexto
 
@@ -34,11 +35,12 @@ Adoptar **OAuth2 Resource Server con RS256** en `msvc-gateway`.
 - Usar `spring-boot-starter-security` y
   `spring-boot-starter-oauth2-resource-server`. No usar JJWT.
 - El par de claves RSA se genera en `msvc-usuarios`, que firma el JWT con la
-  privada. La privada se entrega por entorno o archivo montado, nunca versionada.
-- El gateway valida con la clave pública, configurada por
-  `${JWT_JWK_SET_URI}` (JWKS publicado por `msvc-usuarios`, opción recomendada)
-  o `${JWT_PUBLIC_KEY_LOCATION}` (archivo montado). La audiencia va en
+  privada. La privada se entrega solo por `JWT_PRIVATE_KEY`, nunca versionada.
+- El gateway valida con la clave pública configurada por
+  `${JWT_PUBLIC_KEY_LOCATION}` mediante `public-key-location`. No se usa JWKS y
+  no se agrega `spring-security-oauth2-jose`. La audiencia va en
   `${JWT_AUDIENCE}`.
+- `.env.example` documenta las variables; `.env` no se versiona.
 - `JwtAuthenticationConverter` mapea el claim `roles` a authorities con prefijo
   `ROLE_` y toma el principal del claim `idUsuario` (`setPrincipalClaimName`).
   **No se usa `sub`.**
@@ -52,8 +54,9 @@ Adoptar **OAuth2 Resource Server con RS256** en `msvc-gateway`.
 - Los servicios de dominio dejan de usar `X-User-Role` y de validar roles por
   Feign; conservan solo la comparación de pertenencia por `X-User-Id`.
 
-La emisión del token en `msvc-usuarios` (email, password BCrypt, JWKS) queda
-fuera de este ADR y requiere su propio change.
+La emisión del token en `msvc-usuarios` usa email y password BCrypt, y queda para
+su propio change. El registro público crea solo `CLIENTE`; los otros roles se
+cargan por seed o por `/api/admin/usuarios` protegido.
 
 ## Alternativas consideradas
 
@@ -69,30 +72,63 @@ fuera de este ADR y requiere su propio change.
    cliente podría spoofearlo y contradice "autorización solo en gateway".
 6. **Autorización declarativa en YAML.** Descartada: el `config.yaml` pide
    `requestMatchers(...).hasAuthority(...)` en Java.
+7. **JWKS publicado por `msvc-usuarios`.** Descartado: agrega una dependencia y
+   un endpoint público; se prefiere la clave pública por configuración.
+
+## Diferencia principal con el proyecto de referencia
+
+El proyecto de referencia analizado (`micro_integrador3/gateway`) también usa
+`SecurityFilterChain` con `HttpSecurity`, `securityMatcher("/api/**")`, CSRF
+deshabilitado y `STATELESS`. Por lo tanto **la cadena no es distinta por ser
+reactiva ni por el tipo de filtro**. La diferencia real es de
+**responsabilidad**:
+
+- En la referencia, el gateway **emite y valida**: tiene `/api/authenticate`,
+  `TokenProvider` con JJWT, `SECRET` hardcodeado, `PasswordEncoder`, `JwtFilter`
+  y `@EnableMethodSecurity`.
+- En TicketYa, el gateway **solo valida**: usa
+  `oauth2ResourceServer().jwt()` con RS256, no genera tokens, no tiene
+  `PasswordEncoder`, no habilita `httpBasic` y delega la emisión a
+  `msvc-usuarios`.
+
+Consecuencias directas de esa decisión:
+
+| Referencia | TicketYa |
+|---|---|
+| `TokenProvider.createToken(...)` | Emisión en `msvc-usuarios` |
+| `SECRET` HS256 en el código | `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY_LOCATION` por entorno |
+| `JwtFilter` + `getSubject()` | Filtro estándar de Spring + claim `idUsuario` |
+| `hasAuthority(...)` | `hasRole(...)` con `GatewayRoleMatrix` |
+| `498` para expirado | 401/403 con `GatewayErrorResponse` |
+
+El detalle completo de la comparación está en `design.md` del change
+`gateway-jwt-e2`.
 
 ## Consecuencias
 
 ### Mejoras
 
-- Validación centralizada y estándar, con RS256 y rotación por JWKS.
+- Validación centralizada y estándar, con RS256 y clave pública por
+  configuración.
 - La identidad que reciben los servicios no puede ser suplantada por el cliente.
 - Un único lugar donde se decide el rol por ruta.
 - Errores 401/403 consistentes con el contrato existente del gateway.
 
 ### Costos y riesgos
 
-- `msvc-usuarios` debe incorporar emisión RS256, password y JWKS; es trabajo
+- `msvc-usuarios` debe incorporar emisión RS256 y password BCrypt; es trabajo
   pendiente con su propio change.
-- Si se elige JWKS, hace falta una dependencia nueva en `msvc-usuarios`
-  (`spring-security-oauth2-jose`), que debe registrarse aquí antes de usarse.
+- No se requiere `spring-security-oauth2-jose` porque no se publica JWKS.
 - Las llamadas Feign entre servicios no llevan JWT: quedan fuera del control.
   Es una limitación conocida y documentada.
 - "Acceso solo por gateway" requiere una decisión de red o de bind en el
   despliegue; el código de Spring Security no bloquea puertos directos.
 - Hay que separar endpoints por rol dentro de `msvc-entrada` y `msvc-evento`
   para que la matriz por path sea suficiente.
-- `/api/artistas/**` está en el gateway pero el controlador real es
-  `/api/participantes`; debe alinearse.
+- Se mantiene `/api/artistas/**`: `GET` público y alta/edición en
+  `/api/admin/artistas/**` con `ADMINISTRADOR`. “Artista” designa a cualquier
+  participante (artista, equipo o disertante) y la entidad conserva `tipo`.
+  El controller actual usa `/api/participantes` y debe alinearse.
 - El test existente `GatewayErrorHandlingTest` esperaba `X-User-Role`. Fue
   **reemplazado** en un commit separado: el requisito cambió por decisión de
   diseño (el header se elimina), así que la aserción estaba obsoleta. No se
