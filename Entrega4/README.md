@@ -8,7 +8,7 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 |---|---|---|---|
 | msvc-config | 8888 | - | Configuracion centralizada (`msvc-config/src/main/resources/configuration/`) |
 | msvc-eureka | 8761 | - | Service discovery |
-| msvc-gateway | 8080 | - | Punto de entrada unico, ruteo, (E2) JWT y trazabilidad |
+| msvc-gateway | 8080 | - | Punto de entrada unico, ruteo, (E2) JWT RS256 y autorizacion por rol |
 | msvc-usuarios | 8081 | ticketya_usuarios | Usuarios y roles |
 | msvc-ubicacion | 8082 | ticketya_ubicacion | Lugares y sectores |
 | msvc-evento | 8083 | ticketya_evento | Eventos, artistas, precios por sector, busqueda |
@@ -30,13 +30,33 @@ usuarios; `/api/lugares` y `/api/sectores` a ubicación; `/api/eventos` y
 `/api/artistas` a evento; y `/api/entradas` y `/api/pagos` a entrada. `/api/preferencias` y `/api/recomendaciones` van a preferencias (E2); notificaciones es de uso interno y no tiene ruta pública.
 
 Las operaciones de devolución están incluidas en `/api/entradas/**`; no hay una
-ruta pública para `/api/registros-pago`. En la Entrega 1, `X-User-Id` y
-`X-User-Role` se propagan como headers, pero no constituyen autenticación.
-Rutas inexistentes responden 404 y destinos no disponibles 503 con el formato
-JSON uniforme del gateway. Los errores de negocio devueltos por un servicio se
-mantienen sin modificaciones.
+ruta pública para `/api/registros-pago`. En la Entrega 2 el gateway es un
+**OAuth2 Resource Server RS256**: valida el JWT, autoriza por rol según
+`GatewayRoleMatrix` y deriva `X-User-Id` del claim `idUsuario`. `X-User-Role` no
+se propaga. Rutas inexistentes responden 404 y destinos no disponibles 503 con
+el formato JSON uniforme del gateway; los rechazos 401/403 usan el mismo
+contrato. Los errores de negocio devueltos por un servicio se mantienen sin
+modificaciones.
 
 Los clientes consultan `msvc-config` durante el arranque. Sus imports son opcionales para tolerar indisponibilidad temporal, y cada `application.yml` local conserva valores de respaldo para poder iniciar sin el servidor. La configuración central se sirve desde los YAML empaquetados en `msvc-config/src/main/resources/configuration/`.
+
+### Seguridad del gateway (Entrega 2)
+
+- Los clientes envían `Authorization: Bearer <token>` en cada llamada a
+  `http://localhost:8080/api/**`. Son públicos `POST /api/usuarios/login`,
+  `POST /api/usuarios/registro`, `GET /api/eventos/**` y `GET /api/artistas/**`.
+- Variables obligatorias: `JWT_PUBLIC_KEY_LOCATION`, `JWT_AUDIENCE` y
+  `JWT_ISSUER` (ver `.env.example`). Sin ellas el gateway **no arranca**
+  (fail-closed): nunca vuelve a la identidad simulada de Entrega 1.
+- Autorización por path: `/api/entradas/**` y `/api/pagos/**` para `CLIENTE`;
+  `/api/admin/**` para `ADMINISTRADOR`; `/api/organizador/eventos/**` para
+  `ORGANIZADOR`; `/api/accesos/**` para `PERSONAL_ACCESO`; `/internal/**` queda
+  denegado. `/actuator/**` y `/error` están fuera de la cadena de seguridad.
+- El token lo emite `msvc-usuarios` en `POST /api/usuarios/login` (ADR-0001 y
+  ADR-0003); el gateway solo valida.
+- Los rechazos 401/403 usan `{status, error, message, path}`.
+- Verificación: `mvn -pl msvc-gateway test` (40 tests, 0 fallos).
+  `GatewayRoleMatrixTest` falla si se agrega una ruta al YAML sin regla de rol.
 
 ## Arquitectura de cada servicio: capas
 

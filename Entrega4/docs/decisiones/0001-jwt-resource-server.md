@@ -152,6 +152,21 @@ El detalle completo de la comparación está en `design.md` del change
 - Las aserciones de 404 uniforme, 503 por backend caído, 503 por Eureka sin
   instancias y conservación del error del servicio destino se mantienen.
 
+## Cobertura de seguridad agregada (2026-11-20)
+
+- `GatewayRoleMatrixTest`: 403 por rol insuficiente, endpoints públicos y fallo
+  automático si aparece una ruta en los YAML sin regla explícita en
+  `GatewayRoleMatrix`.
+- `GatewaySecurityBoundaryTest`: `/actuator/health` responde 200 y `/error` no
+  devuelve 401/403, mientras `/api/**` sigue exigiendo token.
+- `GatewayFailClosedTest`: sin `JWT_PUBLIC_KEY_LOCATION`, `JWT_AUDIENCE` ni
+  `JWT_ISSUER` el contexto no arranca. Usa `MockEnvironment` para no depender de
+  las variables del proceso que ejecuta Maven.
+- Smoke test punta a punta (PostgreSQL real y par RS256 temporal fuera del
+  repo): login → gateway → backend con `X-User-Id` del claim, spoofing
+  neutralizado, sin `X-User-Role` y 401 sin token.
+- Total en `msvc-gateway`: 40 tests, 0 fallos.
+
 ## Referencias
 
 - `openspec/changes/gateway-jwt-e2/`
