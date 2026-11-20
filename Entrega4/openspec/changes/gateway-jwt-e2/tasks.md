@@ -127,6 +127,13 @@
       Confirmado que el `HttpServletRequestWrapper` llega al `RestClient` MVC:
       backend recibe `X-User-Id=42` del token, el valor del cliente es pisado y
       `X-User-Role` no se propaga. No hacen falta filtros nativos.
+- [x] **Smoke test punta a punta anterior al refactor**: PostgreSQL real en
+      Docker, `msvc-usuarios` con par RS256 temporal fuera del repo y gateway
+      validador. `POST /api/usuarios/registro` → `POST /api/usuarios/login` →
+      backend stub vía gateway: `X-User-Id=2` coincide con el `idUsuario` del
+      token, `X-User-Id=99` del cliente es pisado, `X-User-Role=ADMINISTRADOR`
+      del cliente no llega al backend y la ruta protegida sin token responde
+      401. Par de claves generado solo en `%TEMP%`, sin secretos versionados.
 
 ## Documentacion y cierre
 
