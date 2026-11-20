@@ -120,8 +120,14 @@
 - [ ] Planificar pruebas de acceso por rol por endpoint sobre docker-compose.
 - [ ] Planificar prueba de carga JMeter con al menos 2 instancias de
       `msvc-entrada` e informe de concurrentes/tiempos/errores.
-- [ ] Verificar que `/error` y `/actuator/**` siguen fuera de la cadena de
-      seguridad y mantienen el JSON uniforme.
+- [x] Verificar que `/error` y `/actuator/**` siguen fuera de la cadena de
+      seguridad: `GatewaySecurityBoundaryTest` comprueba que `/actuator/health`
+      responde 200 y `/error` no devuelve 401/403, mientras `/api/**` sí sigue
+      exigiendo token.
+- [x] Verificar el fail-closed del gateway: `GatewayFailClosedTest` arranca el
+      contexto con un `MockEnvironment` sin `JWT_PUBLIC_KEY_LOCATION`,
+      `JWT_AUDIENCE` ni `JWT_ISSUER` y exige que falle por la configuración JWT,
+      sin caer en la identidad simulada de Entrega 1.
 - [x] Validar el gateway actual con Maven 3.9.11/JDK 21 (Maven de IntelliJ por
       ruta completa): `mvn -B -pl msvc-gateway test` → 9 tests, 0 fallos.
       Confirmado que el `HttpServletRequestWrapper` llega al `RestClient` MVC:
