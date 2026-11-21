@@ -11,7 +11,7 @@ context: |
   msvc-usuarios (ej. POST /api/usuarios/login), ya que ahí está la entidad Usuario con sus
   roles. El token incluye como claims idUsuario y roles. La validación del JWT y la
   autorización por rol se hacen únicamente en msvc-gateway, mediante una SecurityFilterChain
-  de Spring Security en Java (requestMatchers(...).hasAuthority(...) por ruta), no con config
+  de Spring Security en Java (requestMatchers(...).hasRole(...) por ruta), no con config
   YAML declarativa separada. Los microservicios de dominio no validan el token por sí mismos,
   y el gateway es el único punto de entrada para clientes externos. El gateway reemplaza el
   header X-User-Id por el idUsuario del token y descarta el que envíe el cliente; los

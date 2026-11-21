@@ -30,9 +30,10 @@ necesitan saber **quién** es el usuario.
 - La autorización por rol se traslada por completo al gateway. Los servicios
   conservan únicamente las reglas de **pertenencia** (comparar el `X-User-Id`
   recibido contra el dueño del recurso).
-- Las pruebas de integración se planifican con **docker-compose**, no con
-  Testcontainers. Se agregan pruebas de acceso por rol y una prueba de carga con
-  JMeter y su informe de resultados. En este paso **no se escribe ningún test**.
+- Las pruebas de la cadena de seguridad se implementan con `MockMvc` y un
+  `JwtDecoder` de test: **40 tests vigentes**. Las pruebas E2E con docker-compose
+  y la prueba de carga con JMeter se trasladan al change `verificacion-e2e-carga`
+  (EP-21) y quedan fuera de este alcance.
 
 ## Capacidades
 
@@ -68,7 +69,7 @@ entrada y autorización. El ruteo por Eureka y los paths públicos **no cambian*
 - Ajustes en los controllers de `msvc-entrada`, `msvc-evento` y en el
   `EntradaClient` de `msvc-evento` para quitar `X-User-Role`.
 - ADRs `0001-jwt-resource-server.md` y `0002-estrategia-pruebas-e2.md`.
-- Estructura de pruebas documentada (sin código de test en este paso).
+- Tests de la cadena de seguridad del gateway (40 vigentes).
 
 ## Fuera del alcance
 
@@ -76,14 +77,22 @@ entrada y autorización. El ruteo por Eureka y los paths públicos **no cambian*
 - Agregar base de datos, JPA o entidades de usuario al gateway.
 - Usar JJWT, HS256 ni secreto compartido versionado.
 - Mantener `X-User-Role` en ningún servicio ni llamada Feign.
-- Implementar el login en `msvc-usuarios` (requiere su propio change: email,
-  password BCrypt y emisión RS256 con clave privada por entorno).
-- Aplicar la separación final de paths por rol dentro de `msvc-entrada` y
-  `msvc-evento`; la decisión está aprobada y su implementación queda para el
-  change unificado de pasos 3 y 4.
-- Circuit breaker, caché, fila virtual, notificaciones, trazabilidad,
-  dockerización y Swagger agregado en el gateway.
-- Escribir o ejecutar tests en este paso.
+- Circuit breaker, caché, fila virtual, notificaciones, trazabilidad
+  (correlationId y log de requests), dockerización, docker-compose, JMeter y
+  Swagger propio del gateway. La trazabilidad del gateway se propone en el
+  change `trazabilidad-gateway`; la dockerización y JMeter en
+  `verificacion-e2e-carga` (EP-21).
+- Modificar tests existentes sin documentar el motivo. Los reemplazos
+  necesarios se hicieron en commits separados y están explicados en `tasks.md`.
+
+## Traslado de tareas a EP-21
+
+Las tareas «pruebas de acceso por rol por endpoint sobre docker-compose» y
+«prueba de carga JMeter con al menos 2 instancias de `msvc-entrada` e informe»
+se trasladan al change `verificacion-e2e-carga` (EP-21). Por eso el total de
+tareas de este change pasa de **60 a 58**: el progreso se mide sobre el nuevo
+denominador. No se descarta trabajo; cambia de change y de épica, y se declara
+acá para que el número no se interprete como «se quitaron tareas para cerrar».
 
 ## Impacto
 
@@ -101,14 +110,17 @@ siguen leyendo `X-User-Id`, pero ahora es un valor derivado del token.
 
 ## Estado
 
-Estructura propuesta para revisión del grupo. Las tareas de implementación están
-sin tildar. No se agregó código de producción ni de test en este paso.
+Enmienda para cierre: se declara EP-21 fuera de alcance, se migran sus dos
+tareas al change `verificacion-e2e-carga` y se documenta la cobertura real de
+tests. Las tareas de implementación del gateway y de alineación de rutas se
+cierran según `tasks.md`; este change se archiva cuando estén todas tildadas.
 
 ## Decisiones ya tomadas por el grupo
 
 1. RS256 con par de claves; no HS256.
 2. Solo `X-User-Id` en los servicios; `X-User-Role` eliminado.
 3. Integración con docker-compose; pruebas de rol y prueba de carga con JMeter.
+   Se trasladan a `verificacion-e2e-carga` (EP-21), fuera de este change.
 4. Separación física de endpoints por rol dentro de `msvc-entrada` y
    `msvc-evento` (ver lista en `design.md`).
 5. `GET /api/entradas/disponibilidad` se mueve a

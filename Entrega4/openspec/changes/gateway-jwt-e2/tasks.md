@@ -1,5 +1,11 @@
 # Tareas
 
+## Alcance de este cierre
+
+Este change queda con **58 tareas**: las dos verificaciones sobre docker-compose
+y JMeter se trasladan a `verificacion-e2e-carga` (EP-21) y se declaran en la
+propuesta. El denominador del progreso pasa de 60 a 58.
+
 ## Revision previa
 
 - [x] Revisar propuesta, diseño y matriz de roles con el grupo.
@@ -127,13 +133,14 @@
       dejó de depender de `routes[0]`/`routes[7]` porque ADR-0001 antepone los
       prefijos por rol. Ahora busca cada ruta por `id` y verifica su `uri`,
       incluida `admin-usuarios-route`. Commit separado, sin relajar aserciones.
-- [ ] Planificar pruebas de login/registro: BCrypt, `CLIENTE` forzado en registro
-      y roles privilegiados solo por seed o `/api/admin/usuarios`.
+- [ ] Verificar que los tests existentes de `msvc-usuarios` cubren login con
+      BCrypt, `CLIENTE` forzado en registro y roles privilegiados por seed o
+      `/api/admin/usuarios`; documentar la cobertura.
 - [ ] Planificar verificación de path único de artistas en gateway, controllers,
       Feign y tests.
-- [ ] Planificar pruebas de acceso por rol por endpoint sobre docker-compose.
-- [ ] Planificar prueba de carga JMeter con al menos 2 instancias de
-      `msvc-entrada` e informe de concurrentes/tiempos/errores.
+> Trasladadas a `verificacion-e2e-carga` (EP-21): pruebas de acceso por rol sobre
+> docker-compose y prueba de carga JMeter con al menos 2 instancias de
+> `msvc-entrada`. No cuentan en el progreso de este change.
 - [x] Verificar que `/error` y `/actuator/**` siguen fuera de la cadena de
       seguridad: `GatewaySecurityBoundaryTest` comprueba que `/actuator/health`
       responde 200 y `/error` no devuelve 401/403, mientras `/api/**` sí sigue
@@ -143,7 +150,7 @@
       `JWT_AUDIENCE` ni `JWT_ISSUER` y exige que falle por la configuración JWT,
       sin caer en la identidad simulada de Entrega 1.
 - [x] Validar el gateway actual con Maven 3.9.11/JDK 21 (Maven de IntelliJ por
-      ruta completa): `mvn -B -pl msvc-gateway test` → 9 tests, 0 fallos.
+      ruta completa): `mvn -B -pl msvc-gateway test` → 40 tests, 0 fallos.
       Confirmado que el `HttpServletRequestWrapper` llega al `RestClient` MVC:
       backend recibe `X-User-Id=42` del token, el valor del cliente es pisado y
       `X-User-Role` no se propaga. No hacen falta filtros nativos.
@@ -164,8 +171,8 @@
 - [x] ADR-0003: contrato del token (RS256, `iss`/`aud`/`iat`/`exp`,
       `idUsuario`, `roles`, 900 s, nombre de claim idéntico en usuarios y
       gateway) y generación de claves PKCS#8 por entorno.
-- [ ] Actualizar README con `Authorization: Bearer <token>` y el supuesto de
+- [x] Actualizar README con `Authorization: Bearer <token>` y el supuesto de
       acceso solo por gateway.
-- [ ] Verificar que no haya secretos ni `.env` versionados; `.env.example` solo
+- [x] Verificar que no haya secretos ni `.env` versionados; `.env.example` solo
       con placeholders.
 - [ ] No archivar el change hasta que los servicios de dominio estén alineados.
