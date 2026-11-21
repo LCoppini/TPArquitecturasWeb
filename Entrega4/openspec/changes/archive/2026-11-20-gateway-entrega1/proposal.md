@@ -56,3 +56,10 @@ APIs de dominio.
 
 Los errores uniformes normalizan la respuesta del gateway, pero no deben
 reemplazar ni ocultar errores de negocio enviados por un servicio destino.
+
+## Estado
+
+Archivado el 2026-11-20 como antecedente histórico. El ruteo y el formato de
+errores siguen vigentes en `openspec/specs/gateway-ruteo/spec.md`; la
+propagación no autenticada de `X-User-Id`/`X-User-Role` fue reemplazada por
+`gateway-jwt-e2` (ver `gateway-seguridad` e `identidad-servicios`).

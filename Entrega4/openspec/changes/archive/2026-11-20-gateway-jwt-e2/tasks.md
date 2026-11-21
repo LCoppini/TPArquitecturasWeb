@@ -6,6 +6,10 @@ Este change queda con **58 tareas**: las dos verificaciones sobre docker-compose
 y JMeter se trasladan a `verificacion-e2e-carga` (EP-21) y se declaran en la
 propuesta. El denominador del progreso pasa de 60 a 58.
 
+**Estado final: 58/58 tareas.** Cierre verificado el 2026-11-20 con
+`mvn -B package` y las pruebas por módulo; las specs vivas quedan en
+`openspec/specs/`.
+
 ## Revision previa
 
 - [x] Revisar propuesta, diseño y matriz de roles con el grupo.
@@ -32,8 +36,8 @@ propuesta. El denominador del progreso pasa de 60 a 58.
       `/api/admin/artistas/**` con `ADMINISTRADOR`. “Artista” designa a cualquier
       participante (artista, equipo o disertante) y la entidad conserva `tipo`.
       Verificado: gateway y YAML usan `/api/artistas/**`; no hay Feign clients ni
-      tests HTTP de ese recurso; el controller usa `/api/participantes` y debe
-      alinearse en la implementación.
+      tests HTTP de ese recurso; el controller usaba `/api/participantes` y quedó
+      alineado en la implementación.
 - [x] Login con `email` + password BCrypt en `POST /api/usuarios/login`; registro
       público solo `CLIENTE` y roles privilegiados por seed o
       `/api/admin/usuarios` protegido.
@@ -87,9 +91,11 @@ propuesta. El denominador del progreso pasa de 60 a 58.
 - [x] Aplicar la separación física de endpoints por rol aprobada:
       `msvc-evento` con `OrganizadorEventoController` y `AdminEventoController`,
       y `msvc-entrada` con `AdminEntradaController` y `AccesoController`.
-- [ ] Alinear el controller de participantes con `/api/artistas` (GET) y
+- [x] Alinear el controller de participantes con `/api/artistas` (GET) y
       `/api/admin/artistas` (alta/edición); verificado que no hay Feign clients
-      ni tests HTTP que usen `/api/participantes`.
+      ni tests HTTP que usen `/api/participantes`. `ParticipanteController` y
+      `AdminParticipanteController` cubren los dos prefijos; la documentación de
+      Evento y los `package-info` quedaron alineados.
 - [x] Implementar `POST /api/usuarios/login` con email + BCrypt y emisión RS256;
       `POST /api/usuarios/registro` público solo `CLIENTE`; roles privilegiados
       por seed o `/api/admin/usuarios` (ADR-0001). El refactor de usuarios
@@ -97,18 +103,21 @@ propuesta. El denominador del progreso pasa de 60 a 58.
       service con validación de roles y password hasheado, y tests nuevos.
       No se modificaron tests existentes; el registro público sigue sin
       aceptar roles.
-- [ ] Exponer `GET /api/eventos/{idEvento}/disponibilidad` en `msvc-evento` y
+- [x] Exponer `GET /api/eventos/{idEvento}/disponibilidad` en `msvc-evento` y
       delegar en `EntradaClient.consultarDisponibilidad`; mover el contrato
       interno de Entrada a `/internal/entradas/disponibilidad`, sin ruta en el
-      gateway.
+      gateway. El `path` del `@FeignClient` se dejó en `/` para no romper las
+      rutas de ventas y cancelación.
 - [x] Eliminar `PUT/DELETE /api/entradas/{id}` y los métodos `actualizar` y
       `eliminar` de `EntradaService`, que solo lanzaban `IllegalStateException`.
 - [x] Renombrar el escaneo a `POST /api/accesos/escanear` y quitar
       `POST /api/entradas/accesos/validar`.
-- [ ] Agregar el esquema `bearerAuth` a la documentación OpenAPI de los
-      servicios de dominio.
-- [ ] Actualizar los `package-info` de los servicios que describen propagación
-      de `X-User-*`.
+- [x] Agregar el esquema `bearerAuth` a la documentación OpenAPI de los
+      servicios de dominio. Se declaró HTTP Bearer JWT en los seis módulos que ya
+      tenían springdoc, sin agregar dependencias ni ADR nuevo.
+- [x] Actualizar los `package-info` de los servicios que describen propagación
+      de `X-User-*`. No había descripciones de la propagación simulada de E1; se
+      reforzó la de gateway/evento y se agregó la de controllers de Entrada.
 
 ## Pruebas
 
@@ -133,11 +142,13 @@ propuesta. El denominador del progreso pasa de 60 a 58.
       dejó de depender de `routes[0]`/`routes[7]` porque ADR-0001 antepone los
       prefijos por rol. Ahora busca cada ruta por `id` y verifica su `uri`,
       incluida `admin-usuarios-route`. Commit separado, sin relajar aserciones.
-- [ ] Verificar que los tests existentes de `msvc-usuarios` cubren login con
+- [x] Verificar que los tests existentes de `msvc-usuarios` cubren login con
       BCrypt, `CLIENTE` forzado en registro y roles privilegiados por seed o
-      `/api/admin/usuarios`; documentar la cobertura.
-- [ ] Planificar verificación de path único de artistas en gateway, controllers,
-      Feign y tests.
+      `/api/admin/usuarios`; documentar la cobertura en
+      `docs/verificacion-seguridad-rutas.md`.
+- [x] Planificar verificación de path único de artistas en gateway, controllers,
+      Feign y tests. La matriz y los comandos de verificación quedaron en
+      `docs/verificacion-seguridad-rutas.md`.
 > Trasladadas a `verificacion-e2e-carga` (EP-21): pruebas de acceso por rol sobre
 > docker-compose y prueba de carga JMeter con al menos 2 instancias de
 > `msvc-entrada`. No cuentan en el progreso de este change.
@@ -175,4 +186,6 @@ propuesta. El denominador del progreso pasa de 60 a 58.
       acceso solo por gateway.
 - [x] Verificar que no haya secretos ni `.env` versionados; `.env.example` solo
       con placeholders.
-- [ ] No archivar el change hasta que los servicios de dominio estén alineados.
+- [x] No archivar el change hasta que los servicios de dominio estén alineados.
+      Alineación verificada: se publican las specs vivas y se archiva el change
+      con fecha 2026-11-20.

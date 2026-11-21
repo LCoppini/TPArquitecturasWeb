@@ -1,5 +1,9 @@
 # Requisitos: ruteo del gateway
 
+> Documento histórico de Entrega 1. La propagación de `X-User-Id` y
+> `X-User-Role` sin autenticar quedó superseded por `gateway-jwt-e2`; la versión
+> vigente está en `openspec/specs/gateway-ruteo/spec.md`.
+
 ## ADDED Requirements
 
 ### Requirement: Enrutamiento de APIs públicas [Entrega 1]

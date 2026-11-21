@@ -44,7 +44,7 @@ necesitan saber **quién** es el usuario.
 
 ## Cambio respecto a la spec archivada de Entrega 1
 
-La capability `gateway-ruteo` (`openspec/changes/gateway-entrega1/specs/gateway-ruteo/spec.md`)
+La capability `gateway-ruteo` (`openspec/changes/archive/2026-11-20-gateway-entrega1/specs/gateway-ruteo/spec.md`)
 decía que el gateway propagaba `X-User-Id` y `X-User-Role` **sin autenticar**.
 Eso cambia:
 
@@ -110,10 +110,12 @@ siguen leyendo `X-User-Id`, pero ahora es un valor derivado del token.
 
 ## Estado
 
-Enmienda para cierre: se declara EP-21 fuera de alcance, se migran sus dos
-tareas al change `verificacion-e2e-carga` y se documenta la cobertura real de
-tests. Las tareas de implementación del gateway y de alineación de rutas se
-cierran según `tasks.md`; este change se archiva cuando estén todas tildadas.
+Archivado el 2026-11-20 con 58/58 tareas. Se declara EP-21 fuera de alcance, se
+migran sus dos tareas al change `verificacion-e2e-carga` y se documenta la
+cobertura real de tests en `docs/verificacion-seguridad-rutas.md`. Las specs
+vivas quedan en `openspec/specs/gateway-seguridad`,
+`openspec/specs/identidad-servicios` y `openspec/specs/gateway-ruteo`; esta
+última reemplaza la propagación simulada de Entrega 1.
 
 ## Decisiones ya tomadas por el grupo
 

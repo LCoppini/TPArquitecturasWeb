@@ -155,26 +155,7 @@ seguridad Bearer JWT.
 - Cuando se consulta la sección de seguridad
 - Entonces aparece un esquema `bearerAuth` de tipo HTTP Bearer JWT
 
-### Requirement: Verificacion de acceso por rol y carga [Entrega 2]
-
-La estrategia de pruebas DEBE verificar el acceso por rol de cada endpoint y
-DEBE incluir una prueba de carga del flujo de compra con un informe de
-resultados.
-
-#### Scenario: matrices de acceso sobre el entorno real
-
-- Dado que el sistema está levantado con `docker-compose`
-- Cuando se ejecutan las pruebas de acceso con distintos tokens
-- Entonces cada endpoint solo responde para los roles autorizados
-- Y los demás reciben 401 o 403 según corresponda
-
-#### Scenario: informe de carga
-
-- Dado que `msvc-entrada` se ejecuta con al menos 2 instancias
-- Cuando se ejecuta la prueba de carga del flujo de compra con JMeter
-- Entonces se genera un informe con usuarios concurrentes, tiempos de respuesta
-  y errores
-- Y se verifica que no se vendió dos veces la misma entrada
-
-> Nota: este change solo documenta la estrategia. No se escriben ni ejecutan
-> tests en este paso.
+> La verificación de acceso por rol sobre `docker-compose` y la prueba de carga
+> con JMeter se trasladan al change `verificacion-e2e-carga` (EP-21). No forman
+> parte de los requisitos de este change; aquí solo se conserva la matriz
+> automatizada con `MockMvc` descrita en `GatewayRoleMatrixTest`.

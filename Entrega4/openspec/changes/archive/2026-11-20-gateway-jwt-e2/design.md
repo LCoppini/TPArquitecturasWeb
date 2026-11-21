@@ -380,12 +380,12 @@ el token; en TicketYa el gateway **solo valida** un token emitido por
 
 ## Riesgos y pendientes
 
-- La emisión RS256, el password BCrypt y el alta de roles privilegiados todavía
-  deben implementarse en `msvc-usuarios`; la decisión está aprobada y se ejecuta
-  en su change.
+- La emisión RS256, el password BCrypt y el alta de roles privilegiados se
+  implementaron en `msvc-usuarios` y quedaron documentados en
+  `docs/verificacion-seguridad-rutas.md`.
 - La regla "acceso solo por gateway" requiere red/bind, no solo código.
-- `openspec/changes/gateway-entrega1` no está archivado todavía; cuando se
-  archive, la spec `gateway-ruteo` debe quedar reemplazada por esta.
+- `gateway-entrega1` quedó archivado como `2026-11-20-gateway-entrega1`; la spec
+  `gateway-ruteo` vigente está en `openspec/specs/gateway-ruteo/spec.md`.
 - `GatewayErrorHandlingTest` fue reemplazado en un commit separado porque el
   requisito cambió por ADR-0001: ya no asume `X-User-Role` y pasó a verificar
   identidad desde el claim `idUsuario` y anti-spoofing.
