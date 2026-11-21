@@ -18,6 +18,8 @@ spring:
         jwt:
           public-key-location: ${JWT_PUBLIC_KEY_LOCATION}
           audiences: ${JWT_AUDIENCE}
+          # `issuer-uri` dispararia discovery OIDC; la validacion de `iss` se
+          # configura explicitamente en JwtDecoderValidatorPostProcessor.
           issuer: ${JWT_ISSUER}
   cloud:
     gateway:
