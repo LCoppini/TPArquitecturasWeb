@@ -181,5 +181,5 @@ openssl rsa -in jwt_private.pem -pubout -out jwt_public.pem
 
 - `docs/decisiones/0001-jwt-resource-server.md`
 - `openspec/config.yaml`, sección "Seguridad (Entrega 2)"
-- `openspec/changes/gateway-jwt-e2/design.md`
+- `openspec/changes/archive/2026-11-20-gateway-jwt-e2/design.md`
 - `.env.example`

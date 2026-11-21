@@ -73,5 +73,6 @@ este ADR solo registra la decisión de estrategia.
 ## Referencias
 
 - `openspec/config.yaml`, sección "Pruebas"
-- `openspec/changes/gateway-jwt-e2/specs/gateway-seguridad/spec.md`
+- `openspec/specs/gateway-seguridad/spec.md`
+- `openspec/changes/archive/2026-11-20-gateway-jwt-e2/specs/gateway-seguridad/spec.md`
 - `docker-compose.yml`

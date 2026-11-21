@@ -118,19 +118,20 @@ El detalle completo de la comparación está en `design.md` del change
 
 ### Costos y riesgos
 
-- `msvc-usuarios` debe incorporar emisión RS256 y password BCrypt; es trabajo
-  pendiente con su propio change.
+- `msvc-usuarios` incorporó emisión RS256 y password BCrypt; la cobertura se
+  detalla en `docs/verificacion-seguridad-rutas.md`.
 - No se requiere `spring-security-oauth2-jose` porque no se publica JWKS.
 - Las llamadas Feign entre servicios no llevan JWT: quedan fuera del control.
   Es una limitación conocida y documentada.
 - "Acceso solo por gateway" requiere una decisión de red o de bind en el
   despliegue; el código de Spring Security no bloquea puertos directos.
-- Hay que separar endpoints por rol dentro de `msvc-entrada` y `msvc-evento`
+- Se separaron los endpoints por rol dentro de `msvc-entrada` y `msvc-evento`
   para que la matriz por path sea suficiente.
 - Se mantiene `/api/artistas/**`: `GET` público y alta/edición en
   `/api/admin/artistas/**` con `ADMINISTRADOR`. “Artista” designa a cualquier
   participante (artista, equipo o disertante) y la entidad conserva `tipo`.
-  El controller actual usa `/api/participantes` y debe alinearse.
+  El controller quedó alineado a `/api/artistas` y `/api/admin/artistas`, sin
+  `/api/participantes`.
 - El test existente `GatewayErrorHandlingTest` esperaba `X-User-Role`. Fue
   **reemplazado** en un commit separado: el requisito cambió por decisión de
   diseño (el header se elimina), así que la aserción estaba obsoleta. No se
@@ -169,7 +170,8 @@ El detalle completo de la comparación está en `design.md` del change
 
 ## Referencias
 
-- `openspec/changes/gateway-jwt-e2/`
-- `openspec/changes/gateway-entrega1/specs/gateway-ruteo/spec.md`
+- `openspec/changes/archive/2026-11-20-gateway-jwt-e2/`
+- `openspec/changes/archive/2026-11-20-gateway-entrega1/specs/gateway-ruteo/spec.md`
+- `openspec/specs/gateway-ruteo/spec.md`
 - `openspec/config.yaml`, sección "Seguridad (Entrega 2)"
 

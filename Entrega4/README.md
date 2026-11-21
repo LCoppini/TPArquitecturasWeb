@@ -69,6 +69,8 @@ Los clientes consultan `msvc-config` durante el arranque. Sus imports son opcion
 - Los rechazos 401/403 usan `{status, error, message, path}`.
 - Verificación: `mvn -pl msvc-gateway test` (40 tests, 0 fallos).
   `GatewayRoleMatrixTest` falla si se agrega una ruta al YAML sin regla de rol.
+- Cobertura de login/registro y verificación del path único de artistas:
+  `docs/verificacion-seguridad-rutas.md`.
 
 ## Arquitectura de cada servicio: capas
 

@@ -42,7 +42,7 @@ Todos los estados se representan como `String` en la entidad y en las reglas de 
 - **Precio de búsqueda:** cuando se pide ordenar por precio, el precio representativo del evento es el menor precio configurado en sus `EventoSector`; el ordenamiento es ascendente o descendente según el criterio. No se hacen llamadas a Ubicación para conocer precios.
 - **Relevancia:** se ordena por la cantidad de entradas vendidas, descendente, y se usa fecha ascendente como desempate. Evento no estima las ventas a partir de disponibilidad, porque esta también puede incluir reservas temporales.
 - **Búsqueda por defecto:** sin filtros devuelve eventos publicados futuros, del más próximo al más lejano. Con filtros, todos se combinan como AND. La paginación se aplica después del filtrado remoto y del ordenamiento.
-- **Participantes:** al crear/editar se puede referenciar un participante existente por `id`, o enviar `nombre` y `tipo` para reutilizarlo si existe o crearlo si es nuevo. `tipo` acepta cualquier texto no vacío de hasta 80 caracteres. `GET /api/participantes` y `GET /api/participantes/{id}` permiten consultarlos.
+- **Participantes:** al crear/editar se puede referenciar un participante existente por `id`, o enviar `nombre` y `tipo` para reutilizarlo si existe o crearlo si es nuevo. `tipo` acepta cualquier texto no vacío de hasta 80 caracteres. `GET /api/artistas` y `GET /api/artistas/{id}` permiten consultarlos; el alta y la edición están en `/api/admin/artistas`.
 
 ## API pública de Evento
 
@@ -62,8 +62,10 @@ Todas las rutas usan el prefijo `/api`.
 | `PUT /eventos/{id}/estado` | Establecer `AGOTADO` o `FINALIZADO`, respetando transiciones | Administrador |
 | `DELETE /eventos/{id}` | Borrar físicamente un borrador | Organizador dueño o administrador |
 | `GET /eventos` | Buscar, ordenar y paginar | Sin autenticación |
-| `GET /participantes` | Listar participantes | Sin autenticación |
-| `GET /participantes/{id}` | Obtener participante | Sin autenticación |
+| `GET /artistas` | Listar artistas/participantes | Sin autenticación |
+| `GET /artistas/{id}` | Obtener artista/participante | Sin autenticación |
+| `POST /admin/artistas` | Crear artista/participante | Administrador |
+| `PUT /admin/artistas/{id}` | Editar artista/participante | Administrador |
 
 Parámetros de búsqueda opcionales: `tipo`, `idOrganizador`, `participante` (ID o parte del nombre), `ciudad`, `desde`, `hasta`, `orden`, `pagina` y `tamano`. Los órdenes admitidos son `fecha`, `precioAsc`/`precioDesc` y `relevancia`. Fechas en ISO-8601 UTC, por ejemplo `2030-01-01T00:00:00Z`.
 
