@@ -18,7 +18,7 @@ context: |
   servicios reciben el usuario solo por ese header. Las llamadas interservicio (Feign) no
   llevan JWT de usuario y quedan fuera de este control; se documenta como limitación
   conocida. El rol PERSONAL_ACCESO protege la ruta de escaneo de QR
-  (POST /api/entradas/escanear) en msvc-entrada. Reglas de pertenencia más finas (ej. un
+  (POST /api/accesos/escanear) en msvc-entrada. Reglas de pertenencia más finas (ej. un
   organizador solo puede ver reportes de sus propios eventos) no las resuelve el gateway;
   las valida el microservicio de dominio comparando el idUsuario recibido (por X-User-Id)
   contra el dueño del recurso. La documentación OpenAPI declara el esquema de seguridad

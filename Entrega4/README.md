@@ -27,10 +27,22 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 Las llamadas externas se realizan por `http://localhost:8080`. El gateway
 resuelve los servicios con Eureka y enruta `/api/usuarios` y `/api/roles` a
 usuarios; `/api/lugares` y `/api/sectores` a ubicación; `/api/eventos` y
-`/api/artistas` a evento; y `/api/entradas` y `/api/pagos` a entrada. `/api/preferencias` y `/api/recomendaciones` van a preferencias (E2); notificaciones es de uso interno y no tiene ruta pública.
+`/api/artistas` a evento; y `/api/entradas`, `/api/pagos` y `/api/accesos` a
+entrada. `/api/preferencias` y `/api/recomendaciones` van a preferencias (E2);
+notificaciones es de uso interno y no tiene ruta pública.
 
 Las operaciones de devolución están incluidas en `/api/entradas/**`; no hay una
-ruta pública para `/api/registros-pago`. En la Entrega 2 el gateway es un
+ruta pública para `/api/registros-pago`. El control de acceso usa
+`POST /api/accesos/escanear` con `{"idEvento": 10, "codigoQr": "abc"}` y el
+`X-User-Id` del JWT; responde 200 con la entrada en estado `USADA`, o un `code`
+estable: `QR_REQUEST_INVALIDO`, `QR_NO_EXISTE`, `QR_EVENTO_DISTINTO`,
+`QR_DEVUELTO`, `QR_EVENTO_CANCELADO`, `QR_VENCIDO` o `QR_YA_USADO`. La fecha y el
+personal que aprobó el ingreso quedan en `ingresada_en` e
+`id_personal_acceso`; dentro de `EN_REINTEGRO`, `motivo_invalidacion` distingue
+`DEVOLUCION` de `CANCELACION`. La `UNIQUE` de `codigo_qr` no es una migración:
+si hay datos previos, ver el script en
+`openspec/changes/archive/2026-11-20-control-acceso-qr/design.md`.
+En la Entrega 2 el gateway es un
 **OAuth2 Resource Server RS256**: valida el JWT, autoriza por rol según
 `GatewayRoleMatrix` y deriva `X-User-Id` del claim `idUsuario`. `X-User-Role` no
 se propaga. Rutas inexistentes responden 404 y destinos no disponibles 503 con
