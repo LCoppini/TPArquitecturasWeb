@@ -60,5 +60,10 @@ externos.
 
 ## Estado
 
-Propuesta para revisión del grupo. No se modificó código de producción ni de
-test; solo se crean artefactos OpenSpec.
+Archivado el 2026-11-20 con 14/14 tareas. El test con decoder real detectó un
+defecto en la validación de `iss`, corregido en commit `2677cc7` y documentado
+en `design.md`. Los 40 tests existentes no se modificaron; la suite nueva
+agrega 11 escenarios (gateway: 51/51 = 40 existentes + 11 nuevos) y el build
+completo de los 10 módulos pasa. La spec viva queda en `openspec/specs/jwt-verificacion-gateway` y
+complementa `openspec/specs/gateway-seguridad`. EP-21 y la Fase 2
+(`trazabilidad-gateway`) siguen fuera de alcance.

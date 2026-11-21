@@ -61,6 +61,21 @@ Resource Server y matriz de roles.
   `roles` para respetar ADR-0003. Si falta alguno, el test lo declara
   explícitamente en el nombre del caso.
 
+## Defecto encontrado y corregido
+
+El primer escenario de `iss` distinto pasó con 200: `JwtVerificacionRealTest`
+detectó que la property `spring.security.oauth2.resourceserver.jwt.issuer` no
+está enlazada por Spring Boot al validador de `iss`. Cambiarla por `issuer-uri`
+no era válido porque dispara discovery OIDC, que este proyecto no expone
+(ADR-0003).
+
+Corrección en commit `2677cc7`: `JwtDecoderValidatorPostProcessor` agrega al
+`NimbusJwtDecoder` real los validadores de timestamp, emisor (`JWT_ISSUER`) y
+audiencia (`JWT_AUDIENCE`). El post-procesor ignora decoders de prueba y
+placeholders sin resolver, por lo que los 40 tests existentes y el fail-closed
+siguen igual. La aserción del test no se relajó: ahora el token con otro `iss`
+responde 401.
+
 ## ADR
 
 No corresponde uno nuevo: no hay tecnología ni patrón nuevo. Se apoya en
