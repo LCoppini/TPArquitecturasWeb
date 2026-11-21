@@ -5,10 +5,11 @@ import com.ticketya.evento.dto.response.VentasEventoResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
-@FeignClient(name = "msvc-entrada", path = "/api/entradas")
+@FeignClient(name = "msvc-entrada", contextId = "entradaClient", path = "/")
 public interface EntradaClient {
 
-    @GetMapping("/disponibilidad")
+    /** Contrato interno: sin ruta en el gateway (ADR-0001). */
+    @GetMapping("/internal/entradas/disponibilidad")
     DisponibilidadResponse consultarDisponibilidad(
             @RequestParam("idEvento") Long idEvento,
             @RequestParam("idSector") Long idSector

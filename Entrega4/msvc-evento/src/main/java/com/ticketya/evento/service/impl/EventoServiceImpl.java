@@ -7,6 +7,7 @@ import com.ticketya.evento.dto.request.ConfigurarSectoresRequest;
 import com.ticketya.evento.dto.request.EventoRequest;
 import com.ticketya.evento.dto.request.EventoSectorRequest;
 import com.ticketya.evento.dto.request.ParticipanteRequest;
+import com.ticketya.evento.dto.response.DisponibilidadResponse;
 import com.ticketya.evento.dto.response.EventoPaginaResponse;
 import com.ticketya.evento.dto.response.EventoResponse;
 import com.ticketya.evento.dto.response.EventoSectorResponse;
@@ -145,6 +146,12 @@ public class EventoServiceImpl implements EventoService {
                         "El sector " + idSector + " no está configurado para el evento " + idEvento
                 ));
         return new EventoSectorResponse(eventoSector.getIdSector(), eventoSector.getPrecio());
+    }
+
+    @Override
+    public DisponibilidadResponse disponibilidad(Long idEvento, Long idSector) {
+        buscarEvento(idEvento);
+        return entradaClient.consultarDisponibilidad(idEvento, idSector);
     }
 
     @Override

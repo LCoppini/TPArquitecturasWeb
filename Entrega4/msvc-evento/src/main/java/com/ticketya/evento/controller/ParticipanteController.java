@@ -9,8 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/** Consultas públicas de artistas. Las escrituras viven en AdminParticipanteController. */
 @RestController
-@RequestMapping("/api/participantes")
+@RequestMapping("/api/artistas")
 public class ParticipanteController {
 
     private final ParticipanteService participanteService;

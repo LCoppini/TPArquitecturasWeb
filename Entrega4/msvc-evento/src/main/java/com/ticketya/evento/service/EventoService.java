@@ -2,6 +2,7 @@ package com.ticketya.evento.service;
 
 import com.ticketya.evento.dto.request.ConfigurarSectoresRequest;
 import com.ticketya.evento.dto.request.EventoRequest;
+import com.ticketya.evento.dto.response.DisponibilidadResponse;
 import com.ticketya.evento.dto.response.EventoPaginaResponse;
 import com.ticketya.evento.dto.response.EventoResponse;
 import com.ticketya.evento.dto.response.EventoSectorResponse;
@@ -19,6 +20,8 @@ public interface EventoService {
     EventoResponse configurarSectores(Long id, Long idSolicitante, ConfigurarSectoresRequest request);
 
     EventoSectorResponse obtenerPrecioSector(Long idEvento, Long idSector);
+
+    DisponibilidadResponse disponibilidad(Long idEvento, Long idSector);
 
     EventoResponse publicar(Long id, Long idSolicitante);
 
