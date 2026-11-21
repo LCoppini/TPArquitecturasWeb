@@ -1,6 +1,6 @@
 package com.ticketya.entrada.controller;
 
-import com.ticketya.entrada.dto.request.EntradaRequest;
+import com.ticketya.entrada.dto.request.QrEscaneoRequest;
 import com.ticketya.entrada.dto.response.EntradaResponse;
 import com.ticketya.entrada.service.EntradaService;
 import jakarta.validation.Valid;
@@ -24,8 +24,8 @@ public class AccesoController {
     @PostMapping("/escanear")
     public EntradaResponse escanear(
             @RequestHeader("X-User-Id") Long idPersonal,
-            @Valid @RequestBody EntradaRequest request
+            @Valid @RequestBody QrEscaneoRequest request
     ) {
-        return entradaService.validarQr(request.getCodigoQr(), request.getIdEvento());
+        return entradaService.validarQr(request.getCodigoQr(), request.getIdEvento(), idPersonal);
     }
 }

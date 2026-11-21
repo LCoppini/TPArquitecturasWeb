@@ -10,8 +10,12 @@ import com.ticketya.entrada.dto.response.EventoSectorResponse;
 import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
 import com.ticketya.entrada.entity.Entrada;
+import com.ticketya.entrada.exception.QrError;
+import com.ticketya.entrada.exception.QrRechazadoException;
 import com.ticketya.entrada.repository.EntradaRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,8 @@ import java.util.List;
 @Service
 @Transactional(readOnly = true)
 public class EntradaService {
+
+    private static final Logger log = LoggerFactory.getLogger(EntradaService.class);
 
     private final EntradaRepository entradaRepository;
     private final UsuarioClient usuarioClient;
@@ -180,6 +186,7 @@ public class EntradaService {
         entrada.setEstadoDevolucion(aprobar ? "APROBADA" : "RECHAZADA");
         if (aprobar) {
             entrada.setEstado("EN_REINTEGRO");
+            entrada.setMotivoInvalidacion("DEVOLUCION");
         }
         return aprobar;
     }
@@ -194,23 +201,50 @@ public class EntradaService {
     }
 
     @Transactional
-    public EntradaResponse validarQr(String qr, Long idEvento) {
+    public EntradaResponse validarQr(String qr, Long idEvento, Long idPersonal) {
         if (qr == null || qr.isBlank()) {
-            throw new IllegalArgumentException("El código QR es obligatorio");
+            throw rechazar(QrError.QR_REQUEST_INVALIDO, idEvento, idPersonal);
         }
         Entrada entrada = entradaRepository.findByCodigoQr(qr)
-                .orElseThrow(() -> new EntityNotFoundException("El QR no existe o fue alterado"));
+                .orElseThrow(() -> rechazar(QrError.QR_NO_EXISTE, idEvento, idPersonal));
         if (!entrada.getIdEvento().equals(idEvento)) {
-            throw new IllegalStateException("La entrada corresponde a otro evento");
+            throw rechazar(QrError.QR_EVENTO_DISTINTO, idEvento, idPersonal);
         }
-        if (!"VALIDA".equals(entrada.getEstado())) {
-            throw new IllegalStateException("La entrada ya fue utilizada o no está vigente");
+        QrError motivoRechazo = motivoRechazo(entrada);
+        if (motivoRechazo != null) {
+            throw rechazar(motivoRechazo, idEvento, idPersonal);
         }
-        if (entradaRepository.marcarUsada(qr, idEvento) != 1) {
-            throw new IllegalStateException("La entrada ya fue utilizada");
+
+        Instant ahora = Instant.now();
+        if (entradaRepository.marcarUsada(qr, idEvento, ahora, idPersonal) != 1) {
+            throw rechazar(QrError.QR_YA_USADO, idEvento, idPersonal);
         }
+        // El UPDATE limpia el contexto de JPA; la entidad leída queda separada y solo se usa para la respuesta.
         entrada.setEstado("USADA");
+        entrada.setIngresadaEn(ahora);
+        entrada.setIdPersonalAcceso(idPersonal);
+        log.info("ingreso_aprobado idEntrada={} idEvento={} idPersonal={} fecha={}",
+                entrada.getId(), idEvento, idPersonal, ahora);
         return convertirRespuesta(entrada);
+    }
+
+    private QrError motivoRechazo(Entrada entrada) {
+        if (entrada.getEstado() == null) {
+            return null;
+        }
+        return switch (entrada.getEstado()) {
+            case "USADA" -> QrError.QR_YA_USADO;
+            case "EN_REINTEGRO" -> "DEVOLUCION".equals(entrada.getMotivoInvalidacion())
+                    ? QrError.QR_DEVUELTO
+                    : QrError.QR_EVENTO_CANCELADO;
+            case "VENCIDA", "CANCELADA" -> QrError.QR_VENCIDO;
+            default -> null;
+        };
+    }
+
+    private QrRechazadoException rechazar(QrError error, Long idEvento, Long idPersonal) {
+        log.warn("ingreso_rechazado idEvento={} idPersonal={} code={}", idEvento, idPersonal, error.name());
+        return new QrRechazadoException(error);
     }
 
     @Transactional

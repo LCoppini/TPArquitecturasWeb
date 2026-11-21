@@ -20,10 +20,16 @@ import java.util.List;
 @Entity
 @Table(
         name = "entradas",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_entrada_usuario_clave_idempotencia",
-                columnNames = {"id_usuario", "clave_idempotencia"}
-        )
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_entrada_usuario_clave_idempotencia",
+                        columnNames = {"id_usuario", "clave_idempotencia"}
+                ),
+                @UniqueConstraint(
+                        name = "uk_entrada_codigo_qr",
+                        columnNames = {"codigo_qr"}
+                )
+        }
 )
 @Getter
 @Setter
@@ -66,6 +72,15 @@ public class Entrada {
 
     @Column(name = "estado_devolucion", length = 24)
     private String estadoDevolucion;
+
+    @Column(name = "motivo_invalidacion", length = 24)
+    private String motivoInvalidacion;
+
+    @Column(name = "ingresada_en")
+    private Instant ingresadaEn;
+
+    @Column(name = "id_personal_acceso")
+    private Long idPersonalAcceso;
 
     @OneToMany(mappedBy = "entrada")
     private List<RegistroPago> registrosPago = new ArrayList<>();

@@ -96,17 +96,25 @@ public interface EntradaRepository extends JpaRepository<Entrada, Long> {
             """)
     int vencerReservas(@Param("ahora") Instant ahora);
 
-    @Modifying
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("""
             update Entrada e
-            set e.estado = 'USADA'
+            set e.estado = 'USADA',
+                e.ingresadaEn = :ahora,
+                e.idPersonalAcceso = :idPersonal
             where e.codigoQr = :qr and e.idEvento = :idEvento and e.estado = 'VALIDA'
             """)
-    int marcarUsada(@Param("qr") String qr, @Param("idEvento") Long idEvento);
+    int marcarUsada(
+            @Param("qr") String qr,
+            @Param("idEvento") Long idEvento,
+            @Param("ahora") Instant ahora,
+            @Param("idPersonal") Long idPersonal
+    );
 
     @Modifying
     @Query("""
-            update Entrada e set e.estado = 'EN_REINTEGRO'
+            update Entrada e
+            set e.estado = 'EN_REINTEGRO', e.motivoInvalidacion = 'CANCELACION'
             where e.idEvento = :idEvento and e.estado in ('VALIDA', 'USADA')
             """)
     int marcarEntradasDeEventoEnReintegro(@Param("idEvento") Long idEvento);
