@@ -15,6 +15,16 @@ El servicio dueño del reporte DEBE validar la pertenencia del recurso usando
 - Y responde 403 si no coinciden
 - Y no invoca `validarRol` ni `tieneRol` contra `UsuarioClient`
 
+#### Scenario: evento inexistente frente a evento ajeno
+
+- Dado que un organizador consulta un reporte
+- Cuando el evento no existe
+- Entonces responde 404
+- Y cuando el evento existe pero pertenece a otro organizador responde 403
+- Y en ninguno de los dos casos el body expone cifras del evento
+- Y esta distinción es la política vigente de `identidad-servicios`, no un
+  cambio puntual del reporte
+
 #### Scenario: identidad interservicio
 
 - Dado que `msvc-entrada` expone el contrato interno del reporte

@@ -5,24 +5,27 @@
 ### Requirement: Ruteo del reporte del organizador [Entrega 2]
 
 El gateway DEBE enrutar el reporte de un organizador hacia `msvc-evento`
-mediante el service ID registrado en Eureka.
+mediante el service ID registrado en Eureka, reutilizando la ruta genérica
+existente.
 
 #### Scenario: reporte del organizador
 
 - Dado que `msvc-evento` está registrado en Eureka
 - Cuando un organizador llama
   `GET /api/organizador/eventos/{idEvento}/reporte`
-- Entonces el gateway enruta la solicitud a `lb://msvc-evento`
+- Entonces el gateway enruta la solicitud a `lb://msvc-evento` mediante
+  `organizador-eventos-route`
 - Y conserva el path, el método y el `X-User-Id` derivado del JWT
 
-#### Scenario: ruta explícita antes que la genérica
+#### Scenario: reutilización de la ruta genérica
 
-- Dado que existe `organizador-eventos-route` para
-  `/api/organizador/eventos/**`
-- Cuando se declara `organizador-reportes-route`
-- Entonces la ruta del reporte se declara antes
-- Y aparece tanto en `application.yml` como en la configuración central de
-  `msvc-gateway`
+- Dado que ya existe `organizador-eventos-route` para
+  `/api/organizador/eventos/**` en `application.yml` y en la configuración
+  central de `msvc-gateway`
+- Cuando se implementa el reporte
+- Entonces **no** se agrega `organizador-reportes-route` ni otra ruta nueva
+- Y `GatewayRoleMatrixTest.cadaRutaDelGatewayTieneReglaExplicita` sigue
+  protegiendo el sistema ante rutas sin regla de rol
 
 #### Scenario: contrato interno de reporte no es público
 
