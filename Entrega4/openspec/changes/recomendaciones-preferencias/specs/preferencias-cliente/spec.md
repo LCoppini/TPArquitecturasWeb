@@ -27,6 +27,20 @@ Cuando se notifica una compra aprobada, el sistema DEBE registrar el tipo de eve
 - **WHEN** un evento incluye dos veces al mismo artista
 - **THEN** el contador de ese artista se incrementa una sola vez
 
+### Requirement: Registro de eventos ya comprados [Entrega 2]
+
+El sistema DEBE agregar el `idEvento` de cada compra aprobada al conjunto `eventosComprados` de la preferencia, en la misma actualización atómica que registra la entrada. Este conjunto permite excluir esos eventos de las recomendaciones.
+
+#### Scenario: primera compra de un evento
+
+- **WHEN** se registra una compra aprobada con un `idEvento` aún no presente
+- **THEN** el identificador queda agregado a `eventosComprados`
+
+#### Scenario: reintento con la misma entrada
+
+- **WHEN** se reintenta la misma compra
+- **THEN** el `idEvento` no se agrega dos veces
+
 ### Requirement: Un artista con una compra ya es favorito [Entrega 2]
 
 El sistema DEBE considerar favorito a todo artista presente en al menos una compra del cliente, sin exigir un mínimo de compras.

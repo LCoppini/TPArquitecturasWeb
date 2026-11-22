@@ -8,8 +8,8 @@
 
 - Registro automático e idempotente de preferencias por compra aprobada (tipo de evento, artistas participantes y ciudad del cliente), implementado como upsert por `idEntrada`.
 - Nuevo contrato interno `POST /internal/preferencias/compras`, invocado por Feign desde un worker de `msvc-entrada`, sin ruta en el gateway.
-- Outbox persistido en `msvc-entrada` (`pendientes_preferencia`) con claim atómico válido para dos instancias, 5 reintentos reales con backoff configurable, reintento sin consumo de presupuesto cuando el CircuitBreaker está abierto y conservación de registros `FALLIDO` para replay manual.
-- Nuevo endpoint público `GET /api/recomendaciones/clientes/{idUsuario}` con motivos `MISMO_TIPO`, `MISMO_ARTISTA` y `FALLBACK_CIUDAD`, basado en top 5 artistas / 3 tipos y fallback por ciudad con `desde=<ahora>`.
+- Outbox persistido en `msvc-entrada` (`pendientes_preferencia`) con claim atómico válido para dos instancias, 5 intentos reales en total (no 5 reintentos adicionales a un intento inicial), con backoff `10s/30s/1m/5m`, reintento sin consumo de presupuesto cuando el CircuitBreaker está abierto y conservación de registros `FALLIDO` para replay manual.
+- Nuevo endpoint público `GET /api/recomendaciones/clientes/{idUsuario}` con motivos `MISMO_TIPO`, `MISMO_ARTISTA` y `FALLBACK_CIUDAD`, basado en top 5 artistas / 3 tipos y fallback por ciudad con `desde=<ahora>`, excluyendo los eventos que el cliente ya compró (EP-17).
 - Regla de pertenencia por path: un `CLIENTE` consulta solo su propio `{idUsuario}` en `/api/preferencias/clientes/{idUsuario}` y `/api/recomendaciones/clientes/{idUsuario}`; un `ADMINISTRADOR` consulta cualquier `{idUsuario}` en `/api/admin/preferencias/clientes/{idUsuario}` y `/api/admin/recomendaciones/clientes/{idUsuario}`. El gateway autoriza por rol según el path, sin propagar roles al servicio.
 - Extensión no rompiente de los DTOs Feign locales de `msvc-entrada` (`EventoResponse` con `tipo` y `participantes`, `UsuarioResponse` con `ciudad`) mediante constructores sobrecargados que conservan las firmas existentes.
 - Configuración de resiliencia sobre la llamada a preferencias: CircuitBreaker `TIME_BASED`, TimeLimiter de 2s y timeouts HTTP por debajo del TimeLimiter, sin retry interno de Resilience4j.
@@ -32,7 +32,7 @@
 - **Código**: `msvc-preferencias` (controllers, service, repository, entidad, DTOs y clients nuevos); `msvc-entrada` (nueva entidad, repository, worker y Feign client, extensión de dos DTOs de respuesta, `@EnableAsync`/`@EnableScheduling` y `TaskDecorator`); `msvc-gateway` (dos rutas administrativas nuevas, ajuste de `GatewayRoleMatrix` y casos de test nuevos).
 - **APIs**: nuevas rutas `GET /api/preferencias/clientes/{idUsuario}` y `GET /api/recomendaciones/clientes/{idUsuario}` para `CLIENTE`, y `GET /api/admin/preferencias/clientes/{idUsuario}` y `GET /api/admin/recomendaciones/clientes/{idUsuario}` para `ADMINISTRADOR`; nuevo contrato interno `/internal/preferencias/compras`, sin exposición en gateway.
 - **Datos**: MongoDB `ticketya_preferencias` (nueva colección) y PostgreSQL `ticketya_entrada` (nueva tabla `pendientes_preferencia`). Sin migración de datos existentes ni foreign keys entre servicios.
-- **Dependencias**: `spring-cloud-starter-circuitbreaker-resilience4j` en `msvc-entrada`, ya adoptado en otros módulos del proyecto; no corresponde ADR nuevo. No se agregan RabbitMQ, Caffeine ni Redis.
+- **Dependencias y decisiones**: `spring-cloud-starter-circuitbreaker-resilience4j` en `msvc-entrada`, ya adoptado en otros módulos del proyecto; no corresponde ADR nuevo para resiliencia. Se crea `ADR-0004` para justificar MongoDB en `msvc-preferencias`, requisito de `AGENTS.md` que estaba pendiente en el README del módulo. No se agregan RabbitMQ, Caffeine ni Redis.
 - **Specs de Entrega 1**: no se modifica ninguna capability archivada. Los cambios en `msvc-entrada` son aditivos (campos nuevos en DTOs de respuesta y tabla nueva) y no alteran reserva, pago ni emisión.
 
 ## Fuera del alcance
@@ -43,4 +43,3 @@
 - No se descuentan preferencias por devolución: decisión de alcance, porque no existe notificación de devoluciones hacia preferencias en este change.
 - No se modifica `sinFiltros` ni la búsqueda de `msvc-evento`; el cambio de eficiencia en `buscar()` se tramita en un flujo OpenSpec separado.
 - No se modifica la lógica de los servicios para reconocer roles: la distinción `CLIENTE`/`ADMINISTRADOR` se resuelve únicamente por path en el gateway, según ADR-0001. No se propaga `X-User-Role` ni se consulta `msvc-usuarios` para reconstruir el rol.
-- No se requiere ADR nuevo.

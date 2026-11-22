@@ -20,6 +20,36 @@ spring:
     openfeign:
       httpclient:
         enabled: true
+      client:
+        config:
+          msvc-preferencias:
+            connect-timeout: 500     # ms
+            read-timeout: 1200       # ms -> suma 1700ms, 300ms bajo el TimeLimiter
+
+# Outbox de preferencias: 5 intentos reales en total, backoff entre intentos.
+ticketya:
+  preferencias:
+    outbox:
+      intentos-maximos: 5
+      backoff: 10s,30s,1m,5m
+      stale-timeout: 5m
+      poll-ms: 5s
+
+# Resiliencia de la llamada interna a preferencias (sin retry: el worker persistido lleva el presupuesto).
+resilience4j:
+  circuitbreaker:
+    instances:
+      preferencias:
+        slidingWindowType: TIME_BASED
+        slidingWindowSize: 120       # segundos
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  timelimiter:
+    instances:
+      preferencias:
+        timeoutDuration: 2s
 
 eureka:
   instance:

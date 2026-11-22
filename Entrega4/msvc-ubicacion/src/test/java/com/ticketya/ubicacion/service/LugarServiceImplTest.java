@@ -150,6 +150,29 @@ class LugarServiceImplTest {
     }
 
     @Test
+    void crearRechazaCapacidadEnSectorNumeradoAunqueCoincidaConFilasPorAsientos() {
+        SectorRequest invalido = new SectorRequest("Platea", TipoSector.NUMERADO, 10, 20, 200);
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> service.crear(request(invalido)));
+
+        assertTrue(error.getMessage().contains("no admite capacidadMax"));
+        assertTrue(error.getMessage().contains("(200)"));
+        verify(lugarRepository, never()).save(any());
+    }
+
+    @Test
+    void agregarSectorRechazaCapacidadEnSectorNumerado() {
+        when(lugarRepository.findById(1L)).thenReturn(Optional.of(lugarExistente(1L)));
+
+        SectorRequest invalido = new SectorRequest("Platea", TipoSector.NUMERADO, 10, 20, 200);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> service.agregarSector(1L, invalido));
+        verify(sectorRepository, never()).save(any());
+    }
+
+    @Test
     void crearRechazaNombresDeSectorRepetidosEnLaSolicitud() {
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
                 () -> service.crear(request(zona("Campo", 100), zona("campo", 200))));

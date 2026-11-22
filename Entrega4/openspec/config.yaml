@@ -58,11 +58,15 @@ context: |
       copia el correlationId del MDC al hilo. La notificación se guarda como PENDIENTE antes
       de enviarla y las FALLIDA se reintentan, para no perder envíos si el servicio se cae.
 
-  Reportes para organizadores: viven en msvc-evento. Datos consultados: entradas vendidas y
-  devueltas por sector, porcentaje de ocupación y recaudación. Como msvc-evento no tiene esos
-  datos propios (ventas/devoluciones están en msvc-entrada), consulta vía Feign a
-  msvc-entrada para obtenerlos (GET /api/entradas/eventos/{idEvento}/ventas, a crear; lo
-  usan también reportes y la búsqueda por relevancia).
+  Reportes para organizadores (EP-18, cubierto): viven en msvc-evento, en
+  GET /api/organizador/eventos/{idEvento}/reporte, reutilizando la ruta genérica
+  /api/organizador/eventos/** del gateway. Datos consultados: entradas emitidas, activas,
+  devueltas y en reintegro por sector, porcentaje de ocupación y recaudación bruta,
+  devuelta y neta. Como msvc-evento no tiene esos datos propios, consume por Feign el
+  contrato interno GET /internal/entradas/eventos/{idEvento}/reporte de msvc-entrada, que
+  también alimenta la búsqueda por relevancia. La capacidad es la física del sector
+  (SectorResponse.capacidadMax de msvc-ubicacion); no hay ruta pública nueva ni se propaga
+  X-User-Role a los servicios.
 
   Cache: catálogo de eventos, detalle de evento y resultados de búsqueda, en memoria
   (Caffeine) dentro de msvc-evento, con TTL de 30 a 60 segundos e invalidación al
@@ -103,9 +107,9 @@ context: |
   Redis: no se usa; la fila virtual usa una cola propia en la base de Entrada. Cualquier uso
   futuro requiere un ADR.
 
-  Puntos abiertos:
-    - Credencial del login con JWT: Usuario no tiene contraseña (definir el atributo y su
-      almacenamiento, ej. hash BCrypt, al agregar el email).
+  Puntos abiertos: no quedan para EP-18. La credencial del login con JWT quedó resuelta
+  con email y hash BCrypt en msvc-usuarios; la emisión y validación RS256 están cubiertas
+  en msvc-usuarios y msvc-gateway.
 
   Reglas clave: una entrada nunca se vende dos veces, ni con varias instancias ni con
   reintentos. Un QR nunca ingresa dos veces, ni con varias instancias ni con reintentos.
