@@ -135,12 +135,16 @@ public class LugarServiceImpl implements LugarService {
             }
 
             if (TipoSector.NUMERADO.equals(sector.tipo())) {
-                if (sector.filas() == null || sector.asientosPorFila() == null) {
+                Integer filas = sector.filas();
+                Integer asientos = sector.asientosPorFila();
+                if (filas == null || asientos == null) {
                     errores.add(prefijo + "un sector NUMERADO requiere filas y asientosPorFila mayores a cero");
-                } else if (sector.capacidadMax() != null
-                        && sector.capacidadMax() != sector.filas() * sector.asientosPorFila()) {
-                    errores.add(prefijo + "la capacidad de un sector NUMERADO es filas por asientosPorFila ("
-                            + sector.filas() * sector.asientosPorFila() + "); no se puede informar otra");
+                }
+                if (sector.capacidadMax() != null) {
+                    String calculada = filas != null && asientos != null
+                            ? " (" + filas * asientos + ")"
+                            : "";
+                    errores.add(prefijo + "un sector NUMERADO no admite capacidadMax; se calcula como filas por asientosPorFila" + calculada);
                 }
             } else if (TipoSector.NO_NUMERADO.equals(sector.tipo())) {
                 if (sector.capacidadMax() == null) {
