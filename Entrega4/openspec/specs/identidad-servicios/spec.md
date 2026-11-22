@@ -74,3 +74,42 @@ llevan JWT de usuario y quedan fuera del control de autenticación del gateway.
 - Cuando se busca el apartado de consecuencias
 - Entonces consta que Feign no propaga el JWT
 - Y consta el supuesto de que los servicios solo son accesibles por el gateway
+
+### Requirement: Pertenencia aplicada al reporte del organizador [Entrega 2]
+
+El servicio dueño del reporte DEBE validar la pertenencia del recurso usando
+únicamente el `X-User-Id` propagado por el gateway.
+
+#### Scenario: pertenencia del reporte
+
+- Dado que el gateway ya autorizó el rol `ORGANIZADOR`
+- Cuando `msvc-evento` atiende `GET /api/organizador/eventos/{idEvento}/reporte`
+- Entonces compara `evento.getIdOrganizador()` contra `X-User-Id`
+- Y responde 403 si no coinciden
+- Y no invoca `validarRol` ni `tieneRol` contra `UsuarioClient`
+
+#### Scenario: evento inexistente frente a evento ajeno
+
+- Dado que un organizador consulta un reporte
+- Cuando el evento no existe
+- Entonces responde 404
+- Y cuando el evento existe pero pertenece a otro organizador responde 403
+- Y en ninguno de los dos casos el body expone cifras del evento
+- Y esta distinción es la política vigente de `identidad-servicios`, no un
+  cambio puntual del reporte
+
+#### Scenario: identidad ausente o no numérica
+
+- Dado que la solicitud llega sin `X-User-Id`, con el header vacío o con
+  `X-User-Id: abc`
+- Cuando `msvc-evento` intenta evaluar la pertenencia
+- Entonces responde 403
+- Y nunca responde 500 por `NumberFormatException`
+- Y no intenta consultar roles ni datos del evento
+
+#### Scenario: identidad interservicio
+
+- Dado que `msvc-entrada` expone el contrato interno del reporte
+- Cuando `msvc-evento` lo consume por Feign
+- Entonces la llamada no lleva JWT de usuario
+- Y no depende del rol enviado por el cliente
