@@ -16,6 +16,10 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 | msvc-notificaciones | 8085 | ticketya_notificaciones | (E2) Envio de emails: compra, cancelacion/cambio de evento, artista favorito |
 | msvc-preferencias | 8086 | ticketya_preferencias (MongoDB) | (E2) Preferencias de clientes y recomendaciones |
 
+## Frontend
+
+Aplicacion web en React (cartelera, ingreso y registro) en [`frontend/`](frontend/README.md). No es un modulo Maven: se ejecuta con `npm install && npm run dev` y consume el gateway en el puerto 8080 mediante un proxy de `/api`. Decision de stack: [ADR-0004](docs/decisiones/0004-stack-frontend.md).
+
 ## Como levantarlo (E1)
 
 1. `docker compose up -d` (PostgreSQL con una base por servicio y MongoDB para preferencias)
