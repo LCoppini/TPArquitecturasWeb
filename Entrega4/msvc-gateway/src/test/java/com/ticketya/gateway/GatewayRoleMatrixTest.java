@@ -154,6 +154,12 @@ class GatewayRoleMatrixTest {
                 Arguments.of("ORGANIZADOR no puede suspender eventos", HttpMethod.POST,
                         "/api/admin/eventos/1/suspender", ORGANIZADOR),
                 Arguments.of("POST a artistas no es publico", HttpMethod.POST, "/api/artistas", ADMINISTRADOR),
+                Arguments.of("CLIENTE no puede consultar el reporte", HttpMethod.GET,
+                        "/api/organizador/eventos/1/reporte", CLIENTE),
+                Arguments.of("ADMINISTRADOR no puede consultar el reporte", HttpMethod.GET,
+                        "/api/organizador/eventos/1/reporte", ADMINISTRADOR),
+                Arguments.of("PERSONAL no puede consultar el reporte", HttpMethod.GET,
+                        "/api/organizador/eventos/1/reporte", PERSONAL_ACCESO),
                 Arguments.of("contrato interno siempre denegado", HttpMethod.GET,
                         "/internal/entradas/disponibilidad", CLIENTE)
         );
@@ -168,6 +174,8 @@ class GatewayRoleMatrixTest {
                 Arguments.of("ADMINISTRADOR consulta usuarios", HttpMethod.GET, "/api/usuarios", ADMINISTRADOR),
                 Arguments.of("ORGANIZADOR publica evento", HttpMethod.POST,
                         "/api/organizador/eventos/1/publicar", ORGANIZADOR),
+                Arguments.of("ORGANIZADOR consulta el reporte", HttpMethod.GET,
+                        "/api/organizador/eventos/1/reporte", ORGANIZADOR),
                 Arguments.of("ADMINISTRADOR suspende evento", HttpMethod.POST,
                         "/api/admin/eventos/1/suspender", ADMINISTRADOR),
                 Arguments.of("ADMINISTRADOR edita artistas", HttpMethod.POST, "/api/admin/artistas", ADMINISTRADOR),
