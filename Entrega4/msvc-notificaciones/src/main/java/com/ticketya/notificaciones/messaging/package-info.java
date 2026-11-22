@@ -1,10 +1,7 @@
 /**
- * E2 (EDA): consumo de eventos de otros servicios (listener). Los listeners deben ser IDEMPOTENTES.
- *
- * Eventos a consumir (ver docs/eventos.md):
- *  - EntradaEmitida, DevolucionAprobada (msvc-entrada)
- *  - EventoCancelado, EventoModificado, EventoPublicado (msvc-evento)
- *
- * Mecanismo (broker o llamada REST asincrona fire-and-forget): a definir por el grupo y registrar en docs/decisiones.
+ * E2 (EDA): sin broker en este servicio. Los otros microservicios lo invocan por REST interno
+ * (POST /internal/notificaciones, fire-and-forget) y el envio es asincrono DENTRO del servicio (@Async + pool propio),
+ * decision del grupo registrada en openspec/config.yaml. Si en el futuro se agrega un broker, los listeners
+ * (EntradaEmitida, DevolucionAprobada, EventoCancelado, EventoModificado) van aca y deben ser IDEMPOTENTES.
  */
 package com.ticketya.notificaciones.messaging;

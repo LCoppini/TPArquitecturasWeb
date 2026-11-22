@@ -1,7 +1,6 @@
 /**
- * DTOs de entrada de la API REST (con validaciones Jakarta: @NotNull, @Size, ...).
+ * DTOs de entrada de la API REST (con validaciones Jakarta: @NotNull, @Size, @Email, ...).
  *
- * Previstos:
- *  - NotificacionRequest (tipo, idUsuario, datos que completan la plantilla)
+ *  - SolicitudNotificacionRequest (claveIdempotencia, idUsuario, tipo, destinatario opcional, datos de la plantilla)
  */
 package com.ticketya.notificaciones.dto.request;
