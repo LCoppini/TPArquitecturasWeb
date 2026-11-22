@@ -25,6 +25,15 @@ El servicio dueño del reporte DEBE validar la pertenencia del recurso usando
 - Y esta distinción es la política vigente de `identidad-servicios`, no un
   cambio puntual del reporte
 
+#### Scenario: identidad ausente o no numérica
+
+- Dado que la solicitud llega sin `X-User-Id`, con el header vacío o con
+  `X-User-Id: abc`
+- Cuando `msvc-evento` intenta evaluar la pertenencia
+- Entonces responde 403
+- Y nunca responde 500 por `NumberFormatException`
+- Y no intenta consultar roles ni datos del evento
+
 #### Scenario: identidad interservicio
 
 - Dado que `msvc-entrada` expone el contrato interno del reporte

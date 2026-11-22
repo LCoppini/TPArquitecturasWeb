@@ -32,5 +32,6 @@ existente.
 - Dado que `msvc-entrada` expone
   `/internal/entradas/eventos/{idEvento}/reporte`
 - Cuando un cliente intenta llamarlo por el gateway
-- Entonces la cadena de seguridad lo deniega sin enrutarlo
+- Entonces la cadena de seguridad lo deniega sin enrutarlo: 401 sin token y
+  403 con token por `denyAll`
 - Y no existe una ruta pública equivalente bajo `/api/entradas/**`

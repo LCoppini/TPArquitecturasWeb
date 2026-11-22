@@ -40,3 +40,33 @@ y DEBE propagar la identidad del token sin reenviar el rol del cliente.
   de rol permitido y denegado
 - Y no se duplican en esa matriz los casos de identidad ya cubiertos por
   `GatewayErrorHandlingTest`
+
+### Requirement: Contratos internos denegados en el gateway [Entrega 2]
+
+El gateway DEBE denegar `/internal/**` con independencia del rol, usando el
+mismo formato uniforme de errores.
+
+#### Scenario: contrato interno sin token
+
+- Dado que un cliente llama
+  `GET /internal/entradas/eventos/{idEvento}/reporte` sin token
+- Cuando la cadena de seguridad evalúa `/internal/**`
+- Entonces responde 401 con `{status, error, message, path}`
+- Y no enruta la solicitud a `msvc-entrada`
+
+#### Scenario: contrato interno con token
+
+- Dado que un cliente válido con cualquier rol llama al mismo contrato
+  interno con token
+- Cuando la cadena de seguridad evalúa `/internal/**`
+- Entonces responde 403 con `{status, error, message, path}` por `denyAll`
+- Y no enruta la solicitud a `msvc-entrada`
+
+#### Scenario: evidencia del comportamiento
+
+- Dado que `SecurityConfig` declara
+  `.requestMatchers("/internal/**").denyAll()`
+- Cuando se verifican los tests del gateway
+- Entonces el caso con token ya está cubierto por
+  `GatewayRoleMatrixTest` (`contrato interno siempre denegado`)
+- Y el caso sin token se agrega en `GatewayErrorHandlingTest`

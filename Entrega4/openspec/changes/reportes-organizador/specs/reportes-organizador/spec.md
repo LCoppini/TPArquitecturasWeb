@@ -32,6 +32,14 @@ el gateway.
 - Y se distingue del caso de evento ajeno, que responde 403 según la política
   vigente de `identidad-servicios`
 
+#### Scenario: idEvento no numérico
+
+- Dado que el organizador llama
+  `GET /api/organizador/eventos/abc/reporte`
+- Cuando el servicio resuelve el `@PathVariable`
+- Entonces responde 400
+- Y no se intenta consultar a `msvc-entrada`
+
 #### Scenario: identidad ausente en el servicio
 
 - Dado que la solicitud llega a `msvc-evento` sin `X-User-Id`
@@ -39,13 +47,31 @@ el gateway.
 - Entonces responde 403
 - Y no intenta consultar roles contra `msvc-usuarios`
 
+#### Scenario: identidad no numérica
+
+- Dado que la solicitud llega con `X-User-Id: abc` o con un valor vacío
+- Cuando el servicio evalúa la pertenencia
+- Entonces responde 403
+- Y nunca responde 500 por `NumberFormatException`
+
 #### Scenario: evento cancelado
 
 - Dado que el evento está `CANCELADO` y pertenece al organizador
 - Cuando consulta el reporte
 - Entonces responde 200 con `estadoEvento = "CANCELADO"`
 - Y el body muestra el snapshot final con devoluciones y reembolsos ya
-  descontados, sin cifras vigentes inventadas
+  descontados
+- Y solo se descuentan los pagos con estado `REEMBOLSADO`
+
+#### Scenario: cancelación con el mock en FALLA
+
+- Dado que el evento fue cancelado con `PASARELA_RESULTADO = FALLA`
+- Y los pagos quedaron en `REINTEGRO_PENDIENTE` y las entradas en
+  `EN_REINTEGRO`
+- Cuando se consulta el reporte
+- Entonces `recaudacionDevuelta` es 0
+- Y `recaudacionNeta` es igual a `recaudacionBruta`
+- Y no se descuenta un reintegro que no se completó
 
 ### Requirement: Métricas por sector [Entrega 2]
 
@@ -76,6 +102,24 @@ sobre las activas.
   activa ni ocupada
 - Y la reservada no cuenta en ningún campo
 
+#### Scenario: sector numerado
+
+- Dado que un sector es `NUMERADO` con `filas = 10` y
+  `asientosPorFila = 20`, y `msvc-ubicacion` calculó `capacidadMax = 200`
+- Y el sector tiene 120 entradas activas
+- Cuando se genera el reporte
+- Entonces `capacidad` es 200 y `porcentajeOcupacion` es 60.00
+- Y el reporte consume la capacidad calculada por `msvc-ubicacion`, sin
+  recalcular el producto en `msvc-evento`
+
+#### Scenario: capacidad física del sector
+
+- Dado que `EventoSector` solo guarda `precio` y no una capacidad propia
+- Cuando se arma el reporte
+- Entonces la capacidad usada es la física del sector provista por
+  `SectorResponse.capacidadMax`
+- Y no se usa `EventoSector.precio` ni un precio por entrada como capacidad
+
 #### Scenario: porcentaje de ocupación por sector
 
 - Dado que el sector 1 tiene capacidad 200 y 120 entradas activas
@@ -89,11 +133,28 @@ sobre las activas.
 - Entonces `porcentajeOcupacion` es 0.00
 - Y el sector sigue presente en `porSector`
 
-#### Scenario: capacidad nula, cero o desconocida
+#### Scenario: sector con ventas al que SectorClient responde 404
 
-- Dado que un sector tiene `capacidad` nula, 0 o no fue devuelta por
-  `SectorClient`
-- Pero tiene entradas emitidas
+- Dado que un sector fue borrado en `msvc-ubicacion` y no hay FK entre
+  servicios
+- Y `SectorClient` responde 404 al consultarlo
+- Cuando se genera el reporte
+- Entonces el sector se incluye con `capacidad = 0`, `nombreSector = null` y
+  `porcentajeOcupacion = 0.00`
+- Y sus conteos y recaudación se mantienen intactos
+- Y el reporte responde 200, no 404
+
+#### Scenario: error de red o 5xx de SectorClient
+
+- Dado que `SectorClient` falla por error de red o responde 5xx al consultar
+  un sector
+- Cuando se genera el reporte
+- Entonces responde 502
+- Y no devuelve cifras parciales como si fueran definitivas
+
+#### Scenario: capacidad nula o cero en un sector vivo
+
+- Dado que un sector existe y `SectorResponse.capacidadMax` es nula o 0
 - Cuando se genera el reporte
 - Entonces se incluye con `capacidad = 0` y `porcentajeOcupacion = 0.00`
 - Y sus conteos y recaudación no se pierden
@@ -151,6 +212,9 @@ un importe por entrada.
 - Cuando se genera el reporte
 - Entonces la entrada cuenta en `entradasDevueltas`
 - Y su monto no se descuenta de `recaudacionNeta` todavía
+- Y la prueba se arma con datos construidos a mano: el flujo real del mock con
+  `FALLA` deja la entrada en `EN_REINTEGRO`, por lo que este estado no es
+  alcanzable desde `cancelarEvento()`
 
 #### Scenario: monto por entrada, no por compra
 
@@ -189,13 +253,6 @@ interno de `msvc-entrada`, sin exponerlo al público.
 - Entonces responde 502
 - Y no devuelve cifras parciales como si fueran definitivas
 
-#### Scenario: fallo al consultar sectores
-
-- Dado que `SectorClient` falla al consultar nombre o capacidad de un sector
-- Cuando se genera el reporte
-- Entonces responde 502
-- Y no devuelve un reporte incompleto
-
 #### Scenario: contrato único
 
 - Dado que existía `GET /eventos/{idEvento}/ventas` declarado en
@@ -216,21 +273,31 @@ consulta.
 - Entonces no envía parámetros `from`, `to` ni de período
 - Y el sistema no expone histórico ni series temporales en este change
 
-### Requirement: Evidencia automática del reporte [Entrega 2]
+### Requirement: Evidencia automática y cierre del reporte [Entrega 2]
 
 Cada regla de cálculo y autorización DEBE tener un caso de prueba ejecutable.
+La verificación de integración con `docker-compose` se difiere a EP-21.
 
 #### Scenario: cobertura de la suite
 
-- Dado que se ejecutan las pruebas de `msvc-entrada`, `msvc-evento` y gateway
+- Dado que se ejecutan los tests de `msvc-ubicacion`, `msvc-entrada`,
+  `msvc-evento` y gateway
 - Entonces hay tests para dueño, otro organizador (403), evento inexistente
-  (404), evento cancelado (200), identidad ausente, ocupación, capacidad 0,
-  reservadas, usadas, en reintegro, devoluciones, doble descuento, pago
+  (404), `idEvento` no numérico (400), identidad ausente y no numérica (403),
+  evento cancelado (200), cancelación con mock en `FALLA`, sector numerado,
+  SectorClient 404 y 5xx, ocupación, capacidad 0, reservadas, usadas, en
+  reintegro, devoluciones, doble descuento con datos armados a mano, pago
   `REEMBOLSADO`, dos entradas aprobadas, sin movimientos, suma de sectores,
   aislamiento entre eventos y fallos de Feign
 - Y `GatewayRoleMatrixTest` falla si se agrega una ruta sin regla de rol
 - Y los casos de identidad del gateway viven en `GatewayErrorHandlingTest`, no
   en `GatewayRoleMatrixTest`
-- Y la prueba de integración se ejecuta contra `docker-compose`, sin
-  Testcontainers nuevo
 - Y no se modificaron tests existentes para que pasen
+
+#### Scenario: alcance del archivado
+
+- Dado que este change se cierra
+- Entonces se archiva al pasar los tests unitarios y de gateway
+- Y la verificación de integración con `docker-compose` queda como tarea de
+  seguimiento de EP-21 que referencia este change
+- Y no se sustituye esa verificación por Testcontainers nuevo
