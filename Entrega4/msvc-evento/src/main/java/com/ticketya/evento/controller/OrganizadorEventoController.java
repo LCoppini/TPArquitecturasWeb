@@ -3,10 +3,13 @@ package com.ticketya.evento.controller;
 import com.ticketya.evento.dto.request.ConfigurarSectoresRequest;
 import com.ticketya.evento.dto.request.EventoRequest;
 import com.ticketya.evento.dto.response.EventoResponse;
+import com.ticketya.evento.dto.response.ReporteEventoResponse;
 import com.ticketya.evento.service.EventoService;
+import com.ticketya.evento.service.ReporteOrganizadorService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -22,9 +25,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrganizadorEventoController {
 
     private final EventoService eventoService;
+    private final ReporteOrganizadorService reporteOrganizadorService;
 
-    public OrganizadorEventoController(EventoService eventoService) {
+    public OrganizadorEventoController(EventoService eventoService,
+                                       ReporteOrganizadorService reporteOrganizadorService) {
         this.eventoService = eventoService;
+        this.reporteOrganizadorService = reporteOrganizadorService;
+    }
+
+    @GetMapping("/{idEvento}/reporte")
+    public ReporteEventoResponse reporte(
+            @PathVariable Long idEvento,
+            @RequestHeader(value = "X-User-Id", required = false) String idUsuario
+    ) {
+        return reporteOrganizadorService.reporte(idEvento, idUsuario);
     }
 
     @PostMapping

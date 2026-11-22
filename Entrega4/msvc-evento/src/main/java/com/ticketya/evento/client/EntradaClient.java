@@ -1,7 +1,7 @@
 package com.ticketya.evento.client;
 
 import com.ticketya.evento.dto.response.DisponibilidadResponse;
-import com.ticketya.evento.dto.response.VentasEventoResponse;
+import com.ticketya.evento.dto.response.ReporteVentasEventoResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +15,9 @@ public interface EntradaClient {
             @RequestParam("idSector") Long idSector
     );
 
-    @GetMapping("/eventos/{idEvento}/ventas")
-    VentasEventoResponse consultarVentas(@PathVariable("idEvento") Long idEvento);
+    /** Reemplaza al path muerto /eventos/{idEvento}/ventas; también alimenta la relevancia. */
+    @GetMapping("/internal/entradas/eventos/{idEvento}/reporte")
+    ReporteVentasEventoResponse consultarReporte(@PathVariable("idEvento") Long idEvento);
 
     @PostMapping("/eventos/{idEvento}/cancelacion")
     void cancelarEntradas(
