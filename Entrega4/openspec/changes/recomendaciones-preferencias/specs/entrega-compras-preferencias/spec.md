@@ -33,7 +33,7 @@ El sistema NO DEBE registrar avisos para pagos rechazados, vencidos ni fallidos.
 
 ### Requirement: Reintentos con backoff [Entrega 2]
 
-Si preferencias no responde, el sistema DEBE reintentar hasta cinco veces con esperas de 10 segundos, 30 segundos, 1 minuto y 5 minutos, configurables sin tocar el código.
+Si preferencias no responde, el sistema DEBE realizar 5 intentos reales en total (no 5 reintentos adicionales a un intento inicial), con esperas de 10 segundos, 30 segundos, 1 minuto y 5 minutos entre cada uno, configurables sin tocar el código.
 
 #### Scenario: falla transitoria
 

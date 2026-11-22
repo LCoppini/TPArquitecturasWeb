@@ -76,24 +76,35 @@ Los DTOs locales `EventoResponse` y `UsuarioResponse` de `msvc-entrada` se extie
 
 ### 5. Idempotencia en el documento MongoDB
 
-`PreferenciaCliente` usa `_id = idUsuario`, `Map<String,Integer> tiposEvento`, `List<ArtistaPreferido>` con `cantidad`, `Set<Long> comprasProcesadas` y `actualizadoEn`.
+`PreferenciaCliente` usa `_id = idUsuario`, `ciudad`, `Map<String,Integer> tiposEvento`, `List<ArtistaPreferido>` con `cantidad`, `Set<Long> comprasProcesadas`, `Set<Long> eventosComprados` y `actualizadoEn`.
 
-El alta es un update atómico condicional:
+El registro es un único `updateOne` atómico con filtro condicional:
 
 ```
-filtro:  { _id: 42, comprasProcesadas: { $ne: 101 } }
-$addToSet: { comprasProcesadas: 101 }
-$inc: { "tiposEvento.ROCK": 1, "artistas.$[a].cantidad": 1 }
-$set: { ciudad: ... }
+filtro: { _id: 42, comprasProcesadas: { $ne: 101 } }
 ```
 
-Esto cubre el reintento en el que el POST anterior tuvo éxito pero se perdió la confirmación en la red. Un `arrayFilters` por `idArtista` evita duplicar artistas dentro de una misma compra.
+El filtro hace idempotente el reintento en el que el POST anterior tuvo éxito pero se perdió la confirmación: si la entrada ya está en `comprasProcesadas`, la actualización no produce cambios.
+
+Para que un artista nuevo se agregue **y** uno existente se incremente sin dos escrituras separadas, se usa un pipeline de actualización de MongoDB (disponible desde 4.2; el proyecto usa MongoDB 7) con estos pasos:
+
+1. `$set` de `comprasProcesadas` con `$setUnion` entre el conjunto actual y `[idEntrada]`; `$set` de `eventosComprados` con `$setUnion` entre el actual y `[idEvento]`; `$set` de `ciudad` y `actualizadoEn`.
+2. `$set` de `artistas`: si `idArtista` ya figura en `artistas.idArtista`, un `$map` incrementa en uno el `cantidad` de ese elemento; si no figura, `$concatArrays` agrega `{ idArtista, nombre, cantidad: 1 }`.
+3. `$set` de `tiposEvento`: mismo patrón sobre `$objectToArray` / `$map` / `$arrayToObject`, para incrementar el tipo existente o crearlo con valor `1`.
+
+Al ser un solo `updateOne`, los tres pasos son atómicos para el documento. MongoDB serializa las escrituras sobre el mismo `_id`, por lo que dos compras concurrentes del mismo cliente no pierden incrementos; el filtro por `idEntrada` evita que la misma entrada se aplique dos veces.
+
+- **Alternativa descartada — dos pasos `$addToSet` + `$inc` con `arrayFilters`**: `$addToSet` compara el subdocumento completo, por lo que un artista cuyo `cantidad` ya cambió no coincide con el valor inicial y volvería a insertarse. Exigiría además un índice multikey único sobre `artistas.idArtista` y no resolvería la carrera entre dos compras concurrentes del mismo artista nuevo.
+- **Alternativa descartada — `$inc` solo con `arrayFilters`**: incrementa artistas existentes pero nunca crea uno nuevo, que era el defecto del borrador anterior.
+
+Los tests requeridos son: primera compra con artista nuevo, segunda compra con el mismo artista ya existente, dos compras concurrentes con el mismo artista nuevo, reintento con la misma `idEntrada` y verificación de que `eventosComprados` queda poblado con `idEvento`.
 
 ### 6. Regla de recomendación
 
 - Mínimo de un compra por artista: cualquier compra cuenta como favorito.
 - Al recomendar: top 5 artistas y top 3 tipos, ordenados por `cantidad DESC`, desempate por identificador ascendente.
 - Motivos: `MISMO_TIPO`, `MISMO_ARTISTA`, `FALLBACK_CIUDAD`.
+- Exclusión de eventos ya comprados (EP-17): todo candidato cuyo `idEvento` esté en `eventosComprados` se descarta, tanto en las coincidencias por tipo/artista como en el fallback por ciudad.
 - Fallback: si no hay documento, se obtiene la ciudad del usuario; siempre con `desde=<ahora>` y `orden=fecha`, porque la búsqueda con filtros de `msvc-evento` puede incluir eventos pasados.
 - La devolución no descuenta: es una decisión de alcance, no un comportamiento activo. No existe notificación de devoluciones hacia preferencias.
 
@@ -109,7 +120,7 @@ La recuperación de registros `EN_PROCESO` con más de 5 minutos evita avisos tr
 
 ### 8. Reintentos y configuración de resiliencia
 
-5 intentos reales con backoff `10s / 30s / 1m / 5m`, todos configurables desde YAML. Si el circuito está abierto (`CallNotPermittedException`), no se cuenta como intento real: solo se corre `proximo_intento_en` con `waitDurationInOpenState + 5s`, derivado de la misma property para que no se desalineen. Al agotar el quinto intento real, el registro pasa a `FALLIDO` y se conserva para replay manual.
+5 intentos reales en total (no 5 reintentos adicionales a un intento inicial), con backoff `10s / 30s / 1m / 5m` entre cada uno, todos configurables desde YAML. Si el circuito está abierto (`CallNotPermittedException`), no se cuenta como intento real: solo se corre `proximo_intento_en` con `waitDurationInOpenState + 5s`, derivado de la misma property para que no se desalineen. Al agotar el quinto intento real, el registro pasa a `FALLIDO` y se conserva para replay manual.
 
 ```yaml
 ticketya:
@@ -147,7 +158,7 @@ spring:
 
 - `TIME_BASED` con 120s y mínimo 3 llamadas: el tráfico es esporádico (solo compras aprobadas), y con `COUNT_BASED` el breaker podría no acumular muestras nunca.
 - Sin `retry` interno de Resilience4j: el presupuesto de reintentos lo lleva únicamente el worker persistido. Si no, los intentos reales dejarían de ser reales.
-- **Sin ADR nuevo**: Resilience4j ya es dependencia real en `msvc-notificaciones/pom.xml` y ya está declarado como estrategia en `openspec/config.yaml`; el patrón `@Async` + `TaskDecorator` + MDC también está ahí descrito, y la comparación por `X-User-Id` viene de ADR-0001. Agregar el mismo starter al pom de `msvc-entrada` es aplicar decisiones existentes.
+- **Sin ADR adicional para resiliencia**: Resilience4j ya es dependencia real en `msvc-notificaciones/pom.xml` y ya está declarado como estrategia en `openspec/config.yaml`; el patrón `@Async` + `TaskDecorator` + MDC también está ahí descrito, y la comparación por `X-User-Id` viene de ADR-0001. Agregar el mismo starter al pom de `msvc-entrada` es aplicar decisiones existentes. El único ADR nuevo de este change es el `0004`, de MongoDB para `msvc-preferencias`.
 
 ### 9. Seguridad y endpoints finales
 
@@ -175,6 +186,7 @@ El `correlation_id` del request del pago se guarda en la fila, el `TaskDecorator
 
 - **[Una caída prolongada puede mantener el aviso reintentando sin límite de tiempo absoluto]** → Mitigación: **limitación conocida y aceptada para esta entrega**; se documenta aquí y no se implementa ni se registra como trabajo pendiente. El presupuesto solo se agota con intentos reales; los rechazos por circuito abierto no lo consumen.
 - **[Los datos del evento pueden cambiar entre la compra y el envío]** → Mitigación: se acepta la versión vigente al momento del envío; preferencias no consulta eventos ni ubicación.
+- **[Desfase de ciudad con `msvc-usuarios`]** → La ciudad de la preferencia se actualiza solo al procesar una compra aprobada. Si el cliente cambia de ciudad en `msvc-usuarios` sin volver a comprar, el fallback por ciudad puede usar una ciudad desactualizada hasta la próxima compra. **Limitación conocida y aceptada para esta entrega**: no se consulta `usuarioClient` en cada recomendación para evitarla.
 - **[Un registro queda EN_PROCESO si muere la instancia]** → Mitigación: recuperación automática después de 5 minutos y `WHERE estado = 'EN_PROCESO'` en la escritura del resultado.
 - **[Pocas llamadas pueden evitar que el circuito abra]** → Mitigación: ventana temporal amplia y mínimo bajo; con tráfico esporádico no hay riesgo de saturar el destino.
 - **[Carrera entre el timeout HTTP y el TimeLimiter]** → Mitigación: timeouts del cliente suman 1700ms contra 2000ms del TimeLimiter, con 300ms de margen.

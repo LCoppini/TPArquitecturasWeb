@@ -2,14 +2,19 @@ package com.ticketya.entrada.service;
 
 import com.ticketya.entrada.dto.request.PagoRequest;
 import com.ticketya.entrada.dto.response.PagoResponse;
+import com.ticketya.entrada.config.CorrelationContext;
 import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.entity.Pago;
+import com.ticketya.entrada.entity.PendientePreferencia;
 import com.ticketya.entrada.entity.RegistroPago;
 import com.ticketya.entrada.entity.RegistroPagoId;
 import com.ticketya.entrada.repository.EntradaRepository;
 import com.ticketya.entrada.repository.PagoRepository;
+import com.ticketya.entrada.repository.PendientePreferenciaRepository;
 import com.ticketya.entrada.repository.RegistroPagoRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,18 +38,33 @@ public class PagoService {
     private final PagoRepository pagoRepository;
     private final EntradaRepository entradaRepository;
     private final RegistroPagoRepository registroPagoRepository;
+    private final PendientePreferenciaRepository pendientePreferenciaRepository;
     private final String resultadoPasarela;
 
+    /** Constructor usado por Spring; el pendiente se crea en la misma transacción del pago. */
+    @Autowired
     public PagoService(
             PagoRepository pagoRepository,
             EntradaRepository entradaRepository,
             RegistroPagoRepository registroPagoRepository,
+            PendientePreferenciaRepository pendientePreferenciaRepository,
             @Value("${ticketya.pasarela.resultado:APRUEBA}") String resultadoPasarela
     ) {
         this.pagoRepository = pagoRepository;
         this.entradaRepository = entradaRepository;
         this.registroPagoRepository = registroPagoRepository;
+        this.pendientePreferenciaRepository = pendientePreferenciaRepository;
         this.resultadoPasarela = resultadoPasarela.toUpperCase(java.util.Locale.ROOT);
+    }
+
+    /** Constructor previo, conservado para los tests existentes que no exercise el outbox. */
+    public PagoService(
+            PagoRepository pagoRepository,
+            EntradaRepository entradaRepository,
+            RegistroPagoRepository registroPagoRepository,
+            String resultadoPasarela
+    ) {
+        this(pagoRepository, entradaRepository, registroPagoRepository, null, resultadoPasarela);
     }
 
     @Transactional
@@ -132,6 +152,7 @@ public class PagoService {
         registro.setDescripcion("Pago de entrada " + entrada.getId() + " con " + pago.getMedioDePago());
         registro.setMontoTotal(entrada.getPrecio());
         registroPagoRepository.save(registro);
+        registrarPendientePreferencia(entrada);
         return convertirRespuesta(pago);
     }
 
@@ -236,6 +257,27 @@ public class PagoService {
     @Transactional
     public void eliminar(Long id) {
         throw new IllegalStateException("Los pagos no se pueden eliminar por CRUD");
+    }
+
+    private void registrarPendientePreferencia(Entrada entrada) {
+        if (pendientePreferenciaRepository == null) {
+            return;
+        }
+        if (pendientePreferenciaRepository.findByIdEntrada(entrada.getId()).isPresent()) {
+            return;
+        }
+        String correlationId = MDC.get(CorrelationContext.MDC_KEY);
+        if (correlationId == null || correlationId.isBlank()) {
+            correlationId = UUID.randomUUID().toString();
+        }
+        PendientePreferencia pendiente = new PendientePreferencia();
+        pendiente.setIdEntrada(entrada.getId());
+        pendiente.setIdUsuario(entrada.getIdUsuario());
+        pendiente.setIdEvento(entrada.getIdEvento());
+        pendiente.setCorrelationId(correlationId);
+        pendiente.setEstado(PendientePreferencia.PENDIENTE);
+        pendiente.setIntentos(0);
+        pendientePreferenciaRepository.save(pendiente);
     }
 
     private void validarClave(String clave) {

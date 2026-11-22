@@ -161,7 +161,25 @@ class GatewayRoleMatrixTest {
                 Arguments.of("PERSONAL no puede consultar el reporte", HttpMethod.GET,
                         "/api/organizador/eventos/1/reporte", PERSONAL_ACCESO),
                 Arguments.of("contrato interno siempre denegado", HttpMethod.GET,
-                        "/internal/entradas/disponibilidad", CLIENTE)
+                        "/internal/entradas/disponibilidad", CLIENTE),
+                Arguments.of("ORGANIZADOR no puede consultar preferencias", HttpMethod.GET,
+                        "/api/preferencias/clientes/42", ORGANIZADOR),
+                Arguments.of("ORGANIZADOR no puede consultar recomendaciones", HttpMethod.GET,
+                        "/api/recomendaciones/clientes/42", ORGANIZADOR),
+                Arguments.of("ORGANIZADOR no puede consultar preferencias administrativas", HttpMethod.GET,
+                        "/api/admin/preferencias/clientes/42", ORGANIZADOR),
+                Arguments.of("ORGANIZADOR no puede consultar recomendaciones administrativas", HttpMethod.GET,
+                        "/api/admin/recomendaciones/clientes/42", ORGANIZADOR),
+                Arguments.of("CLIENTE no puede consultar preferencias administrativas", HttpMethod.GET,
+                        "/api/admin/preferencias/clientes/42", CLIENTE),
+                Arguments.of("CLIENTE no puede consultar recomendaciones administrativas", HttpMethod.GET,
+                        "/api/admin/recomendaciones/clientes/42", CLIENTE),
+                Arguments.of("ADMINISTRADOR no usa el path de preferencias de cliente", HttpMethod.GET,
+                        "/api/preferencias/clientes/42", ADMINISTRADOR),
+                Arguments.of("ADMINISTRADOR no usa el path de recomendaciones de cliente", HttpMethod.GET,
+                        "/api/recomendaciones/clientes/42", ADMINISTRADOR),
+                Arguments.of("POST interno de preferencias siempre denegado", HttpMethod.POST,
+                        "/internal/preferencias/compras", CLIENTE)
         );
     }
 
@@ -180,6 +198,14 @@ class GatewayRoleMatrixTest {
                         "/api/admin/eventos/1/suspender", ADMINISTRADOR),
                 Arguments.of("ADMINISTRADOR edita artistas", HttpMethod.POST, "/api/admin/artistas", ADMINISTRADOR),
                 Arguments.of("CLIENTE consulta preferencias", HttpMethod.GET, "/api/preferencias", CLIENTE),
+                Arguments.of("CLIENTE consulta sus preferencias", HttpMethod.GET,
+                        "/api/preferencias/clientes/42", CLIENTE),
+                Arguments.of("CLIENTE consulta sus recomendaciones", HttpMethod.GET,
+                        "/api/recomendaciones/clientes/42", CLIENTE),
+                Arguments.of("ADMINISTRADOR consulta preferencias administrativas", HttpMethod.GET,
+                        "/api/admin/preferencias/clientes/42", ADMINISTRADOR),
+                Arguments.of("ADMINISTRADOR consulta recomendaciones administrativas", HttpMethod.GET,
+                        "/api/admin/recomendaciones/clientes/42", ADMINISTRADOR),
                 Arguments.of("ADMINISTRADOR consulta eventos", HttpMethod.GET, "/api/eventos/1", ADMINISTRADOR)
         );
     }

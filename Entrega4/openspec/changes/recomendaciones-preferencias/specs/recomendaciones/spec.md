@@ -68,6 +68,25 @@ El sistema NO DEBE devolver eventos cuya fecha ya pasó, aun cuando la búsqueda
 - **WHEN** un evento pasado coincide con un artista favorito del cliente
 - **THEN** el sistema no lo incluye entre las recomendaciones
 
+### Requirement: Exclusión de eventos ya comprados [Entrega 2]
+
+El sistema NO DEBE devolver eventos que el cliente ya compró, incluso cuando coincidan por tipo, por artista o por ciudad. Para ello DEBE usar el conjunto `eventosComprados` de la preferencia, poblado con `idEvento` al registrar cada compra aprobada.
+
+#### Scenario: evento comprado coincide por tipo
+
+- **WHEN** un evento ya comprado por el cliente tiene el mismo tipo que una de sus preferencias
+- **THEN** el sistema no lo devuelve con motivo `MISMO_TIPO`
+
+#### Scenario: evento comprado coincide por artista
+
+- **WHEN** un evento ya comprado por el cliente incluye un artista favorito
+- **THEN** el sistema no lo devuelve con motivo `MISMO_ARTISTA`
+
+#### Scenario: evento comprado aparece en el fallback
+
+- **WHEN** el fallback por ciudad devuelve un evento que ya está en `eventosComprados`
+- **THEN** el sistema lo descarta antes de responder
+
 ### Requirement: Consulta de recomendaciones con pertenencia [Entrega 2]
 
 El sistema DEBE exponer `GET /api/recomendaciones/clientes/{idUsuario}` para `CLIENTE`, comparando el identificador del path contra `X-User-Id` y respondiendo 403 si difieren. DEBE exponer `GET /api/admin/recomendaciones/clientes/{idUsuario}` para `ADMINISTRADOR`, sin aplicar esa comparación. El gateway DEBE autorizar cada path por rol, sin propagar el rol al servicio.
