@@ -194,6 +194,22 @@ class ReporteVentasServiceTest {
         assertEquals(dinero("10.00"), respuesta.totales().recaudacionNeta());
     }
 
+    @Test
+    void noDobleDescuentaConDatosArmadosManualmente() {
+        // Fixture artificial: con FALLA el flujo real deja la entrada en EN_REINTEGRO,
+        // por lo que DEVUELTA + REINTEGRO_PENDIENTE no es alcanzable desde cancelarEvento().
+        esperarConteos(conteo(1, "DEVUELTA", 1));
+        esperarPagos(pago(1, "REINTEGRO_PENDIENTE", "1000"));
+
+        ReporteVentasEventoResponse respuesta = service.reporte(10L);
+
+        assertEquals(1, respuesta.totales().entradasDevueltas());
+        assertEquals(0, respuesta.totales().enReintegro());
+        assertEquals(dinero("1000.00"), respuesta.totales().recaudacionBruta());
+        assertEquals(dinero("0.00"), respuesta.totales().recaudacionDevuelta());
+        assertEquals(dinero("1000.00"), respuesta.totales().recaudacionNeta());
+    }
+
     private static BigDecimal dinero(String valor) {
         return new BigDecimal(valor);
     }

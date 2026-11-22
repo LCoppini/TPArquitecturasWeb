@@ -3,6 +3,7 @@ package com.ticketya.evento.service;
 import com.ticketya.evento.client.EntradaClient;
 import com.ticketya.evento.client.SectorClient;
 import com.ticketya.evento.dto.response.ReporteEventoResponse;
+import com.ticketya.evento.dto.response.ReporteSectorEventoResponse;
 import com.ticketya.evento.dto.response.ReporteSectorResponse;
 import com.ticketya.evento.dto.response.ReporteVentasEventoResponse;
 import com.ticketya.evento.dto.response.SectorResponse;
@@ -224,5 +225,47 @@ class ReporteOrganizadorServiceTest {
         assertEquals(2, respuesta.porSector().getFirst().enReintegro());
         assertEquals(new BigDecimal("200.00"), respuesta.totales().recaudacionBruta());
         assertEquals(new BigDecimal("200.00"), respuesta.totales().recaudacionNeta());
+    }
+
+    @Test
+    void laSumaDePorSectorIgualaLosTotales() {
+        dadoElEvento(evento(10L, 42L, "PUBLICADO", 1L, 2L));
+        when(entradaClient.consultarReporte(10L)).thenReturn(ventas(10L, List.of(
+                sector(1L, 10, 8, 1, 1, "1000.00", "100.00", "900.00"),
+                sector(2L, 5, 4, 1, 0, "500.00", "50.00", "450.00")
+        )));
+        when(sectorClient.obtenerPorId(1L)).thenReturn(new SectorResponse(1L, 3L, "Platea", 100));
+        when(sectorClient.obtenerPorId(2L)).thenReturn(new SectorResponse(2L, 3L, "Campo", 50));
+
+        ReporteEventoResponse respuesta = service.reporte(10L, "42");
+
+        assertEquals(respuesta.porSector().stream().mapToLong(ReporteSectorEventoResponse::entradasEmitidas).sum(),
+                respuesta.totales().entradasEmitidas());
+        assertEquals(respuesta.porSector().stream().mapToLong(ReporteSectorEventoResponse::entradasActivas).sum(),
+                respuesta.totales().entradasActivas());
+        assertEquals(respuesta.porSector().stream().mapToLong(ReporteSectorEventoResponse::entradasDevueltas).sum(),
+                respuesta.totales().entradasDevueltas());
+        assertEquals(respuesta.porSector().stream().mapToLong(ReporteSectorEventoResponse::enReintegro).sum(),
+                respuesta.totales().enReintegro());
+        assertEquals(0, new BigDecimal("1500.00").compareTo(respuesta.totales().recaudacionBruta()));
+        assertEquals(0, new BigDecimal("150.00").compareTo(respuesta.totales().recaudacionDevuelta()));
+        assertEquals(0, new BigDecimal("1350.00").compareTo(respuesta.totales().recaudacionNeta()));
+    }
+
+    @Test
+    void elReporteDeUnEventoNoIncluyeDatosDeOtro() {
+        dadoElEvento(evento(10L, 42L, "PUBLICADO", 1L));
+        when(entradaClient.consultarReporte(10L)).thenReturn(ventas(10L, List.of(
+                sector(1L, 5, 3, 0, 0, "300.00", "0.00", "300.00")
+        )));
+        when(sectorClient.obtenerPorId(1L)).thenReturn(new SectorResponse(1L, 3L, "Platea", 100));
+
+        ReporteEventoResponse respuesta = service.reporte(10L, "42");
+
+        assertEquals(List.of(1L),
+                respuesta.porSector().stream().map(ReporteSectorEventoResponse::idSector).toList());
+        verify(entradaClient).consultarReporte(10L);
+        verify(entradaClient, never()).consultarReporte(20L);
+        assertEquals(3, respuesta.totales().entradasActivas());
     }
 }
