@@ -7,8 +7,9 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 /**
- * NUMERADO: informar {@code filas} y {@code asientosPorFila} (la capacidad se calcula).
- * NO_NUMERADO: informar {@code capacidadMax} mayor a cero.
+ * NUMERADO: informar {@code filas} y {@code asientosPorFila}; la capacidad se calcula
+ * en el servidor y no se admite {@code capacidadMax} en la solicitud.
+ * NO_NUMERADO: informar {@code capacidadMax} mayor a cero, sin filas ni asientos.
  */
 public record SectorRequest(
         @NotBlank @Size(max = 100) String nombre,

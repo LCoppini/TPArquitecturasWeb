@@ -175,6 +175,28 @@ class GatewayErrorHandlingTest {
         assertErrorBody(response, "Token ausente, invalido o vencido.");
     }
 
+    @Test
+    void contratoInternoSinTokenResponde401() {
+        ResponseEntity<Map> response = restTemplate.getForEntity(
+                "/internal/entradas/eventos/1/reporte", Map.class);
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
+        assertErrorBody(response, "Token ausente, invalido o vencido.");
+    }
+
+    @Test
+    void contratoInternoConTokenResponde403PorDenyAll() {
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "/internal/entradas/eventos/1/reporte",
+                HttpMethod.GET,
+                new HttpEntity<>(autorizado(TOKEN_VALIDO)),
+                Map.class
+        );
+
+        assertEquals(HttpStatus.FORBIDDEN, response.getStatusCode());
+        assertErrorBody(response, "No tenes el rol requerido para este recurso.");
+    }
+
     private HttpHeaders autorizado(String token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);

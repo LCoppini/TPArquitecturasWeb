@@ -13,7 +13,7 @@ import com.ticketya.evento.dto.response.EventoResponse;
 import com.ticketya.evento.dto.response.EventoSectorResponse;
 import com.ticketya.evento.dto.response.LugarResponse;
 import com.ticketya.evento.dto.response.SectorResponse;
-import com.ticketya.evento.dto.response.VentasEventoResponse;
+import com.ticketya.evento.dto.response.ReporteVentasEventoResponse;
 import com.ticketya.evento.entity.EstadosEvento;
 import com.ticketya.evento.entity.Evento;
 import com.ticketya.evento.entity.EventoSector;
@@ -471,17 +471,19 @@ public class EventoServiceImpl implements EventoService {
 
     private long cantidadVendida(Evento evento) {
         try {
-            VentasEventoResponse ventas = entradaClient.consultarVentas(evento.getId());
-            if (ventas == null || !evento.getId().equals(ventas.idEvento()) || ventas.entradasVendidas() == null) {
+            ReporteVentasEventoResponse reporte = entradaClient.consultarReporte(evento.getId());
+            if (reporte == null || !evento.getId().equals(reporte.idEvento())
+                    || reporte.porSector() == null || reporte.totales() == null) {
                 throw new ServicioExternoException(
-                        "Entrada devolvió una cantidad de ventas incompleta para el evento " + evento.getId(),
+                        "Entrada devolvió un reporte incompleto para el evento " + evento.getId(),
                         null
                 );
             }
-            return ventas.entradasVendidas();
+            // La relevancia usa las activas, no el histórico de emitidas.
+            return reporte.totales().entradasActivas();
         } catch (FeignException exception) {
             throw new ServicioExternoException(
-                    "No se pudo consultar la cantidad de entradas vendidas en msvc-entrada",
+                    "No se pudo consultar el reporte de entradas en msvc-entrada",
                     exception
             );
         }

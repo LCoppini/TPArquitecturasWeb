@@ -127,4 +127,24 @@ public interface EntradaRepository extends JpaRepository<Entrada, Long> {
             """)
     int cancelarReservasDeEvento(@Param("idEvento") Long idEvento);
 
+    /** Proyección del reporte: un renglón por (sector, estado). */
+    interface ConteoPorSectorYEstado {
+        Long getIdSector();
+
+        String getEstado();
+
+        Long getCantidad();
+    }
+
+    @Query("""
+            select e.idSector as idSector, e.estado as estado, count(e) as cantidad
+            from Entrada e
+            where e.idEvento = :idEvento and e.estado in :estados
+            group by e.idSector, e.estado
+            """)
+    List<ConteoPorSectorYEstado> contarPorSectorYEstado(
+            @Param("idEvento") Long idEvento,
+            @Param("estados") List<String> estados
+    );
+
 }

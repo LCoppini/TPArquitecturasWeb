@@ -77,6 +77,14 @@ spring:
               uri: lb://msvc-entrada
               predicates:
                 - Path=/api/pagos/**
+            - id: admin-preferencias-route
+              uri: lb://msvc-preferencias
+              predicates:
+                - Path=/api/admin/preferencias/**
+            - id: admin-recomendaciones-route
+              uri: lb://msvc-preferencias
+              predicates:
+                - Path=/api/admin/recomendaciones/**
             - id: preferencias-route
               uri: lb://msvc-preferencias
               predicates:

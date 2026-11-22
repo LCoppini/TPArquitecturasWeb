@@ -20,7 +20,8 @@ import java.util.stream.Stream;
 public class GatewayRoleMatrix {
 
     private static final String[] ADMIN = {
-            "/api/usuarios/**", "/api/roles/**", "/api/admin/usuarios/**"
+            "/api/usuarios/**", "/api/roles/**", "/api/admin/usuarios/**",
+            "/api/admin/preferencias/**", "/api/admin/recomendaciones/**"
     };
     private static final String[] ADMIN_Y_ORGANIZADOR = {
             "/api/lugares/**", "/api/sectores/**"
@@ -35,16 +36,13 @@ public class GatewayRoleMatrix {
             "/api/admin/eventos/**", "/api/admin/artistas/**"
     };
     private static final String[] CLIENTE = {
-            "/api/entradas/**", "/api/pagos/**"
+            "/api/entradas/**", "/api/pagos/**", "/api/preferencias/**", "/api/recomendaciones/**"
     };
     private static final String[] ADMIN_ENTRADAS = {
             "/api/admin/entradas/**"
     };
     private static final String[] PERSONAL_ACCESO = {
             "/api/accesos/**"
-    };
-    private static final String[] CLIENTE_Y_ADMIN = {
-            "/api/preferencias/**", "/api/recomendaciones/**"
     };
 
     /**
@@ -53,7 +51,7 @@ public class GatewayRoleMatrix {
      */
     public static List<String> prefijosConRegla() {
         return Stream.of(ADMIN, ADMIN_Y_ORGANIZADOR, SOLO_LECTURA, ORGANIZADOR,
-                        ADMIN_ESCRITURA, CLIENTE, ADMIN_ENTRADAS, PERSONAL_ACCESO, CLIENTE_Y_ADMIN)
+                        ADMIN_ESCRITURA, CLIENTE, ADMIN_ENTRADAS, PERSONAL_ACCESO)
                 .flatMap(Arrays::stream)
                 .map(patron -> patron.substring(0, patron.length() - 3))
                 .distinct()
@@ -87,8 +85,5 @@ public class GatewayRoleMatrix {
 
         authz.requestMatchers(PERSONAL_ACCESO)
                 .hasRole(GatewayRoles.PERSONAL_ACCESO);
-
-        authz.requestMatchers(CLIENTE_Y_ADMIN)
-                .hasAnyRole(GatewayRoles.ADMINISTRADOR, GatewayRoles.CLIENTE);
     }
 }
