@@ -32,6 +32,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -172,16 +173,39 @@ public class FilaVirtualService {
         ingreso.setIdUsuario(idUsuario);
         ingreso.setSecuencia(fila.getSiguienteSecuencia());
         ingreso.setEstado(EN_ESPERA);
-        ingreso.setIngresadoEn(Instant.now());
+        Instant ahora = Instant.now();
+        ingreso.setIngresadoEn(ahora);
         fila.setSiguienteSecuencia(fila.getSiguienteSecuencia() + 1);
+        habilitarEnTandaAbiertaSiCorresponde(fila, ingreso, ahora);
         ingreso = ingresoFilaRepository.saveAndFlush(ingreso);
 
         if (ACTIVA.equals(fila.getEstado())) {
-            abrirTandaSiCorresponde(fila, Instant.now());
+            abrirTandaSiCorresponde(fila, ahora);
         }
         log.info("ingreso_fila idEvento={} idUsuario={} secuencia={} estado={} correlationId={}",
                 idEvento, idUsuario, ingreso.getSecuencia(), ingreso.getEstado(), correlationId());
         return convertirIngreso(ingreso);
+    }
+
+    private void habilitarEnTandaAbiertaSiCorresponde(FilaEvento fila, IngresoFila ingreso, Instant ahora) {
+        if (!ACTIVA.equals(fila.getEstado())) {
+            return;
+        }
+        Optional<TandaFila> tandaAbierta = tandaFilaRepository.buscarAbiertaPorEventoConBloqueo(fila.getIdEvento());
+        if (tandaAbierta.isEmpty()) {
+            return;
+        }
+        TandaFila tanda = tandaAbierta.get();
+        long asignados = ingresoFilaRepository.contarAsignadosDeTanda(fila.getIdEvento(), tanda.getId());
+        long esperandoDelante = ingresoFilaRepository.countByIdEventoAndEstadoAndSecuenciaLessThan(
+                fila.getIdEvento(), EN_ESPERA, ingreso.getSecuencia());
+        boolean turnoUtil = tanda.getVenceEn() != null && tanda.getVenceEn().isAfter(ahora)
+                && tanda.getCupoRestante() != null && tanda.getCupoRestante() > 0;
+        if (turnoUtil && asignados < fila.getMaxPersonas() && esperandoDelante == 0) {
+            ingreso.setEstado(HABILITADO);
+            ingreso.setIdTanda(tanda.getId());
+            ingreso.setVenceEn(tanda.getVenceEn());
+        }
     }
 
     public IngresoFilaResponse consultarMiEstado(Long idEvento, Long idUsuario) {
@@ -473,11 +497,16 @@ public class FilaVirtualService {
     }
 
     private IngresoFilaResponse convertirIngreso(IngresoFila ingreso) {
-        Long posicion = EN_ESPERA.equals(ingreso.getEstado())
-                ? ingresoFilaRepository.countByIdEventoAndEstadoAndSecuenciaLessThan(
-                        ingreso.getIdEvento(), EN_ESPERA, ingreso.getSecuencia()
-                ) + 1
-                : HABILITADO.equals(ingreso.getEstado()) ? 0L : null;
+        Long posicion;
+        if (EN_ESPERA.equals(ingreso.getEstado())) {
+            posicion = ingresoFilaRepository.countByIdEventoAndEstadoAndSecuenciaLessThan(
+                    ingreso.getIdEvento(), EN_ESPERA, ingreso.getSecuencia()
+            ) + 1;
+        } else if (HABILITADO.equals(ingreso.getEstado())) {
+            posicion = 0L;
+        } else {
+            posicion = null;
+        }
         return new IngresoFilaResponse(
                 ingreso.getIdEvento(),
                 ingreso.getId(),

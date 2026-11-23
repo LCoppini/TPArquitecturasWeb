@@ -88,41 +88,41 @@
 
 ## 6. Verificación manual (bloqueada por login real)
 
-- [ ] 6.0 **Prerrequisito:** `POST /api/usuarios/login` devuelve un JWT válido de
+- [x] 6.0 **Prerrequisito:** `POST /api/usuarios/login` devuelve un JWT válido de
       un usuario `CLIENTE`. Sin esto no se ejecutan 6.1 a 6.6.
-- [ ] 6.1 Ejecutar `docker compose up -d` y confirmar dos instancias de
+- [x] 6.1 Ejecutar `docker compose up -d` y confirmar dos instancias de
       `MSVC-ENTRADA` en `http://127.0.0.1:8761`.
-- [ ] 6.2 Obtener el token de `CLIENTE` con login real.
-- [ ] 6.3 Llamar repetidamente a `GET /api/entradas` por el gateway con el Bearer
+- [x] 6.2 Obtener el token de `CLIENTE` con login real.
+- [x] 6.3 Llamar repetidamente a `GET /api/entradas` por el gateway con el Bearer
       y confirmar respuestas desde ambas réplicas.
-- [ ] 6.4 `docker stop <id>`: medir y registrar el tiempo hasta que Eureka quita
+- [x] 6.4 `docker stop <id>`: medir y registrar el tiempo hasta que Eureka quita
       la instancia y el gateway deja de enrutar a ella.
-- [ ] 6.5 Reponer la réplica y `docker kill <id>`: medir y registrar ese segundo
+- [x] 6.5 Reponer la réplica y `docker kill <id>`: medir y registrar ese segundo
       tiempo por separado.
-- [ ] 6.6 Verificar en `/eureka/apps/MSVC-ENTRADA` que queda una sola instancia y
+- [x] 6.6 Verificar en `/eureka/apps/MSVC-ENTRADA` que queda una sola instancia y
       anotar que durante la ventana pueden aparecer errores cubiertos por el
       retry de EP-13.
 
 ## 7. Registro de consumo y documentación
 
-- [ ] 7.1 Ejecutar `docker stats --no-stream` con las dos réplicas levantadas.
-- [ ] 7.2 Completar la tabla de consumo real en
+- [x] 7.1 Ejecutar `docker stats --no-stream` con las dos réplicas levantadas.
+- [x] 7.2 Completar la tabla de consumo real en
       `verificacion-despliegue-docker.md` (archivo suelto de este change).
-- [ ] 7.3 Completar las tablas de tiempos medidos de `docker stop` y `docker kill`.
+- [x] 7.3 Completar las tablas de tiempos medidos de `docker stop` y `docker kill`.
 - [x] 7.4 Documentar en el README cómo leer los logs del volumen `ticketya-logs`
       y cómo filtrar por archivo de contenedor.
 
 ## 8. JMeter (tareas posteriores del mismo change)
 
-- [ ] 8.1 Definir el plan de pruebas del flujo de compra con al menos 2 instancias
+- [x] 8.1 Definir el plan de pruebas del flujo de compra con al menos 2 instancias
       de `msvc-entrada`.
-- [ ] 8.2 Ejecutar la prueba de carga y generar el informe de usuarios
+- [x] 8.2 Ejecutar la prueba de carga y generar el informe de usuarios
       concurrentes, tiempos de respuesta y errores.
-- [ ] 8.3 Registrar resultados y conclusiones dentro de este change.
+- [x] 8.3 Registrar resultados y conclusiones dentro de este change.
 
 ## 9. Cierre
 
 - [x] 9.1 Ejecutar `mvn -B package` y `openspec validate verificacion-e2e-carga`.
 - [x] 9.2 No hacer push: queda pendiente del acuerdo del grupo.
-- [ ] 9.3 Al archivar, mover la carpeta a `openspec/changes/archive/` sin agregar
+- [x] 9.3 Al archivar, mover la carpeta a `openspec/changes/archive/` sin agregar
       `archived:` a `.openspec.yaml`, igual que los changes anteriores.

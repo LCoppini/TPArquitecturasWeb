@@ -61,4 +61,13 @@ public interface IngresoFilaRepository extends JpaRepository<IngresoFila, Long> 
             @Param("idEvento") Long idEvento,
             @Param("idTanda") Long idTanda
     );
+
+    @Query("""
+            select count(i) from IngresoFila i
+            where i.idEvento = :idEvento and i.idTanda = :idTanda
+            """)
+    long contarAsignadosDeTanda(
+            @Param("idEvento") Long idEvento,
+            @Param("idTanda") Long idTanda
+    );
 }

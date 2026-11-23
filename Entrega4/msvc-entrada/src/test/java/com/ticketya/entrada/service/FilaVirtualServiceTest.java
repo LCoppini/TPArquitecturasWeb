@@ -37,6 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -385,6 +386,54 @@ class FilaVirtualServiceTest {
 
         assertThrows(EntityNotFoundException.class,
                 () -> service.consultarMiEstado(20L, 10L));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"COMPRO", "VENCIDO", "CANCELADO", "SALIO"})
+    void consultarMiEstadoConEstadoTerminalDevuelvePosicionNull(String estado) {
+        IngresoFila ingreso = new IngresoFila();
+        ingreso.setId(501L);
+        ingreso.setIdEvento(20L);
+        ingreso.setIdUsuario(10L);
+        ingreso.setSecuencia(7L);
+        ingreso.setEstado(estado);
+        ingreso.setIngresadoEn(Instant.now());
+        ingreso.setIdTanda(99L);
+        when(filaEventoRepository.findById(20L)).thenReturn(Optional.of(filaActiva()));
+        when(ingresoFilaRepository.findFirstByIdEventoAndIdUsuarioOrderBySecuenciaDesc(20L, 10L))
+                .thenReturn(Optional.of(ingreso));
+
+        var respuesta = service.consultarMiEstado(20L, 10L);
+
+        assertEquals(20L, respuesta.idEvento());
+        assertEquals(501L, respuesta.idIngreso());
+        assertEquals(7L, respuesta.secuencia());
+        assertEquals(estado, respuesta.estado());
+        assertNull(respuesta.posicion());
+        assertEquals(99L, respuesta.idTanda());
+    }
+
+    @Test
+    void consultarMiEstadoConservaPosicionDeEsperaYDeHabilitado() {
+        IngresoFila esperando = new IngresoFila();
+        esperando.setId(502L);
+        esperando.setIdEvento(20L);
+        esperando.setIdUsuario(10L);
+        esperando.setSecuencia(7L);
+        esperando.setEstado("EN_ESPERA");
+        esperando.setIngresadoEn(Instant.now());
+        when(filaEventoRepository.findById(20L)).thenReturn(Optional.of(filaActiva()));
+        when(ingresoFilaRepository.findFirstByIdEventoAndIdUsuarioOrderBySecuenciaDesc(20L, 10L))
+                .thenReturn(Optional.of(esperando));
+        when(ingresoFilaRepository.countByIdEventoAndEstadoAndSecuenciaLessThan(20L, "EN_ESPERA", 7L))
+                .thenReturn(3L);
+
+        var respuestaEspera = service.consultarMiEstado(20L, 10L);
+        assertEquals(4L, respuestaEspera.posicion());
+
+        esperando.setEstado("HABILITADO");
+        var respuestaHabilitado = service.consultarMiEstado(20L, 10L);
+        assertEquals(0L, respuestaHabilitado.posicion());
     }
 
     @Test

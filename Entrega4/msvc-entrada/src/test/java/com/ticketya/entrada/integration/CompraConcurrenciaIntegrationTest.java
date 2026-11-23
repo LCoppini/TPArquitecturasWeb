@@ -59,6 +59,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -1089,6 +1090,358 @@ class CompraConcurrenciaIntegrationTest {
                 executor.shutdownNow();
             }
         }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void nConcurrentesSobreCapacidadNCompranTodosSinRechazo() throws Exception {
+        int n = 8;
+        when(sectorClient.obtenerPorId(30L)).thenReturn(
+                new SectorResponse(30L, 2 * n, null, null, "NO_NUMERADO")
+        );
+        TandaFila tanda = prepararFilaAbiertaVacia(2 * n, 2 * n, n);
+        CountDownLatch inicio = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(n);
+        try {
+            List<Future<CompraResponse>> resultados = new ArrayList<>();
+            for (long id = 10L; id < 10L + n; id++) {
+                long usuario = id;
+                resultados.add(executor.submit(() -> {
+                    await(inicio);
+                    filaVirtualService.unirse(20L, usuario);
+                    CompraResponse compra = compraService.crear(
+                            usuario, "conc-" + usuario, requestDosEntradas()
+                    );
+                    if (compra.idCompra() != null) {
+                        compraService.pagar(compra.idCompra(), usuario, "pago-" + usuario,
+                                new PagoCompraRequest("TARJETA"));
+                    }
+                    return compra;
+                }));
+            }
+            inicio.countDown();
+            for (Future<CompraResponse> futuro : resultados) {
+                CompraResponse compra = futuro.get();
+                assertNotNull(compra.idCompra(), "todos deben obtener turno: " + compra.codigo());
+                assertNull(compra.codigo());
+            }
+            entityManager.clear();
+            assertEquals(n, compraRepository.count());
+            assertEquals(2 * n, entradaRepository.count());
+            assertEquals(n, compraRepository.findAll().stream()
+                    .filter(compra -> "PAGADA".equals(compra.getEstado())).count());
+            assertEquals(0, intentoCompraRepository.count());
+            assertEquals(0, tandaFilaRepository.findById(tanda.getId()).orElseThrow().getCupoRestante());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void doceIngresosConcurrentesRespetanTopeMaxPersonas() throws Exception {
+        prepararFilaAbiertaVacia(24, 24, 8);
+        CountDownLatch inicio = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(12);
+        try {
+            List<Future<?>> resultados = new ArrayList<>();
+            for (long id = 30L; id < 42L; id++) {
+                long usuario = id;
+                resultados.add(executor.submit(() -> {
+                    await(inicio);
+                    filaVirtualService.unirse(20L, usuario);
+                }));
+            }
+            inicio.countDown();
+            for (Future<?> resultado : resultados) {
+                resultado.get();
+            }
+            entityManager.clear();
+            List<IngresoFila> habilitados = ingresoFilaRepository
+                    .findByIdEventoAndEstadoOrderBySecuenciaAsc(20L, "HABILITADO");
+            List<IngresoFila> esperando = ingresoFilaRepository
+                    .findByIdEventoAndEstadoOrderBySecuenciaAsc(20L, "EN_ESPERA");
+            assertEquals(8, habilitados.size());
+            assertEquals(4, esperando.size());
+            assertEquals(List.of(1L, 2L, 3L, 4L, 5L, 6L, 7L, 8L),
+                    habilitados.stream().map(IngresoFila::getSecuencia).sorted().toList());
+            assertEquals(List.of(9L, 10L, 11L, 12L),
+                    esperando.stream().map(IngresoFila::getSecuencia).sorted().toList());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void loteNoSuperaMaxPersonasCuandoDiezYaCompraronEnLaMismaTanda() throws Exception {
+        int maxPersonas = 30;
+        when(sectorClient.obtenerPorId(30L)).thenReturn(
+                new SectorResponse(30L, 120, null, null, "NO_NUMERADO")
+        );
+        TandaFila tanda = prepararFilaAbiertaVacia(120, 120, maxPersonas);
+        CountDownLatch inicio = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(maxPersonas);
+        try {
+            List<Future<?>> ingresos = new ArrayList<>();
+            for (long id = 100L; id < 100L + maxPersonas; id++) {
+                long usuario = id;
+                ingresos.add(executor.submit(() -> {
+                    await(inicio);
+                    filaVirtualService.unirse(20L, usuario);
+                }));
+            }
+            inicio.countDown();
+            for (Future<?> ingreso : ingresos) {
+                ingreso.get();
+            }
+            entityManager.clear();
+            assertEquals(30, ingresoFilaRepository.buscarHabilitadosDeTanda(20L, tanda.getId()).size());
+
+            for (long id = 100L; id < 110L; id++) {
+                CompraResponse compra = compraService.crear(id, "lote-" + id, requestDosEntradas());
+                assertNotNull(compra.idCompra(), "la compra debía reservarse: " + compra.codigo());
+                compraService.pagar(compra.idCompra(), id, "pago-lote-" + id,
+                        new PagoCompraRequest("TARJETA"));
+            }
+            entityManager.clear();
+            assertEquals(10, ingresoFilaRepository
+                    .findByIdEventoAndIdTandaAndEstadoOrderBySecuenciaAsc(20L, tanda.getId(), "COMPRO").size());
+            assertEquals(20, ingresoFilaRepository.buscarHabilitadosDeTanda(20L, tanda.getId()).size());
+            assertEquals("ABIERTA", tandaFilaRepository.findById(tanda.getId()).orElseThrow().getEstado());
+            assertTrue(tandaFilaRepository.findById(tanda.getId()).orElseThrow().getCupoRestante() > 0);
+
+            CountDownLatch segundaEntrada = new CountDownLatch(1);
+            ExecutorService segundoExecutor = Executors.newFixedThreadPool(5);
+            try {
+                List<Future<?>> nuevos = new ArrayList<>();
+                for (long id = 200L; id < 205L; id++) {
+                    long usuario = id;
+                    nuevos.add(segundoExecutor.submit(() -> {
+                        await(segundaEntrada);
+                        filaVirtualService.unirse(20L, usuario);
+                    }));
+                }
+                segundaEntrada.countDown();
+                for (Future<?> nuevo : nuevos) {
+                    nuevo.get();
+                }
+            } finally {
+                segundoExecutor.shutdownNow();
+            }
+            entityManager.clear();
+            Integer asignados = jdbcTemplate.queryForObject(
+                    "select count(*) from entrada_fila where id_evento = 20 and id_tanda = ?",
+                    Integer.class, tanda.getId());
+            assertEquals(30, asignados, "el lote de la tanda 1 no debe superar maxPersonas=30");
+            for (long id = 200L; id < 205L; id++) {
+                assertEquals("EN_ESPERA", estadoDe(id), "el recién llegado " + id + " no debe entrar en la tanda llena");
+            }
+            assertEquals(1, tandaFilaRepository.count());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void loteCuentaCompradoresYTurnosVencidosSinSuperarMaxPersonas() throws Exception {
+        int maxPersonas = 30;
+        when(sectorClient.obtenerPorId(30L)).thenReturn(
+                new SectorResponse(30L, 120, null, null, "NO_NUMERADO")
+        );
+        TandaFila tanda = prepararFilaAbiertaVacia(120, 120, maxPersonas);
+        CountDownLatch inicio = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(maxPersonas);
+        try {
+            List<Future<?>> ingresos = new ArrayList<>();
+            for (long id = 300L; id < 300L + maxPersonas; id++) {
+                long usuario = id;
+                ingresos.add(executor.submit(() -> {
+                    await(inicio);
+                    filaVirtualService.unirse(20L, usuario);
+                }));
+            }
+            inicio.countDown();
+            for (Future<?> ingreso : ingresos) {
+                ingreso.get();
+            }
+            entityManager.clear();
+            assertEquals(30, ingresoFilaRepository.contarAsignadosDeTanda(20L, tanda.getId()));
+
+            for (long id = 300L; id < 310L; id++) {
+                CompraResponse compra = compraService.crear(id, "lote-mixto-" + id, requestDosEntradas());
+                assertNotNull(compra.idCompra(), "la compra debía reservarse: " + compra.codigo());
+                compraService.pagar(compra.idCompra(), id, "pago-mixto-" + id,
+                        new PagoCompraRequest("TARJETA"));
+            }
+            for (long id = 310L; id < 315L; id++) {
+                IngresoFila vencido = ingresoFilaRepository
+                        .findFirstByIdEventoAndIdUsuarioAndEstadoOrderBySecuenciaDesc(20L, id, "HABILITADO")
+                        .orElseThrow();
+                vencido.setEstado("VENCIDO");
+                vencido.setVenceEn(null);
+                ingresoFilaRepository.saveAndFlush(vencido);
+            }
+            entityManager.clear();
+            assertEquals(10, ingresoFilaRepository
+                    .findByIdEventoAndIdTandaAndEstadoOrderBySecuenciaAsc(20L, tanda.getId(), "COMPRO").size());
+            assertEquals(5, ingresoFilaRepository
+                    .findByIdEventoAndIdTandaAndEstadoOrderBySecuenciaAsc(20L, tanda.getId(), "VENCIDO").size());
+            assertEquals(15, ingresoFilaRepository.buscarHabilitadosDeTanda(20L, tanda.getId()).size());
+            assertEquals(30, ingresoFilaRepository.contarAsignadosDeTanda(20L, tanda.getId()));
+            assertTrue(ingresoFilaRepository.findByIdEventoAndIdTandaAndEstadoOrderBySecuenciaAsc(
+                    20L, tanda.getId(), "VENCIDO").stream().allMatch(i -> tanda.getId().equals(i.getIdTanda())));
+            assertEquals("ABIERTA", tandaFilaRepository.findById(tanda.getId()).orElseThrow().getEstado());
+            assertTrue(tandaFilaRepository.findById(tanda.getId()).orElseThrow().getCupoRestante() > 0);
+
+            CountDownLatch segundaEntrada = new CountDownLatch(1);
+            ExecutorService segundoExecutor = Executors.newFixedThreadPool(5);
+            try {
+                List<Future<?>> nuevos = new ArrayList<>();
+                for (long id = 400L; id < 405L; id++) {
+                    long usuario = id;
+                    nuevos.add(segundoExecutor.submit(() -> {
+                        await(segundaEntrada);
+                        filaVirtualService.unirse(20L, usuario);
+                    }));
+                }
+                segundaEntrada.countDown();
+                for (Future<?> nuevo : nuevos) {
+                    nuevo.get();
+                }
+            } finally {
+                segundoExecutor.shutdownNow();
+            }
+            entityManager.clear();
+            assertEquals(30, ingresoFilaRepository.contarAsignadosDeTanda(20L, tanda.getId()),
+                    "el lote de la tanda 1 no debe superar maxPersonas=30");
+            for (long id = 400L; id < 405L; id++) {
+                assertEquals("EN_ESPERA", estadoDe(id), "el recién llegado " + id + " no debe entrar en la tanda llena");
+            }
+            assertEquals(1, tandaFilaRepository.count());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void habilitacionRespetaOrdenDeSecuenciaYNoAdelantaAQuienEsperaba() throws Exception {
+        TandaFila primera = prepararFilaAbiertaVacia(10, 10, 2);
+        CountDownLatch inicio = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+        TandaFila segunda;
+        Long idRezagado;
+        try {
+            List<Future<?>> resultados = new ArrayList<>();
+            for (long id = 50L; id < 53L; id++) {
+                long usuario = id;
+                resultados.add(executor.submit(() -> {
+                    await(inicio);
+                    filaVirtualService.unirse(20L, usuario);
+                }));
+            }
+            inicio.countDown();
+            for (Future<?> resultado : resultados) {
+                resultado.get();
+            }
+            entityManager.clear();
+            List<IngresoFila> habilitados = ingresoFilaRepository
+                    .findByIdEventoAndEstadoOrderBySecuenciaAsc(20L, "HABILITADO");
+            List<IngresoFila> esperando = ingresoFilaRepository
+                    .findByIdEventoAndEstadoOrderBySecuenciaAsc(20L, "EN_ESPERA");
+            assertEquals(List.of(1L, 2L), habilitados.stream()
+                    .map(IngresoFila::getSecuencia).sorted().toList());
+            assertEquals(List.of(3L), esperando.stream()
+                    .map(IngresoFila::getSecuencia).sorted().toList());
+            assertTrue(habilitados.stream().allMatch(i -> primera.getId().equals(i.getIdTanda())));
+            idRezagado = esperando.getFirst().getIdUsuario();
+            assertTrue(idRezagado >= 50L && idRezagado <= 52L,
+                    "el rezagado debe ser uno de los usuarios creados por el test");
+        } finally {
+            executor.shutdownNow();
+        }
+
+        entityManager.clear();
+        primera.setVenceEn(Instant.now().minusSeconds(1));
+        tandaFilaRepository.saveAndFlush(primera);
+        entityManager.clear();
+        filaVirtualService.cerrarTandaVencida(20L);
+        entityManager.clear();
+        segunda = tandaFilaRepository.findFirstByIdEventoOrderByNumeroDesc(20L).orElseThrow();
+        assertNotEquals(primera.getId(), segunda.getId());
+        IngresoFila rezagado = ingresoFilaRepository
+                .findFirstByIdEventoAndIdUsuarioOrderBySecuenciaDesc(20L, idRezagado).orElseThrow();
+        assertEquals("HABILITADO", rezagado.getEstado());
+        assertEquals(3L, rezagado.getSecuencia());
+        assertEquals(segunda.getId(), rezagado.getIdTanda());
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    void demandaMayorAlCupoVendeExactamenteCupoEntradas() throws Exception {
+        int cupo = 4;
+        when(sectorClient.obtenerPorId(30L)).thenReturn(
+                new SectorResponse(30L, 10, null, null, "NO_NUMERADO")
+        );
+        TandaFila tanda = prepararFilaAbiertaVacia(10, cupo, 6);
+        CountDownLatch inicio = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(6);
+        try {
+            List<Future<CompraResponse>> resultados = new ArrayList<>();
+            for (long id = 70L; id < 76L; id++) {
+                long usuario = id;
+                resultados.add(executor.submit(() -> {
+                    await(inicio);
+                    filaVirtualService.unirse(20L, usuario);
+                    return compraService.crear(usuario, "cupo-" + usuario, requestDosEntradas());
+                }));
+            }
+            inicio.countDown();
+            List<CompraResponse> respuestas = new ArrayList<>();
+            for (Future<CompraResponse> futuro : resultados) {
+                respuestas.add(futuro.get());
+            }
+            assertEquals(2, respuestas.stream().filter(r -> r.idCompra() != null).count());
+            assertEquals(4, respuestas.stream()
+                    .filter(r -> "CUPO_TANDA_INSUFICIENTE".equals(r.codigo())).count());
+            entityManager.clear();
+            assertEquals(4, entradaRepository.count());
+            assertEquals(2, compraRepository.count());
+            assertEquals(4, intentoCompraRepository.count());
+            assertEquals(0, tandaFilaRepository.findById(tanda.getId()).orElseThrow().getCupoRestante());
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    private TandaFila prepararFilaAbiertaVacia(int capacidad, int cupo, int maxPersonas) {
+        FilaEvento fila = new FilaEvento();
+        fila.setIdEvento(20L);
+        fila.setEstado("ACTIVA");
+        fila.setMaxPersonas(maxPersonas);
+        fila.setCupoEntradas(cupo);
+        fila.setCapacidadTotal(capacidad);
+        fila.setSiguienteSecuencia(1L);
+        filaEventoRepository.saveAndFlush(fila);
+
+        TandaFila tanda = new TandaFila();
+        tanda.setIdEvento(20L);
+        tanda.setNumero(1L);
+        tanda.setEstado("ABIERTA");
+        tanda.setIniciadaEn(Instant.now());
+        tanda.setVenceEn(Instant.now().plusSeconds(600));
+        tanda.setCupoEfectivo(cupo);
+        tanda.setCupoRestante(cupo);
+        return tandaFilaRepository.saveAndFlush(tanda);
+    }
+
+    private CompraRequest requestDosEntradas() {
+        return new CompraRequest(20L, List.of(
+                new EntradaCompraRequest(30L, null, null),
+                new EntradaCompraRequest(30L, null, null)
+        ));
     }
 
     private void deshabilitarFila() {

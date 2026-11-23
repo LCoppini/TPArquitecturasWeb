@@ -1,5 +1,11 @@
 # Requisitos: despliegue Docker y verificación manual (EP-21)
 
+## Purpose
+
+Define el empaquetado Docker y la verificación del despliegue completo: arranque
+con compose, dos réplicas de `msvc-entrada`, secretos, logging compartido y
+registro del consumo y de la prueba de carga.
+
 ## ADDED Requirements
 
 ### Requirement: Contenedor por microservicio [Entrega 2]
@@ -66,7 +72,8 @@ dominio → gateway, usando healthchecks y `depends_on` con
 
 #### Scenario: parada ordenada de una réplica
 
-- **Bloqueado hasta que `POST /api/usuarios/login` devuelva un JWT válido de `CLIENTE`.**
+- Verificado el 2026-11-23 con un JWT real de `CLIENTE`; ver
+  `verificacion-despliegue-docker.md`.
 - Dado que las dos réplicas atienden `GET /api/entradas`
 - Cuando se ejecuta `docker stop <id>` sobre una de ellas
 - Entonces se mide y registra el tiempo hasta que Eureka la quita y el gateway
@@ -75,7 +82,8 @@ dominio → gateway, usando healthchecks y `depends_on` con
 
 #### Scenario: caída abrupta de una réplica
 
-- **Bloqueado hasta que `POST /api/usuarios/login` devuelva un JWT válido de `CLIENTE`.**
+- Verificado el 2026-11-23 con un JWT real de `CLIENTE`; ver
+  `verificacion-despliegue-docker.md`.
 - Dado que la réplica detenida fue reemplazada y ambas vuelven a estar sanas
 - Cuando se ejecuta `docker kill <id>` sobre una de ellas
 - Entonces se mide por separado el tiempo de convergencia
@@ -164,7 +172,8 @@ El change DEBE documentar el procedimiento de verificación manual y registrar e
 
 #### Scenario: llamada de verificación
 
-- **Bloqueado hasta que `POST /api/usuarios/login` devuelva un JWT válido de `CLIENTE`.**
+- Verificado el 2026-11-23 con un JWT real de `CLIENTE`; ver
+  `verificacion-despliegue-docker.md`.
 - Dado que el gateway está disponible en 8080
 - Cuando se llama a `GET /api/entradas` con `Authorization: Bearer <token>`
 - Entonces las respuestas provienen de ambas réplicas de `msvc-entrada`
