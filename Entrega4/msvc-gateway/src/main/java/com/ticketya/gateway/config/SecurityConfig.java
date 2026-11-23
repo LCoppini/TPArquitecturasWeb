@@ -62,6 +62,7 @@ public class SecurityConfig {
                             .permitAll();
                     // Perfil propio: cualquier usuario autenticado, antes de que /api/usuarios/** lo exija ADMIN.
                     authz.requestMatchers(HttpMethod.GET, "/api/usuarios/me").authenticated();
+                    authz.requestMatchers(HttpMethod.PUT, "/api/usuarios/me/ciudad").authenticated();
                     roleMatrix.apply(authz);
                     authz.anyRequest().hasRole(GatewayRoles.CLIENTE);
                 })

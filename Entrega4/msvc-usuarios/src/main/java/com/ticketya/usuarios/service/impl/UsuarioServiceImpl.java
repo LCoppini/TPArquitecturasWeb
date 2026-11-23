@@ -83,6 +83,14 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     @Transactional
+    public UsuarioResponse actualizarCiudad(Long id, String ciudad) {
+        Usuario usuario = usuarioActivo(id);
+        usuario.setCiudad(ciudad.trim());
+        return guardar(usuario);
+    }
+
+    @Override
+    @Transactional
     public void eliminar(Long id) {
         Usuario usuario = usuarioActivo(id);
         usuario.setActivo(false);
