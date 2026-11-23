@@ -40,6 +40,10 @@ spring:
               uri: lb://msvc-evento
               predicates:
                 - Path=/api/organizador/eventos/**
+            - id: organizador-filas-virtuales-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/organizador/filas-virtuales/**
             - id: admin-eventos-route
               uri: lb://msvc-evento
               predicates:
@@ -48,6 +52,14 @@ spring:
               uri: lb://msvc-entrada
               predicates:
                 - Path=/api/admin/entradas/**
+            - id: filas-virtuales-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/filas-virtuales/**
+            - id: compras-route
+              uri: lb://msvc-entrada
+              predicates:
+                - Path=/api/compras/**
             - id: accesos-route
               uri: lb://msvc-entrada
               predicates:

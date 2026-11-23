@@ -35,3 +35,5 @@ ticketya:
     limite-por-cliente: ${ENTRADA_LIMITE_POR_CLIENTE:6}
   pasarela:
     resultado: ${PASARELA_RESULTADO:APRUEBA}
+  fila-virtual:
+    enabled: ${FILA_VIRTUAL_ENABLED:true}

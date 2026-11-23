@@ -30,13 +30,14 @@ public class GatewayRoleMatrix {
             "/api/eventos/**", "/api/artistas/**"
     };
     private static final String[] ORGANIZADOR = {
-            "/api/organizador/eventos/**"
+            "/api/organizador/eventos/**", "/api/organizador/filas-virtuales/**"
     };
     private static final String[] ADMIN_ESCRITURA = {
             "/api/admin/eventos/**", "/api/admin/artistas/**"
     };
     private static final String[] CLIENTE = {
-            "/api/entradas/**", "/api/pagos/**", "/api/preferencias/**", "/api/recomendaciones/**"
+            "/api/entradas/**", "/api/pagos/**", "/api/filas-virtuales/**",
+            "/api/compras/**", "/api/preferencias/**", "/api/recomendaciones/**"
     };
     private static final String[] ADMIN_ENTRADAS = {
             "/api/admin/entradas/**"

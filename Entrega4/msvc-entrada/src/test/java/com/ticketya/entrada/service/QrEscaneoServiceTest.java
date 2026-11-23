@@ -8,6 +8,7 @@ import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.exception.QrError;
 import com.ticketya.entrada.exception.QrRechazadoException;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,6 +36,9 @@ class QrEscaneoServiceTest {
     private EntradaRepository entradaRepository;
 
     @Mock
+    private FilaEventoRepository filaEventoRepository;
+
+    @Mock
     private UsuarioClient usuarioClient;
 
     @Mock
@@ -47,7 +51,9 @@ class QrEscaneoServiceTest {
 
     @BeforeEach
     void setUp() {
-        entradaService = new EntradaService(entradaRepository, usuarioClient, eventoClient, sectorClient, 6);
+        entradaService = new EntradaService(
+                entradaRepository, filaEventoRepository, usuarioClient, eventoClient, sectorClient, 6
+        );
     }
 
     @Test

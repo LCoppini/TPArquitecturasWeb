@@ -13,10 +13,13 @@ import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.exception.QrError;
 import com.ticketya.entrada.exception.QrRechazadoException;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,23 +36,42 @@ public class EntradaService {
     private static final Logger log = LoggerFactory.getLogger(EntradaService.class);
 
     private final EntradaRepository entradaRepository;
+    private final FilaEventoRepository filaEventoRepository;
     private final UsuarioClient usuarioClient;
     private final EventoClient eventoClient;
     private final SectorClient sectorClient;
     private final int limitePorCliente;
+    private final ObjectProvider<CompraService> compraService;
 
+    @Autowired
     public EntradaService(
             EntradaRepository entradaRepository,
+            FilaEventoRepository filaEventoRepository,
             UsuarioClient usuarioClient,
             EventoClient eventoClient,
             SectorClient sectorClient,
+            ObjectProvider<CompraService> compraService,
             @Value("${ticketya.entrada.limite-por-cliente:6}") int limitePorCliente
     ) {
         this.entradaRepository = entradaRepository;
+        this.filaEventoRepository = filaEventoRepository;
         this.usuarioClient = usuarioClient;
         this.eventoClient = eventoClient;
         this.sectorClient = sectorClient;
+        this.compraService = compraService;
         this.limitePorCliente = limitePorCliente;
+    }
+
+    public EntradaService(
+            EntradaRepository entradaRepository,
+            FilaEventoRepository filaEventoRepository,
+            UsuarioClient usuarioClient,
+            EventoClient eventoClient,
+            SectorClient sectorClient,
+            int limitePorCliente
+    ) {
+        this(entradaRepository, filaEventoRepository, usuarioClient, eventoClient, sectorClient, null,
+                limitePorCliente);
     }
 
     @Transactional
@@ -90,6 +112,15 @@ public class EntradaService {
                 "Eventos no devolvió un precio válido para el sector del evento");
         validarReserva(request, evento, sector);
         Instant ahora = Instant.now();
+        // El lock compartido se toma antes de consultar la fila y se conserva hasta
+        // el commit de este método @Transactional, coordinando con su activación exclusiva.
+        filaEventoRepository.bloquearEventoCompartido(request.getIdEvento());
+        if (filaEventoRepository.existsById(request.getIdEvento())) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "El evento tiene una fila persistida; debe utilizar una Compra agrupada"
+            );
+        }
         entradaRepository.vencerReservas(ahora);
 
         // Este segundo bloqueo protege el conteo de capacidad del evento y sector.
@@ -160,6 +191,18 @@ public class EntradaService {
     public void solicitarDevolucion(Long id, Long idUsuario) {
         Entrada entrada = entradaRepository.findByIdAndIdUsuario(id, idUsuario)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró la entrada con id " + id));
+        if (entrada.getIdCompra() != null) {
+            List<Entrada> entradasCompra = entradaRepository.findByIdCompraOrderById(entrada.getIdCompra());
+            CompraService servicioCompra = compraService == null ? null : compraService.getIfAvailable();
+            if (entradasCompra.size() == 1 && servicioCompra != null) {
+                servicioCompra.solicitarDevolucion(entrada.getIdCompra(), idUsuario);
+                return;
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "La devolución debe solicitarse para la Compra completa"
+            );
+        }
         if (!"VALIDA".equals(entrada.getEstado())) {
             throw new IllegalStateException("Solo se pueden solicitar devoluciones de entradas válidas");
         }
