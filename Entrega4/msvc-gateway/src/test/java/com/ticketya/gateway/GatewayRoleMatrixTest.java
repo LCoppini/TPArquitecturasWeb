@@ -115,6 +115,10 @@ class GatewayRoleMatrixTest {
                     .findFirst()
                     .orElse(null);
             assertNotNull(path, "La ruta " + id + " no declara un predicate Path.");
+            assertTrue(path.startsWith("/api/"),
+                    "La ruta '" + id + "' (" + path + ") no empieza con /api/.");
+            assertFalse(path.startsWith("/internal/"),
+                    "La ruta '" + id + "' (" + path + ") no debe exponerse públicamente.");
             assertTrue(prefijos.stream().anyMatch(path::startsWith),
                     "La ruta '" + id + "' (" + path + ") no tiene regla explícita en GatewayRoleMatrix.");
         }
