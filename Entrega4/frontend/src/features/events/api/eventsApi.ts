@@ -1,5 +1,7 @@
 import { http } from '@/lib/http'
+import { toEventDetail, toSectorAvailability } from '../mappers/toEventDetail'
 import { toEventPage } from '../mappers/toEventSummary'
+import type { DisponibilidadApi, EventoDetalleApi } from '../types/detail'
 import type { EventoPaginaApi, EventPage } from '../types/event'
 
 export type ListEventsParams = {
@@ -20,4 +22,10 @@ export const eventsApi = {
         signal,
       }),
     ),
+
+  detail: async (id: number, signal?: AbortSignal) =>
+    toEventDetail(await http<EventoDetalleApi>(`/eventos/${id}/detalle`, { signal })),
+
+  availability: async (id: number, sectorId: number, signal?: AbortSignal) =>
+    toSectorAvailability(await http<DisponibilidadApi>(`/eventos/${id}/disponibilidad`, { query: { idSector: sectorId }, signal })),
 }

@@ -48,7 +48,7 @@ export const CatalogResults = ({ data, isPending, isError, onRetry, onClearFilte
   return (
     <EventGrid>
       {data.items.map((event) => (
-        <EventCard key={event.id} event={event} />
+        <EventCard key={event.id} event={event} href={`/eventos/${event.id}`} />
       ))}
     </EventGrid>
   )

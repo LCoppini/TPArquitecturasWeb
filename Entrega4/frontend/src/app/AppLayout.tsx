@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import { Container } from '@/components/layout/Container'
 import { Footer } from '@/components/layout/Footer'
+import { SessionExpiredNotice } from '@/features/auth/components/SessionExpiredNotice'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { AppNavbar } from './AppNavbar'
 import { footerColumns } from './navigation'
@@ -12,6 +13,7 @@ export const AppLayout = () => {
       <Container>
         <AppNavbar />
       </Container>
+      <SessionExpiredNotice />
       <main className="flex-1">
         <Outlet />
       </main>

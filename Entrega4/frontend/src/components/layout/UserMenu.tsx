@@ -1,12 +1,26 @@
+import { Link } from 'react-router-dom'
 import { useCallback, useRef, useState } from 'react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Icon } from '@/components/ui/Icon'
+import type { IconName } from '@/components/ui/iconPaths'
 import { useDismiss } from '@/lib/hooks/useDismiss'
 
 type UserMenuProps = {
   email: string
   onSignOut: () => void
 }
+
+const MenuLink = ({ to, icon, label, onNavigate }: { to: string; icon: IconName; label: string; onNavigate: () => void }) => (
+  <Link
+    to={to}
+    role="menuitem"
+    onClick={onNavigate}
+    className="flex items-center gap-2 rounded-sm px-3 py-2.5 text-[15px] leading-5 text-fg no-underline hover:bg-surface-alt"
+  >
+    <Icon name={icon} />
+    {label}
+  </Link>
+)
 
 const initialsOf = (email: string) => email.slice(0, 2).toUpperCase()
 
@@ -36,6 +50,9 @@ export const UserMenu = ({ email, onSignOut }: UserMenuProps) => {
             <Avatar initials={initialsOf(email)} className="size-12" />
             <span className="min-w-0 truncate text-[14px] leading-5 text-fg-secondary">{email}</span>
           </div>
+          <div role="separator" className="my-1 h-px bg-line-subtle" />
+          <MenuLink to="/mis-entradas" icon="ticket" label="Mis entradas" onNavigate={close} />
+          <MenuLink to="/perfil" icon="user" label="Mi perfil" onNavigate={close} />
           <div role="separator" className="my-1 h-px bg-line-subtle" />
           <button
             type="button"

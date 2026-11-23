@@ -24,6 +24,7 @@ export const toApiError = (status: number, body: unknown): ApiError => {
     status,
     typeof message === 'string' && message.length > 0 ? message : fallback,
     isFieldErrors(details) ? details : {},
+    body,
   )
 }
 

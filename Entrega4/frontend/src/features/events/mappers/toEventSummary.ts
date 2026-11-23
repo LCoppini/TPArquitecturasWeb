@@ -8,6 +8,9 @@ const STATUS_BY_ESTADO: Record<string, EventSaleStatus> = {
   FINALIZADO: 'finished',
 }
 
+/** Estado del backend -> estado de venta de la vista. PUBLICADO (y cualquier otro) se considera a la venta. */
+export const toSaleStatus = (estado: string): EventSaleStatus => STATUS_BY_ESTADO[estado] ?? 'available'
+
 const lowestPrice = (sectores: EventoApi['sectores']): number | null =>
   sectores.length === 0 ? null : Math.min(...sectores.map(({ precio }) => precio))
 
@@ -17,7 +20,7 @@ export const toEventSummary = (evento: EventoApi): EventSummary => ({
   category: categoryLabelOf(evento.tipo),
   startsAt: evento.fechaHora,
   fromPrice: lowestPrice(evento.sectores),
-  status: STATUS_BY_ESTADO[evento.estado] ?? 'available',
+  status: toSaleStatus(evento.estado),
 })
 
 export const toEventPage = (pagina: EventoPaginaApi): EventPage => ({
