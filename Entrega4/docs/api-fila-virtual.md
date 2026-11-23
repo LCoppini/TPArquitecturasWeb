@@ -60,9 +60,14 @@ sola vez y es inmutable. Devuelve `IngresoFilaResponse`:
   "estado": "HABILITADO",
   "posicion": 1,
   "venceEn": "2026-11-23T02:15:00Z",
-  "idTanda": 7
+  "idTanda": 7,
+  "esperaEstimadaSegundos": null
 }
 ```
+
+`esperaEstimadaSegundos` es una cota superior de la espera (lo que resta de la tanda
+abierta más 10 minutos por cada grupo de `maxPersonas` por delante); solo se informa en
+`EN_ESPERA` y si hay una tanda abierta, de lo contrario es `null`.
 
 `estado` puede ser `EN_ESPERA`, `HABILITADO`, `VENCIDO`, `SALIO` o `CANCELADO`.
 Códigos: 200, 400, 404, 409, 503.
@@ -70,6 +75,16 @@ Códigos: 200, 400, 404, 409, 503.
 ### `GET /api/filas-virtuales/eventos/{idEvento}/mi-estado`
 
 Devuelve el mismo DTO para la membresía vigente del cliente. Códigos: 200, 400, 404.
+
+### `DELETE /api/filas-virtuales/eventos/{idEvento}/ingresos/mi`
+
+Salida voluntaria: pasa un ingreso `EN_ESPERA` a `SALIO` (idempotente si ya salió) y
+devuelve `IngresoFilaResponse`. Si el cliente ya está `HABILITADO` responde 409; sin
+ingreso, 404. Códigos: 200, 404, 409.
+
+### `GET /api/filas-virtuales/eventos/{idEvento}`
+
+Devuelve `FilaEventoResponse` para saber si el evento tiene fila. Códigos: 200, 404.
 
 ## Compra
 

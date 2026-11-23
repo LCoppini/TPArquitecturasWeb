@@ -1,0 +1,4 @@
+- [x] 1. `NotificacionesFeign`, `NotificacionesClient` adaptador y `SolicitudNotificacionRequest`
+- [x] 2. `EventoCanceladoEvent`, `CancelacionNotificacionListener` y `CancelacionEventoService`
+- [x] 3. Tests: `NotificacionesClientTest`, `CancelacionNotificacionListenerTest`, `CancelacionEventoNotificacionTest`
+- [ ] 4. Correr `mvn -pl msvc-entrada test` y probar con Mailtrap

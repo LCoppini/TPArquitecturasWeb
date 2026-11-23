@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import com.ticketya.entrada.service.FilaVirtualService;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,6 +43,37 @@ public class FilaVirtualController {
             @RequestHeader("X-User-Id") Long idUsuario
     ) {
         return filaVirtualService.unirse(idEvento, idUsuario);
+    }
+
+    @Operation(
+            summary = "Consultar la fila del evento",
+            description = "Permite al cliente saber si el evento tiene fila virtual y en qué estado está."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Fila del evento"),
+            @ApiResponse(responseCode = "404", description = "El evento no tiene fila")
+    })
+    @GetMapping
+    public FilaEventoResponse consultarFila(@PathVariable Long idEvento) {
+        return filaVirtualService.consultarFila(idEvento);
+    }
+
+    @Operation(
+            summary = "Salir de la fila",
+            description = "Solo mientras el cliente está EN_ESPERA. Es idempotente: si ya salió, devuelve su estado."
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Estado del ingreso tras salir"),
+            @ApiResponse(responseCode = "400", description = "Falta X-User-Id"),
+            @ApiResponse(responseCode = "404", description = "Sin ingreso para el evento"),
+            @ApiResponse(responseCode = "409", description = "Ya está habilitado para comprar")
+    })
+    @DeleteMapping("/ingresos/mi")
+    public IngresoFilaResponse salir(
+            @PathVariable Long idEvento,
+            @RequestHeader("X-User-Id") Long idUsuario
+    ) {
+        return filaVirtualService.salir(idEvento, idUsuario);
     }
 
     @Operation(

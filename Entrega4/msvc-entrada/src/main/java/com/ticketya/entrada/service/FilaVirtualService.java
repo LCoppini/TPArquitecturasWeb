@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -184,11 +185,34 @@ public class FilaVirtualService {
         return convertirIngreso(ingreso);
     }
 
+    public FilaEventoResponse consultarFila(Long idEvento) {
+        return convertirFila(buscarFila(idEvento));
+    }
+
     public IngresoFilaResponse consultarMiEstado(Long idEvento, Long idUsuario) {
         buscarFila(idEvento);
         IngresoFila ingreso = ingresoFilaRepository
                 .findFirstByIdEventoAndIdUsuarioOrderBySecuenciaDesc(idEvento, idUsuario)
                 .orElseThrow(() -> new EntityNotFoundException("No se encontró un ingreso para este usuario"));
+        return convertirIngreso(ingreso);
+    }
+
+    @Transactional
+    public IngresoFilaResponse salir(Long idEvento, Long idUsuario) {
+        validarFilaHabilitada();
+        buscarFila(idEvento);
+        filaEventoRepository.bloquearEventoCompartido(idEvento);
+        IngresoFila ingreso = ingresoFilaRepository
+                .findFirstByIdEventoAndIdUsuarioOrderBySecuenciaDesc(idEvento, idUsuario)
+                .orElseThrow(() -> new EntityNotFoundException("No se encontró un ingreso para este usuario"));
+        if (HABILITADO.equals(ingreso.getEstado())) {
+            throw conflicto("Ya estás habilitado para comprar: tu turno vence solo si no completás la compra");
+        }
+        if (EN_ESPERA.equals(ingreso.getEstado())) {
+            ingreso.setEstado("SALIO");
+            log.info("salida_fila idEvento={} idUsuario={} secuencia={} correlationId={}",
+                    idEvento, idUsuario, ingreso.getSecuencia(), correlationId());
+        }
         return convertirIngreso(ingreso);
     }
 
@@ -473,11 +497,13 @@ public class FilaVirtualService {
     }
 
     private IngresoFilaResponse convertirIngreso(IngresoFila ingreso) {
-        Long posicion = EN_ESPERA.equals(ingreso.getEstado())
-                ? ingresoFilaRepository.countByIdEventoAndEstadoAndSecuenciaLessThan(
-                        ingreso.getIdEvento(), EN_ESPERA, ingreso.getSecuencia()
-                ) + 1
-                : HABILITADO.equals(ingreso.getEstado()) ? 0L : null;
+        Long posicion = null;
+        if (EN_ESPERA.equals(ingreso.getEstado())) {
+            posicion = ingresoFilaRepository.countByIdEventoAndEstadoAndSecuenciaLessThan(
+                    ingreso.getIdEvento(), EN_ESPERA, ingreso.getSecuencia()) + 1;
+        } else if (HABILITADO.equals(ingreso.getEstado())) {
+            posicion = 0L;
+        }
         return new IngresoFilaResponse(
                 ingreso.getIdEvento(),
                 ingreso.getId(),
@@ -485,8 +511,28 @@ public class FilaVirtualService {
                 ingreso.getEstado(),
                 posicion,
                 ingreso.getVenceEn(),
-                ingreso.getIdTanda()
+                ingreso.getIdTanda(),
+                esperaEstimada(ingreso, posicion)
         );
+    }
+
+    /**
+     * Cota superior en segundos: lo que resta de la tanda abierta mas una tanda completa (10 min)
+     * por cada grupo de maxPersonas por delante. Las tandas se cierran antes si todos compran.
+     */
+    private Long esperaEstimada(IngresoFila ingreso, Long posicion) {
+        if (!EN_ESPERA.equals(ingreso.getEstado()) || posicion == null) {
+            return null;
+        }
+        FilaEvento fila = filaEventoRepository.findById(ingreso.getIdEvento()).orElse(null);
+        TandaFila abierta = tandaFilaRepository
+                .findFirstByIdEventoAndEstado(ingreso.getIdEvento(), ABIERTA).orElse(null);
+        if (fila == null || abierta == null || fila.getMaxPersonas() == null || fila.getMaxPersonas() <= 0) {
+            return null;
+        }
+        long restante = Math.max(0, Duration.between(Instant.now(), abierta.getVenceEn()).getSeconds());
+        long tandasPrevias = (posicion + fila.getMaxPersonas() - 1) / fila.getMaxPersonas() - 1;
+        return restante + tandasPrevias * Duration.ofMinutes(10).getSeconds();
     }
 
     private ResponseStatusException conflicto(String mensaje) {

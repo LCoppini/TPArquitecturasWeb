@@ -335,7 +335,10 @@ public class EntradaService {
                 entrada.getPrecio(),
                 entrada.getCodigoQr(),
                 entrada.getEstado(),
-                entrada.getExpiraEn()
+                entrada.getExpiraEn(),
+                entrada.getIdCompra(),
+                entrada.getEstadoDevolucion(),
+                entrada.getMotivoInvalidacion()
         );
     }
 
