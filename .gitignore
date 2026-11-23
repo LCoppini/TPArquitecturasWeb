@@ -48,3 +48,8 @@ mysql_data/
 # Archivos del entorno (IntelliJ IDEA)
 .idea/
 *.iml
+
+# Entorno, secretos y logs del despliegue Docker
+.env
+secrets/
+logs/

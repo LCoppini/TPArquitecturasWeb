@@ -125,6 +125,17 @@ eureka:
   instance:
     hostname: localhost
 
+# Solo health, sin detalles. El gateway lo deja fuera de la cadena con
+# securityMatcher("/api/**", "/internal/**").
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 # Las APIs de registros de pago no se exponen públicamente en el gateway.
 # Los errores de negocio de los servicios destino se conservan; el gateway solo
 # normaliza los errores que genera él mismo, como ruta desconocida o backend caído.

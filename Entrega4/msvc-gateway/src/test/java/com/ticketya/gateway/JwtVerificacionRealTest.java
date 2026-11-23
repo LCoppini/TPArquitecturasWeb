@@ -170,6 +170,27 @@ class JwtVerificacionRealTest {
     }
 
     @Test
+    void tokenVencidoEnGetPublicoResponde401SinLlamarAlDestino() throws Exception {
+        Instant expiracion = Instant.now().minus(1, ChronoUnit.MINUTES);
+        String token = tokenRs256(claves.par(), ISSUER, AUDIENCE,
+                expiracion.minusSeconds(900), expiracion);
+
+        assert401Publico(solicitarPublico(token));
+        assertFalse(CONTROLADOR_INVOCADO.get());
+    }
+
+    @Test
+    void tokenDeOtraClaveEnGetPublicoResponde401SinLlamarAlDestino() throws Exception {
+        KeyPairGenerator generador = KeyPairGenerator.getInstance("RSA");
+        generador.initialize(2048);
+        KeyPair otroPar = generador.generateKeyPair();
+        String token = tokenRs256(otroPar, ISSUER, AUDIENCE, Instant.now(), Instant.now().plusSeconds(900));
+
+        assert401Publico(solicitarPublico(token));
+        assertFalse(CONTROLADOR_INVOCADO.get());
+    }
+
+    @Test
     void idUsuarioNumericoLlegaComoXUserIdYSinXUserRole() throws Exception {
         String token = tokenRs256(claves.par(), ISSUER, AUDIENCE,
                 Instant.now(), Instant.now().plusSeconds(900));
@@ -188,6 +209,19 @@ class JwtVerificacionRealTest {
     private ResultActions solicitar(String token) throws Exception {
         return mockMvc.perform(get("/api/identidad")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token));
+    }
+
+    private ResultActions solicitarPublico(String token) throws Exception {
+        return mockMvc.perform(get("/api/eventos/publico-de-test")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token));
+    }
+
+    private void assert401Publico(ResultActions resultado) throws Exception {
+        resultado
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401))
+                .andExpect(jsonPath("$.message").value(MENSAJE_401))
+                .andExpect(jsonPath("$.path").value("/api/eventos/publico-de-test"));
     }
 
     private void assert401(ResultActions resultado) throws Exception {
@@ -269,6 +303,12 @@ class JwtVerificacionRealTest {
     /** Endpoint de prueba: expone lo que el filtro de identidad reenvió. */
     @RestController
     static class IdentidadController {
+
+        @GetMapping("/api/eventos/publico-de-test")
+        Map<String, String> publico() {
+            CONTROLADOR_INVOCADO.set(true);
+            return Map.of("ok", "true");
+        }
 
         @GetMapping("/api/identidad")
         Map<String, String> identidad(
