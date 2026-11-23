@@ -11,7 +11,7 @@ const BENEFITS: { icon: IconName; text: string }[] = [
 
 /** Panel oscuro de marca que acompaña a los formularios de ingreso y registro. */
 export const AuthBrandPanel = () => (
-  <ScenePanel aria-label="Por qué TicketYa" className="flex min-h-190 flex-col justify-between p-14" artClassName="-right-30 -bottom-35">
+  <ScenePanel aria-label="Por qué TicketYa" className="flex min-h-190 flex-col justify-between p-14" artClassName="-top-32 -right-40">
     <Logo className="relative text-[30px]" />
     <div className="relative flex max-w-120 flex-col gap-6">
       <span className="text-overline text-brand-text">Entradas en pocos pasos</span>

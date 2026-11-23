@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import { Pagination } from '@/components/ui/Pagination'
 import { useCatalogParams } from '../hooks/useCatalogParams'
 import { useEvents } from '../hooks/useEvents'
@@ -10,9 +11,15 @@ const countLabel = (total: number) => `${total} ${total === 1 ? 'evento' : 'even
 export const EventCatalog = () => {
   const { category, page, selectCategory, selectPage } = useCatalogParams()
   const events = useEvents({ category, page })
+  const sectionRef = useRef<HTMLElement>(null)
+
+  const changePage = (nextPage: number) => {
+    selectPage(nextPage)
+    sectionRef.current?.scrollIntoView({ block: 'start' })
+  }
 
   return (
-    <section id="cartelera" aria-labelledby="catalog-title" className="flex flex-col gap-8">
+    <section ref={sectionRef} id="cartelera" aria-labelledby="catalog-title" className="flex scroll-mt-6 flex-col gap-8">
       <div className="flex flex-col gap-2">
         <span className="text-overline text-brand-text">Cartelera</span>
         <h2 id="catalog-title" className="text-h2">
@@ -34,7 +41,7 @@ export const EventCatalog = () => {
         onRetry={() => void events.refetch()}
         onClearFilters={() => selectCategory(null)}
       />
-      <Pagination page={events.data?.page ?? page} totalPages={events.data?.totalPages ?? 0} onPageChange={selectPage} />
+      <Pagination page={events.data?.page ?? page} totalPages={events.data?.totalPages ?? 0} onPageChange={changePage} />
     </section>
   )
 }

@@ -38,4 +38,20 @@ describe('AppRoutes', () => {
     renderWithApp(<AppRoutes />, '/?categoria=teatro')
     expect(screen.getByRole('navigation', { name: 'Principal' }).querySelector('[aria-current="page"]')).toHaveTextContent('Teatro')
   })
+
+  it('con sesión, ingreso y registro redirigen al inicio', () => {
+    sessionStorage.setItem('ticketya.session', JSON.stringify({ token: makeToken({ exp: secondsFromNow(600) }), email: 'vale@correo.com' }))
+    renderWithApp(<AppRoutes />, '/ingresar')
+    expect(screen.queryByRole('heading', { name: 'Ingresá a tu cuenta' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Tu noche, tu entrada' })).toBeInTheDocument()
+  })
+
+  it('el pie solo ofrece ingresar y crear cuenta sin sesión', () => {
+    const { unmount } = renderWithApp(<AppRoutes />)
+    expect(screen.getByRole('navigation', { name: 'Cuenta' })).toBeInTheDocument()
+    unmount()
+    sessionStorage.setItem('ticketya.session', JSON.stringify({ token: makeToken({ exp: secondsFromNow(600) }), email: 'vale@correo.com' }))
+    renderWithApp(<AppRoutes />)
+    expect(screen.queryByRole('navigation', { name: 'Cuenta' })).not.toBeInTheDocument()
+  })
 })
