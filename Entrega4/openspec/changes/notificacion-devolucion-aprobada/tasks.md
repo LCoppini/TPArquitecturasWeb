@@ -1,0 +1,4 @@
+- [x] 1. `DevolucionAprobadaEvent` y publicación en `CompraService` (reintegro de compra) y `PagoService` (entrada individual)
+- [x] 2. `DevolucionNotificacionListener` y soporte de `DEVOLUCION_APROBADA` en `NotificacionesClient`
+- [x] 3. Tests: listener, cliente, `CompraService` (aprobar, reintentar, rechazar, cancelación) y `PagoService`
+- [ ] 4. Correr `mvn -pl msvc-entrada test` y probar con Mailtrap (aprobar la devolución como administrador)
