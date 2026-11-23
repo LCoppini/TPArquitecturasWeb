@@ -20,6 +20,60 @@ spring:
     openfeign:
       httpclient:
         enabled: true
+      client:
+        config:
+          usuarioClient:            # contextId de UsuarioClient
+            connect-timeout: 500
+            read-timeout: 1500
+  mail:
+    host: ${MAIL_HOST:sandbox.smtp.mailtrap.io}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USER:}        # credenciales SMTP: solo por variables de entorno, nunca en el repositorio
+    password: ${MAIL_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 3000   # ms; bajo el TimeLimiter del circuito "email" (15s)
+          timeout: 5000
+          writetimeout: 5000
+
+logging:
+  pattern:
+    level: "%5p [%X{correlationId:-}]"
+
+ticketya:
+  notificaciones:
+    remitente: ${MAIL_FROM:no-reply@ticketya.local}
+    envio:
+      intentos-maximos: 5
+      backoff: 10s,30s,1m,5m        # espera antes del intento 2, 3, 4 y 5
+      stale-timeout: 5m             # una notificacion ENVIANDO sin actualizarse este tiempo vuelve a ser elegible
+      espera-circuito-abierto: 35s  # waitDurationInOpenState (30s) + 5s; no consume intento
+      poll-ms: 5000
+      lote: 20
+    executor:
+      core: 2
+      max: 4
+      cola: 100
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      email:
+        slidingWindowType: TIME_BASED
+        slidingWindowSize: 60       # segundos
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  timelimiter:
+    instances:
+      email:
+        timeoutDuration: 15s
 
 eureka:
   instance:

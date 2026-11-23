@@ -1,0 +1,300 @@
+{
+  "info": {
+    "name": "TicketYa - Notificaciones",
+    "description": "Contrato interno de msvc-notificaciones (puerto 8085, sin ruta en el gateway). Requiere msvc-config 8888, msvc-eureka 8761, PostgreSQL y msvc-notificaciones 8085. Para recibir los emails, configurar MAIL_USER/MAIL_PASSWORD (Mailtrap). Ejecutar en orden con el Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "notificaciones",
+      "value": "http://localhost:8085"
+    },
+    {
+      "key": "clave",
+      "value": ""
+    },
+    {
+      "key": "idNotificacion",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Solicitar compra confirmada (202, PENDIENTE)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveIdempotencia\": \"{{clave}}\",\n  \"idUsuario\": 42,\n  \"tipo\": \"COMPRA_CONFIRMADA\",\n  \"destinatario\": \"cliente@correo.com\",\n  \"datos\": {\n    \"nombre\": \"Ana\",\n    \"evento\": \"Ritual en vivo\",\n    \"fechaHora\": \"24/10 21:00\",\n    \"idEntrada\": \"101\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('clave', 'COMPRA_CONFIRMADA:postman:' + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('202 Accepted', () => pm.response.to.have.status(202));",
+              "const r = pm.response.json();",
+              "pm.test('queda PENDIENTE y sin intentos', () => { pm.expect(r.estado).to.eql('PENDIENTE'); pm.expect(r.intentos).to.eql(0); });",
+              "pm.collectionVariables.set('idNotificacion', r.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Repetir la misma solicitud (idempotente: misma notificacion)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveIdempotencia\": \"{{clave}}\",\n  \"idUsuario\": 42,\n  \"tipo\": \"COMPRA_CONFIRMADA\",\n  \"destinatario\": \"cliente@correo.com\",\n  \"datos\": {\n    \"nombre\": \"Ana\",\n    \"evento\": \"Ritual en vivo\",\n    \"fechaHora\": \"24/10 21:00\",\n    \"idEntrada\": \"101\"\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('202 Accepted', () => pm.response.to.have.status(202));",
+              "pm.test('devuelve la misma notificacion', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('idNotificacion'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Consultar el estado (esperar unos segundos)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones/{{idNotificacion}}",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones",
+            "{{idNotificacion}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('estado conocido', () => pm.expect(['PENDIENTE','ENVIANDO','ENVIADA','FALLIDA']).to.include(pm.response.json().estado));",
+              "// ENVIADA si hay credenciales SMTP (Mailtrap); FALLIDA con el motivo en ultimoError si no."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Historial del usuario 42",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones?idUsuario=42",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones"
+          ],
+          "query": [
+            {
+              "key": "idUsuario",
+              "value": "42"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('incluye la notificacion creada', () => pm.expect(pm.response.json().map(n => n.id)).to.include(Number(pm.collectionVariables.get('idNotificacion'))));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Faltan datos obligatorios del tipo (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveIdempotencia\": \"COMPRA_CONFIRMADA:postman:incompleta\",\n  \"idUsuario\": 42,\n  \"tipo\": \"COMPRA_CONFIRMADA\",\n  \"datos\": { \"evento\": \"Ritual en vivo\" }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('indica los datos faltantes', () => pm.expect(pm.response.json().mensaje).to.include('fechaHora'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Tipo desconocido (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"claveIdempotencia\": \"k-tipo-invalido\",\n  \"idUsuario\": 42,\n  \"tipo\": \"INVENTADO\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('400 Bad Request', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Notificacion inexistente (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{notificaciones}}/internal/notificaciones/999999",
+          "host": [
+            "{{notificaciones}}"
+          ],
+          "path": [
+            "internal",
+            "notificaciones",
+            "999999"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('404 Not Found', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

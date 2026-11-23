@@ -1,9 +1,9 @@
 /**
  * Clients Feign hacia OTROS microservicios (resueltos por Eureka: nombre msvc-xxx).
- * Clients previstos:
- *  - PreferenciasClient (msvc-preferencias): clientes cuyo artista/tipo/ciudad favorito coincide con un evento recien publicado
- *  - UsuarioClient (msvc-usuarios): datos del destinatario. OJO: hoy Usuario NO tiene email; definir con el grupo (ver README del servicio)
+ *  - UsuarioClient (msvc-usuarios): email del destinatario cuando la solicitud no lo trae. OJO: hoy UsuarioResponse de
+ *    msvc-usuarios no expone email; mientras tanto el llamador debe enviar "destinatario".
  *
- * E2: envolver con Circuit Breaker + timeout + fallback.
+ * Pendiente (fuera de este change): PreferenciasClient (msvc-preferencias) para "artista favorito publica un evento".
+ * Timeouts Feign en msvc-notificaciones.yml (clave usuarioClient = contextId).
  */
 package com.ticketya.notificaciones.client;
