@@ -215,14 +215,15 @@ public class CompraService {
         }
 
         bloquearSectores(request.idEvento(), request.entradas());
-        validarSelecciones(request, sectores, entradaRepository, ahora, idUsuario);
+        CompraRequest resuelta = asignarAsientosLibres(request, sectores, ahora);
+        validarSelecciones(resuelta, sectores, entradaRepository, ahora, idUsuario);
         if (entradaRepository.contarActivasDeUsuario(request.idEvento(), idUsuario, ahora)
-                + request.entradas().size() > limitePorCliente) {
+                + resuelta.entradas().size() > limitePorCliente) {
             throw conflicto("Se superó el límite de entradas por cliente");
         }
 
         if (tanda != null) {
-            int cantidad = request.entradas().size();
+            int cantidad = resuelta.entradas().size();
             int actualizada = tandaFilaRepository.descontarCupo(tanda.getId(), cantidad);
             if (actualizada == 0) {
                 int disponible = tandaFilaRepository.findById(tanda.getId())
@@ -242,7 +243,7 @@ public class CompraService {
         compra.setEstado(Compra.RESERVADA);
         compra.setCreadaEn(ahora);
         compra.setVenceEn(venceEn);
-        compra.setCantidadEntradas(request.entradas().size());
+        compra.setCantidadEntradas(resuelta.entradas().size());
         compra.setTotal(request.entradas().stream()
                 .map(item -> precios.get(item.idSector()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add));
@@ -251,7 +252,7 @@ public class CompraService {
         compra = compraRepository.saveAndFlush(compra);
 
         List<Entrada> entradas = new ArrayList<>();
-        for (EntradaCompraRequest seleccion : request.entradas()) {
+        for (EntradaCompraRequest seleccion : resuelta.entradas()) {
             Entrada entrada = new Entrada();
             entrada.setIdEvento(request.idEvento());
             entrada.setIdCompra(compra.getIdCompra());
@@ -907,6 +908,27 @@ public class CompraService {
                 .forEach(idSector -> entradaRepository.bloquearReservasPorClave(idEvento + ":" + idSector));
     }
 
+    /** Completa fila y asiento de los sectores numerados que el cliente eligió sin indicar asiento. */
+    private CompraRequest asignarAsientosLibres(
+            CompraRequest request,
+            Map<Long, SectorResponse> sectores,
+            Instant ahora
+    ) {
+        try {
+            return AsignacionAsientos.resolver(request, sectores, idSector -> {
+                Set<String> claves = new HashSet<>();
+                for (Object[] fila : entradaRepository.asientosOcupadosDeSector(request.idEvento(), idSector, ahora)) {
+                    claves.add(fila[0] + ":" + fila[1]);
+                }
+                return claves;
+            });
+        } catch (AsignacionAsientos.SinLugaresException exception) {
+            throw conflicto("El sector no tiene lugares suficientes");
+        } catch (AsignacionAsientos.DimensionesInvalidasException exception) {
+            throw servicioNoDisponible("Ubicación devolvió dimensiones inválidas para el sector numerado");
+        }
+    }
+
     private void validarSelecciones(
             CompraRequest request,
             Map<Long, SectorResponse> sectores,
@@ -1007,7 +1029,8 @@ public class CompraService {
                 entradas.stream().map(entrada -> new EntradaResponse(
                         entrada.getId(), entrada.getIdEvento(), entrada.getIdUsuario(), entrada.getIdSector(),
                         entrada.getFila(), entrada.getAsiento(), entrada.getPrecio(), entrada.getCodigoQr(),
-                        entrada.getEstado(), entrada.getExpiraEn()
+                        entrada.getEstado(), entrada.getExpiraEn(), entrada.getIdCompra(),
+                        entrada.getEstadoDevolucion(), entrada.getMotivoInvalidacion()
                 )).toList(),
                 codigo,
                 disponible

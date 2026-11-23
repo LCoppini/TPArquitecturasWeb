@@ -34,6 +34,8 @@ public interface TandaFilaRepository extends JpaRepository<TandaFila, Long> {
 
     Optional<TandaFila> findFirstByIdEventoOrderByNumeroDesc(Long idEvento);
 
+    Optional<TandaFila> findFirstByIdEventoAndEstado(Long idEvento, String estado);
+
     @Query("""
             select t.idEvento from TandaFila t
             where t.estado = 'ABIERTA' and t.venceEn <= :ahora

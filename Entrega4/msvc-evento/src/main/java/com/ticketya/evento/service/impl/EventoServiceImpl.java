@@ -8,6 +8,7 @@ import com.ticketya.evento.dto.request.EventoRequest;
 import com.ticketya.evento.dto.request.EventoSectorRequest;
 import com.ticketya.evento.dto.request.ParticipanteRequest;
 import com.ticketya.evento.dto.response.DisponibilidadResponse;
+import com.ticketya.evento.dto.response.EventoDetalleResponse;
 import com.ticketya.evento.dto.response.EventoPaginaResponse;
 import com.ticketya.evento.dto.response.EventoResponse;
 import com.ticketya.evento.dto.response.EventoSectorResponse;
@@ -83,6 +84,12 @@ public class EventoServiceImpl implements EventoService {
     @Override
     public EventoResponse obtenerPorId(Long id) {
         return eventoMapper.aResponse(buscarEvento(id));
+    }
+
+    @Override
+    public EventoDetalleResponse obtenerDetalle(Long id) {
+        Evento evento = buscarEvento(id);
+        return eventoMapper.aDetalle(evento, obtenerLugar(evento.getIdLugar()));
     }
 
     @Override

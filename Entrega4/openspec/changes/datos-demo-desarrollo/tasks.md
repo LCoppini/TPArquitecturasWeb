@@ -14,3 +14,7 @@
 ## 3. Documentación
 - [ ] 3.1 Documentar en el README raíz cómo activar el seed y reiniciar las bases.
 - [ ] 3.2 Verificar el alcance: `git status` solo muestra los tres seeders, sus tests y este cambio.
+
+## Ampliación: msvc-entrada
+- [x] `DatosDemoEntradaSeeder` (perfil dev-seed): fila ACTIVA en los eventos publicados 1 a 18 y dos compras PAGADAS del cliente (`seed.dev.id-cliente`, 3 por defecto) con QR
+- [x] `DatosDemoEntradaSeederTest`
