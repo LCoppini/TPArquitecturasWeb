@@ -16,6 +16,19 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 | msvc-notificaciones | 8085 | ticketya_notificaciones | (E2) Envio de emails: compra, cancelacion/cambio de evento, artista favorito |
 | msvc-preferencias | 8086 | ticketya_preferencias (MongoDB) | (E2) Preferencias de clientes y recomendaciones |
 
+## Datos de demostracion (desarrollo)
+
+Para ver el frontend con datos sin cargarlos a mano, arrancar msvc-usuarios, msvc-ubicacion y msvc-evento con el perfil `dev-seed` (variable de entorno `SPRING_PROFILES_ACTIVE=dev-seed`) y con las bases vacias. Arrancar primero usuarios y ubicacion, y despues evento: los eventos referencian lugares, sectores y organizador por id.
+
+| Usuario | Rol |
+|---|---|
+| admin@ticketya.dev | ADMINISTRADOR |
+| organizador@ticketya.dev | ORGANIZADOR |
+| cliente@ticketya.dev, cliente2@ticketya.dev | CLIENTE |
+| acceso@ticketya.dev | PERSONAL_ACCESO |
+
+Contrasena de todos: `Ticketya123!` (se cambia con `seed.dev.password`). Cada seed es idempotente y no hace nada si ya hay datos. Para volver a cargar, vaciar las bases `ticketya_usuarios`, `ticketya_ubicacion` y `ticketya_evento`. No usar este perfil fuera de desarrollo. Detalle: `openspec/changes/datos-demo-desarrollo`.
+
 ## Como levantarlo (E1)
 
 1. `docker compose up -d` (PostgreSQL con una base por servicio y MongoDB para preferencias)
