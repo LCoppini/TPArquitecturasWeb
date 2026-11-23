@@ -1,0 +1,31 @@
+# Perfil "docker", global para todos los clientes del config server.
+# SPRING_PROFILES_ACTIVE=docker se fija en el compose (msvc-config usa native,docker).
+eureka:
+  client:
+    registry-fetch-interval-seconds: 5
+    service-url:
+      defaultZone: http://msvc-eureka:8761/eureka/
+    # No se definen register-with-eureka ni fetch-registry: el servidor
+    # msvc-eureka conserva sus valores false/false.
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5
+    lease-expiration-duration-in-seconds: 15
+    # HOSTNAME lo inyecta Docker con el id corto del contenedor. En Spring el
+    # default es "${VAR:default}" (con ":-" quedaría "-local").
+    instance-id: ${spring.application.name}:${server.port}:${HOSTNAME:local}
+
+spring:
+  cloud:
+    loadbalancer:
+      cache:
+        enabled: true
+        ttl: 5s
+
+# Un único lugar para el archivo de log de todos los servicios. El volumen
+# ticketya-logs se monta en /app/logs; el sufijo evita pisar archivos entre
+# las dos réplicas de msvc-entrada.
+logging:
+  file:
+    name: /app/logs/${spring.application.name}-${HOSTNAME:local}.log
+
