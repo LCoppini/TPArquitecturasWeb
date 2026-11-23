@@ -37,7 +37,8 @@ public class GatewayRoleMatrix {
     };
     private static final String[] CLIENTE = {
             "/api/entradas/**", "/api/pagos/**", "/api/filas-virtuales/**",
-            "/api/compras/**", "/api/preferencias/**", "/api/recomendaciones/**"
+            "/api/compras/**", "/api/preferencias/**", "/api/recomendaciones/**",
+            "/api/notificaciones/**"
     };
     private static final String[] ADMIN_ENTRADAS = {
             "/api/admin/entradas/**"

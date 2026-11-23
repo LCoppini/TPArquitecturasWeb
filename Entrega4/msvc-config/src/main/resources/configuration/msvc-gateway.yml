@@ -60,6 +60,10 @@ spring:
               uri: lb://msvc-entrada
               predicates:
                 - Path=/api/compras/**
+            - id: notificaciones-route
+              uri: lb://msvc-notificaciones
+              predicates:
+                - Path=/api/notificaciones/**
             - id: accesos-route
               uri: lb://msvc-entrada
               predicates:

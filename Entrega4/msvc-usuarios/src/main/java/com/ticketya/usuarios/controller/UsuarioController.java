@@ -1,5 +1,6 @@
 package com.ticketya.usuarios.controller;
 
+import com.ticketya.usuarios.dto.request.ActualizarCiudadRequest;
 import com.ticketya.usuarios.dto.request.ActualizarRolesRequest;
 import com.ticketya.usuarios.dto.request.ActualizarUsuarioRequest;
 import com.ticketya.usuarios.dto.request.CrearUsuarioRequest;
@@ -68,6 +69,21 @@ public class UsuarioController {
     })
     public UsuarioResponse miPerfil(@RequestHeader("X-User-Id") Long idUsuario) {
         return usuarioService.buscarPorId(idUsuario);
+    }
+
+    @PutMapping("/me/ciudad")
+    @Operation(summary = "Cambiar la ciudad del usuario autenticado",
+            description = "El gateway deriva el usuario del token y lo envía en X-User-Id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Perfil actualizado"),
+            @ApiResponse(responseCode = "400", description = "Ciudad inválida",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Usuario inexistente o inactivo",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public UsuarioResponse cambiarMiCiudad(@RequestHeader("X-User-Id") Long idUsuario,
+                                           @Valid @RequestBody ActualizarCiudadRequest request) {
+        return usuarioService.actualizarCiudad(idUsuario, request.ciudad());
     }
 
     @GetMapping("/{id}")
