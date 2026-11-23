@@ -9,6 +9,8 @@ export type HttpOptions = {
   body?: unknown
   query?: QueryParams
   signal?: AbortSignal
+  /** Cabeceras extra, por ejemplo `Idempotency-Key`. */
+  headers?: Record<string, string>
 }
 
 const readJson = async (response: Response): Promise<unknown> => {
@@ -22,11 +24,11 @@ const readJson = async (response: Response): Promise<unknown> => {
 
 /** Única puerta de salida hacia el gateway: agrega el token, parsea JSON y normaliza los errores. */
 export const http = async <T>(path: string, options: HttpOptions = {}): Promise<T> => {
-  const { method = 'GET', body, query, signal } = options
+  const { method = 'GET', body, query, signal, headers: extraHeaders } = options
   const { getToken, onUnauthorized } = getAuthHandlers()
   const token = getToken()
 
-  const headers: Record<string, string> = { Accept: 'application/json' }
+  const headers: Record<string, string> = { Accept: 'application/json', ...extraHeaders }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
 

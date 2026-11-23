@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { PasswordField } from '@/components/ui/PasswordField'
@@ -11,6 +11,7 @@ import { describeLoginError } from '../utils/authErrors'
 
 export const LoginForm = () => {
   const navigate = useNavigate()
+  const from = (useLocation().state as { from?: string } | null)?.from ?? '/'
   const login = useLogin()
   const {
     register,
@@ -18,7 +19,7 @@ export const LoginForm = () => {
     formState: { errors },
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema), defaultValues: { email: '', password: '' } })
 
-  const onSubmit = handleSubmit((values) => login.mutate(values, { onSuccess: () => navigate('/') }))
+  const onSubmit = handleSubmit((values) => login.mutate(values, { onSuccess: () => navigate(from, { replace: true }) }))
   const failure = login.error ? describeLoginError(login.error) : null
 
   return (

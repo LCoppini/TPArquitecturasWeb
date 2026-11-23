@@ -34,3 +34,25 @@ describe('http', () => {
     await expect(http('/x')).rejects.toMatchObject({ status: 0 })
   })
 })
+
+describe('http con cabeceras extra', () => {
+  const fetchMock = vi.fn()
+  beforeEach(() => {
+    fetchMock.mockReset()
+    vi.stubGlobal('fetch', fetchMock)
+    setAuthHandlers({ getToken: () => null, onUnauthorized: vi.fn() })
+  })
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('envía las cabeceras indicadas', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({}))
+    await http('/compras', { method: 'POST', body: {}, headers: { 'Idempotency-Key': 'k-1' } })
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect((init.headers as Record<string, string>)['Idempotency-Key']).toBe('k-1')
+  })
+
+  it('conserva el cuerpo del error para leer códigos propios del endpoint', async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ codigo: 'COMPRA_PENDIENTE' }, 409))
+    await expect(http('/compras')).rejects.toMatchObject({ status: 409, data: { codigo: 'COMPRA_PENDIENTE' } })
+  })
+})
