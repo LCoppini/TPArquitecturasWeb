@@ -36,7 +36,7 @@ y las llamadas Feign NO DEBEN enviarlo.
 
 #### Scenario: cliente Feign entre servicios
 
-- Dado que `msvc-evento` invoca `POST /api/entradas/eventos/{idEvento}/cancelacion`
+- Dado que `msvc-evento` invoca `POST /api/admin/entradas/eventos/{idEvento}/cancelacion`
 - Cuando construye la llamada con `EntradaClient`
 - Entonces envía el `X-User-Id` del solicitante
 - Y no envía ningún header de rol

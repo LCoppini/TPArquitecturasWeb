@@ -25,9 +25,14 @@ spring:
           msvc-preferencias:
             connect-timeout: 500     # ms
             read-timeout: 1200       # ms -> suma 1700ms, 300ms bajo el TimeLimiter
+          msvc-notificaciones:
+            connect-timeout: 500
+            read-timeout: 1200
 
 # Outbox de preferencias: 5 intentos reales en total, backoff entre intentos.
 ticketya:
+  fila-virtual:
+    enabled: ${FILA_VIRTUAL_ENABLED:true}
   preferencias:
     outbox:
       intentos-maximos: 5
@@ -46,6 +51,13 @@ resilience4j:
         failureRateThreshold: 50
         waitDurationInOpenState: 30s
         automaticTransitionFromOpenToHalfOpenEnabled: true
+      notificaciones:
+        slidingWindowType: TIME_BASED
+        slidingWindowSize: 120
+        minimumNumberOfCalls: 3
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
   timelimiter:
     instances:
       preferencias:
@@ -57,3 +69,14 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+# Solo health, sin detalles. El gateway lo deja fuera de la cadena con
+# securityMatcher("/api/**", "/internal/**").
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

@@ -36,11 +36,23 @@ public interface EntradaRepository extends JpaRepository<Entrada, Long> {
 
     Optional<Entrada> findByCodigoQr(String codigoQr);
 
+    List<Entrada> findByIdCompraOrderById(Long idCompra);
+
     List<Entrada> findByIdUsuarioOrderByIdDesc(Long idUsuario);
 
     Optional<Entrada> findByIdAndIdUsuario(Long id, Long idUsuario);
 
     List<Entrada> findByIdEventoAndEstadoIn(Long idEvento, List<String> estados);
+
+    @Query("""
+            select count(e) from Entrada e
+            where e.idEvento = :idEvento
+              and (
+                e.estado in ('VALIDA', 'USADA')
+                or (e.estado = 'RESERVADA' and e.expiraEn > :ahora)
+              )
+            """)
+    long contarEntradasActivasDeEvento(@Param("idEvento") Long idEvento, @Param("ahora") Instant ahora);
 
     @Query("""
             select count(e) from Entrada e

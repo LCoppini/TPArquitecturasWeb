@@ -19,7 +19,7 @@ public interface EntradaClient {
     @GetMapping("/internal/entradas/eventos/{idEvento}/reporte")
     ReporteVentasEventoResponse consultarReporte(@PathVariable("idEvento") Long idEvento);
 
-    @PostMapping("/eventos/{idEvento}/cancelacion")
+    @PostMapping("/api/admin/entradas/eventos/{idEvento}/cancelacion")
     void cancelarEntradas(
             @PathVariable("idEvento") Long idEvento,
             @RequestHeader("X-User-Id") Long idAdministrador

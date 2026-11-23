@@ -11,12 +11,16 @@ import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.dto.response.UsuarioResponse;
 import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -27,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -36,6 +41,9 @@ class EntradaServiceTest {
 
     @Mock
     private EntradaRepository entradaRepository;
+
+    @Mock
+    private FilaEventoRepository filaEventoRepository;
 
     @Mock
     private UsuarioClient usuarioClient;
@@ -52,6 +60,7 @@ class EntradaServiceTest {
     void setUp() {
         entradaService = new EntradaService(
                 entradaRepository,
+                filaEventoRepository,
                 usuarioClient,
                 eventoClient,
                 sectorClient,
@@ -126,6 +135,23 @@ class EntradaServiceTest {
         assertThrows(IllegalArgumentException.class, () -> entradaService.crear(crearSolicitud(2, 4)));
 
         verify(entradaRepository, never()).save(any(Entrada.class));
+    }
+
+    @Test
+    void bloqueaReservaIndividualCuandoExisteUnaFilaPersistida() {
+        prepararReservaNumerada(0);
+        when(filaEventoRepository.existsById(20L)).thenReturn(true);
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> entradaService.crear(crearSolicitud(2, 4))
+        );
+
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        verify(entradaRepository, never()).save(any(Entrada.class));
+        InOrder orden = inOrder(filaEventoRepository);
+        orden.verify(filaEventoRepository).bloquearEventoCompartido(20L);
+        orden.verify(filaEventoRepository).existsById(20L);
     }
 
     private void prepararReservaNumerada(long asientoOcupado) {

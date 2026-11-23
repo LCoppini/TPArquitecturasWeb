@@ -9,6 +9,7 @@ import com.ticketya.entrada.entity.PendientePreferencia;
 import com.ticketya.entrada.entity.RegistroPago;
 import com.ticketya.entrada.entity.RegistroPagoId;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import com.ticketya.entrada.repository.PagoRepository;
 import com.ticketya.entrada.repository.PendientePreferenciaRepository;
 import com.ticketya.entrada.repository.RegistroPagoRepository;
@@ -37,6 +38,7 @@ public class PagoService {
 
     private final PagoRepository pagoRepository;
     private final EntradaRepository entradaRepository;
+    private final FilaEventoRepository filaEventoRepository;
     private final RegistroPagoRepository registroPagoRepository;
     private final PendientePreferenciaRepository pendientePreferenciaRepository;
     private final String resultadoPasarela;
@@ -46,12 +48,14 @@ public class PagoService {
     public PagoService(
             PagoRepository pagoRepository,
             EntradaRepository entradaRepository,
+            FilaEventoRepository filaEventoRepository,
             RegistroPagoRepository registroPagoRepository,
             PendientePreferenciaRepository pendientePreferenciaRepository,
             @Value("${ticketya.pasarela.resultado:APRUEBA}") String resultadoPasarela
     ) {
         this.pagoRepository = pagoRepository;
         this.entradaRepository = entradaRepository;
+        this.filaEventoRepository = filaEventoRepository;
         this.registroPagoRepository = registroPagoRepository;
         this.pendientePreferenciaRepository = pendientePreferenciaRepository;
         this.resultadoPasarela = resultadoPasarela.toUpperCase(java.util.Locale.ROOT);
@@ -61,15 +65,27 @@ public class PagoService {
     public PagoService(
             PagoRepository pagoRepository,
             EntradaRepository entradaRepository,
+            FilaEventoRepository filaEventoRepository,
             RegistroPagoRepository registroPagoRepository,
             String resultadoPasarela
     ) {
-        this(pagoRepository, entradaRepository, registroPagoRepository, null, resultadoPasarela);
+        this(pagoRepository, entradaRepository, filaEventoRepository, registroPagoRepository, null, resultadoPasarela);
     }
 
     @Transactional
     public PagoResponse crear(PagoRequest request) {
         validarClave(request.getClaveIdempotencia());
+        Entrada preflight = entradaRepository.findById(request.getIdEntrada())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No se encontró la reserva " + request.getIdEntrada()
+                ));
+        filaEventoRepository.bloquearEventoCompartido(preflight.getIdEvento());
+        if (filaEventoRepository.existsById(preflight.getIdEvento())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT,
+                    "El evento tiene una fila persistida; debe utilizar una Compra agrupada"
+            );
+        }
         Entrada entrada = entradaRepository.buscarPorIdConBloqueo(request.getIdEntrada())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "No se encontró la reserva " + request.getIdEntrada()

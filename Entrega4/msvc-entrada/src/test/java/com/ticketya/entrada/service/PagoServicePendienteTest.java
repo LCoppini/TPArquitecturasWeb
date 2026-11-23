@@ -6,6 +6,7 @@ import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.entity.Pago;
 import com.ticketya.entrada.entity.PendientePreferencia;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import com.ticketya.entrada.repository.PagoRepository;
 import com.ticketya.entrada.repository.PendientePreferenciaRepository;
 import com.ticketya.entrada.repository.RegistroPagoRepository;
@@ -37,6 +38,9 @@ class PagoServicePendienteTest {
 
     @Mock
     private EntradaRepository entradaRepository;
+
+    @Mock
+    private FilaEventoRepository filaEventoRepository;
 
     @Mock
     private RegistroPagoRepository registroPagoRepository;
@@ -109,6 +113,7 @@ class PagoServicePendienteTest {
         entrada.setEstado("RESERVADA");
         entrada.setExpiraEn(expiraEn);
         when(entradaRepository.buscarPorIdConBloqueo(100L)).thenReturn(Optional.of(entrada));
+        when(entradaRepository.findById(100L)).thenReturn(Optional.of(entrada));
         when(pagoRepository.findByIdEntradaAndClaveIdempotencia(100L, "pago-1"))
                 .thenReturn(Optional.empty());
         lenient().when(pagoRepository.save(any(Pago.class))).thenAnswer(invocacion -> {
@@ -119,8 +124,8 @@ class PagoServicePendienteTest {
     }
 
     private PagoService servicio(String resultadoPasarela) {
-        return new PagoService(pagoRepository, entradaRepository, registroPagoRepository,
-                pendienteRepository, resultadoPasarela);
+        return new PagoService(pagoRepository, entradaRepository, filaEventoRepository,
+                registroPagoRepository, pendienteRepository, resultadoPasarela);
     }
 
     private PagoRequest solicitud() {
