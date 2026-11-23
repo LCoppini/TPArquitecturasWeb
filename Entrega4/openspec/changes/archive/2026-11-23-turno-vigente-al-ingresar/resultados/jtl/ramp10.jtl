@@ -1,0 +1,972 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testResults version="1.2">
+<httpSample t="77" it="0" lt="70" ct="30" ts="1795461975862" s="true" lb="PUT activar fila (maxPersonas y cupoEntradas por propiedad)" rc="200" rm="" tn="Setup - activar fila 1-1" dt="text" by="523" sby="808" ng="1" na="1">
+  <assertionResult>
+    <name>Setup responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/organizador/filas-virtuales/eventos/15/activacion</java.net.URL>
+</httpSample>
+<httpSample t="50" it="0" lt="50" ct="2" ts="1795461976627" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-3" dt="text" by="563" sby="795" ng="3" na="3">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="56" it="0" lt="56" ct="1" ts="1795461975981" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-1" dt="text" by="566" sby="795" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="47" it="0" lt="47" ct="2" ts="1795461976298" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-2" dt="text" by="563" sby="795" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="65" it="0" lt="64" ct="3" ts="1795461976962" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-4" dt="text" by="563" sby="795" ng="4" na="4">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="26" it="0" lt="26" ct="0" ts="1795461976976" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-1" dt="text" by="563" sby="776" ng="4" na="4">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="32" it="0" lt="32" ct="0" ts="1795461976976" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-2" dt="text" by="563" sby="776" ng="4" na="4">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="32" it="0" lt="27" ct="0" ts="1795461976976" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-3" dt="text" by="563" sby="776" ng="4" na="4">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="35" it="0" lt="35" ct="0" ts="1795461977235" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-4" dt="text" by="563" sby="776" ng="4" na="4">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="119" it="0" lt="118" ct="0" ts="1795461977207" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-1" dt="text" by="936" sby="930" ng="5" na="5">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="155" it="0" lt="155" ct="0" ts="1795461977207" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-3" dt="text" by="936" sby="930" ng="5" na="5">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="198" it="0" lt="198" ct="0" ts="1795461977207" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-2" dt="text" by="936" sby="930" ng="5" na="5">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="131" it="0" lt="131" ct="3" ts="1795461977296" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-5" dt="text" by="563" sby="795" ng="5" na="5">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="171" it="0" lt="171" ct="0" ts="1795461977281" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-4" dt="text" by="936" sby="930" ng="5" na="5">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="193" it="0" lt="193" ct="0" ts="1795461977331" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-1" dt="text" by="595" sby="849" ng="5" na="5">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/186/pago</java.net.URL>
+</httpSample>
+<httpSample t="220" it="0" lt="219" ct="0" ts="1795461977368" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-3" dt="text" by="595" sby="849" ng="4" na="4">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/187/pago</java.net.URL>
+</httpSample>
+<httpSample t="230" it="0" lt="230" ct="0" ts="1795461977410" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-2" dt="text" by="595" sby="849" ng="4" na="4">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/188/pago</java.net.URL>
+</httpSample>
+<httpSample t="22" it="0" lt="22" ct="0" ts="1795461977631" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-5" dt="text" by="563" sby="776" ng="3" na="3">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="257" it="0" lt="257" ct="0" ts="1795461977456" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-4" dt="text" by="595" sby="849" ng="3" na="3">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/189/pago</java.net.URL>
+</httpSample>
+<httpSample t="105" it="0" lt="105" ct="1" ts="1795461977626" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-6" dt="text" by="563" sby="795" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="101" it="0" lt="101" ct="0" ts="1795461977661" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-5" dt="text" by="936" sby="930" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="62" it="0" lt="62" ct="0" ts="1795461977766" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-5" dt="text" by="595" sby="849" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/190/pago</java.net.URL>
+</httpSample>
+<httpSample t="15" it="0" lt="15" ct="0" ts="1795461977939" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-6" dt="text" by="563" sby="776" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="42" it="0" lt="42" ct="1" ts="1795461977957" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-7" dt="text" by="563" sby="795" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="70" it="0" lt="70" ct="0" ts="1795461977958" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-6" dt="text" by="936" sby="930" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="59" it="0" lt="59" ct="0" ts="1795461978031" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-6" dt="text" by="595" sby="849" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/191/pago</java.net.URL>
+</httpSample>
+<httpSample t="16" it="0" lt="15" ct="0" ts="1795461978203" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-7" dt="text" by="563" sby="776" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="59" it="0" lt="59" ct="0" ts="1795461978223" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-7" dt="text" by="936" sby="930" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="72" it="0" lt="71" ct="0" ts="1795461978284" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-7" dt="text" by="595" sby="849" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/192/pago</java.net.URL>
+</httpSample>
+<httpSample t="90" it="0" lt="90" ct="1" ts="1795461978289" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-8" dt="text" by="566" sby="795" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="11" it="0" lt="11" ct="0" ts="1795461978582" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-8" dt="text" by="563" sby="776" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="43" it="0" lt="42" ct="1" ts="1795461978622" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-9" dt="text" by="563" sby="795" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="93" it="0" lt="93" ct="0" ts="1795461978599" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-8" dt="text" by="936" sby="930" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="102" it="0" lt="102" ct="0" ts="1795461978703" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-8" dt="text" by="595" sby="849" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/193/pago</java.net.URL>
+</httpSample>
+<httpSample t="34" it="0" lt="34" ct="0" ts="1795461978871" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-9" dt="text" by="563" sby="776" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="50" it="0" lt="50" ct="2" ts="1795461978957" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-10" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="123" it="0" lt="123" ct="0" ts="1795461978916" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-9" dt="text" by="936" sby="930" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="151" it="0" lt="151" ct="0" ts="1795461979042" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-9" dt="text" by="595" sby="849" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/194/pago</java.net.URL>
+</httpSample>
+<httpSample t="18" it="0" lt="17" ct="0" ts="1795461979214" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-10" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="83" it="0" lt="83" ct="0" ts="1795461979238" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-10" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="64" it="0" lt="64" ct="2" ts="1795461979290" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-11" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="114" it="0" lt="114" ct="0" ts="1795461979326" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-10" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/195/pago</java.net.URL>
+</httpSample>
+<httpSample t="26" it="0" lt="26" ct="0" ts="1795461979559" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-11" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="72" it="0" lt="72" ct="0" ts="1795461979590" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-11" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="65" it="0" lt="65" ct="1" ts="1795461979620" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-12" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="58" it="0" lt="58" ct="0" ts="1795461979667" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-11" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/196/pago</java.net.URL>
+</httpSample>
+<httpSample t="23" it="0" lt="22" ct="0" ts="1795461979889" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-12" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="92" it="0" lt="92" ct="0" ts="1795461979918" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-12" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="78" it="0" lt="78" ct="2" ts="1795461979953" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-13" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="72" it="0" lt="72" ct="0" ts="1795461980014" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-12" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/197/pago</java.net.URL>
+</httpSample>
+<httpSample t="13" it="0" lt="13" ct="0" ts="1795461980237" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-13" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="74" it="0" lt="74" ct="0" ts="1795461980259" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-13" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="70" it="0" lt="70" ct="2" ts="1795461980286" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-14" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="55" it="0" lt="54" ct="0" ts="1795461980340" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-13" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/198/pago</java.net.URL>
+</httpSample>
+<httpSample t="17" it="0" lt="17" ct="0" ts="1795461980561" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-14" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="57" it="0" lt="57" ct="0" ts="1795461980583" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-14" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="43" it="0" lt="43" ct="1" ts="1795461980618" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-15" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="57" it="0" lt="57" ct="0" ts="1795461980643" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-14" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/199/pago</java.net.URL>
+</httpSample>
+<httpSample t="15" it="0" lt="15" ct="0" ts="1795461980864" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-15" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="62" it="0" lt="62" ct="0" ts="1795461980883" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-15" dt="text" by="938" sby="932" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="64" it="0" lt="64" ct="0" ts="1795461980947" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-15" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/200/pago</java.net.URL>
+</httpSample>
+<httpSample t="82" it="0" lt="82" ct="1" ts="1795461980951" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-16" dt="text" by="569" sby="796" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="11" it="0" lt="11" ct="0" ts="1795461981237" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-16" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="67" it="0" lt="67" ct="0" ts="1795461981252" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-16" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="52" it="0" lt="51" ct="2" ts="1795461981283" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-17" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="59" it="0" lt="59" ct="0" ts="1795461981322" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-16" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/201/pago</java.net.URL>
+</httpSample>
+<httpSample t="10" it="0" lt="10" ct="0" ts="1795461981541" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-17" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="49" it="0" lt="49" ct="0" ts="1795461981554" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-17" dt="text" by="938" sby="932" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="72" it="0" lt="72" ct="0" ts="1795461981606" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-17" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/202/pago</java.net.URL>
+</httpSample>
+<httpSample t="87" it="0" lt="87" ct="2" ts="1795461981616" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-18" dt="text" by="569" sby="796" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="12" it="0" lt="12" ct="0" ts="1795461981906" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-18" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="63" it="0" lt="63" ct="0" ts="1795461981921" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-18" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="61" it="0" lt="60" ct="2" ts="1795461981947" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-19" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="58" it="0" lt="58" ct="0" ts="1795461981988" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-18" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/203/pago</java.net.URL>
+</httpSample>
+<httpSample t="14" it="0" lt="14" ct="0" ts="1795461982211" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-19" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="66" it="0" lt="65" ct="0" ts="1795461982238" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-19" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="44" it="0" lt="43" ct="1" ts="1795461982280" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-20" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="53" it="0" lt="53" ct="0" ts="1795461982307" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-19" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/204/pago</java.net.URL>
+</httpSample>
+<httpSample t="15" it="0" lt="15" ct="0" ts="1795461982526" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-20" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="47" it="0" lt="47" ct="0" ts="1795461982544" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-20" dt="text" by="938" sby="932" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="98" it="0" lt="98" ct="0" ts="1795461982593" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-20" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/205/pago</java.net.URL>
+</httpSample>
+<httpSample t="149" it="0" lt="149" ct="2" ts="1795461982615" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-21" dt="text" by="569" sby="796" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="49" it="0" lt="48" ct="0" ts="1795461982973" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-21" dt="text" by="566" sby="777" ng="2" na="2">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="105" it="0" lt="105" ct="3" ts="1795461982949" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-22" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="148" it="0" lt="148" ct="0" ts="1795461983030" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-21" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="129" it="0" lt="129" ct="0" ts="1795461983183" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-21" dt="text" by="597" sby="851" ng="3" na="3">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/206/pago</java.net.URL>
+</httpSample>
+<httpSample t="48" it="0" lt="48" ct="0" ts="1795461983264" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-22" dt="text" by="566" sby="777" ng="3" na="3">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="96" it="0" lt="96" ct="2" ts="1795461983284" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-23" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="192" it="0" lt="192" ct="0" ts="1795461983332" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-22" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="41" it="0" lt="40" ct="0" ts="1795461983586" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-23" dt="text" by="566" sby="777" ng="3" na="3">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="138" it="0" lt="137" ct="0" ts="1795461983530" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-22" dt="text" by="597" sby="851" ng="3" na="3">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/207/pago</java.net.URL>
+</httpSample>
+<httpSample t="95" it="0" lt="95" ct="4" ts="1795461983614" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-24" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="118" it="0" lt="118" ct="0" ts="1795461983650" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-23" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="77" it="0" lt="77" ct="0" ts="1795461983775" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-23" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/208/pago</java.net.URL>
+</httpSample>
+<httpSample t="27" it="0" lt="27" ct="0" ts="1795461983915" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-24" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="62" it="0" lt="62" ct="4" ts="1795461983949" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-25" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="95" it="0" lt="95" ct="0" ts="1795461983955" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-24" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="47" it="0" lt="47" ct="0" ts="1795461984054" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-24" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/209/pago</java.net.URL>
+</httpSample>
+<httpSample t="10" it="0" lt="10" ct="0" ts="1795461984216" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-25" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="75" it="0" lt="75" ct="0" ts="1795461984230" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-25" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="42" it="0" lt="42" ct="1" ts="1795461984280" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-26" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="50" it="0" lt="49" ct="0" ts="1795461984310" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-25" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/210/pago</java.net.URL>
+</httpSample>
+<httpSample t="21" it="0" lt="21" ct="0" ts="1795461984524" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-26" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="71" it="0" lt="71" ct="0" ts="1795461984550" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-26" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="40" it="0" lt="40" ct="4" ts="1795461984614" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-27" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="66" it="0" lt="66" ct="0" ts="1795461984625" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-26" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/211/pago</java.net.URL>
+</httpSample>
+<httpSample t="16" it="0" lt="16" ct="0" ts="1795461984856" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-27" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="50" it="0" lt="50" ct="0" ts="1795461984876" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-27" dt="text" by="938" sby="932" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="61" it="0" lt="61" ct="0" ts="1795461984928" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-27" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/212/pago</java.net.URL>
+</httpSample>
+<httpSample t="72" it="0" lt="71" ct="1" ts="1795461984945" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-28" dt="text" by="569" sby="796" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="11" it="0" lt="11" ct="0" ts="1795461985218" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-28" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="73" it="0" lt="73" ct="0" ts="1795461985234" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-28" dt="text" by="938" sby="932" ng="2" na="2">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="47" it="0" lt="47" ct="1" ts="1795461985279" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-29" dt="text" by="566" sby="796" ng="2" na="2">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="58" it="0" lt="58" ct="0" ts="1795461985311" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-28" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/213/pago</java.net.URL>
+</httpSample>
+<httpSample t="14" it="0" lt="14" ct="0" ts="1795461985530" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-29" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="52" it="0" lt="52" ct="0" ts="1795461985547" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-29" dt="text" by="938" sby="932" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="59" it="0" lt="59" ct="0" ts="1795461985601" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-29" dt="text" by="597" sby="851" ng="2" na="2">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/214/pago</java.net.URL>
+</httpSample>
+<httpSample t="70" it="0" lt="70" ct="1" ts="1795461985611" s="true" lb="1 - POST ingreso a fila" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-30" dt="text" by="569" sby="796" ng="1" na="1">
+  <assertionResult>
+    <name>Ingreso responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/ingresos</java.net.URL>
+</httpSample>
+<httpSample t="15" it="0" lt="14" ct="0" ts="1795461985898" s="true" lb="2a - GET mi-estado" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-30" dt="text" by="566" sby="777" ng="1" na="1">
+  <java.net.URL>http://127.0.0.1:8080/api/filas-virtuales/eventos/15/mi-estado</java.net.URL>
+</httpSample>
+<httpSample t="55" it="0" lt="55" ct="0" ts="1795461985916" s="true" lb="3 - POST compra (2 entradas)" rc="201" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-30" dt="text" by="938" sby="932" ng="1" na="1">
+  <assertionResult>
+    <name>Compra responde 201</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras</java.net.URL>
+</httpSample>
+<httpSample t="48" it="0" lt="48" ct="0" ts="1795461985973" s="true" lb="4 - POST pago de compra" rc="200" rm="" tn="CLIENTES - ingreso, espera de turno, compra y pago 2-30" dt="text" by="597" sby="851" ng="1" na="1">
+  <assertionResult>
+    <name>Pago responde 200</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <assertionResult>
+    <name>Pago devuelve PAGADA</name>
+    <failure>false</failure>
+    <error>false</error>
+  </assertionResult>
+  <java.net.URL>http://127.0.0.1:8080/api/compras/215/pago</java.net.URL>
+</httpSample>
+
+</testResults>

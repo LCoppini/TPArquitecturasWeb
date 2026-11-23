@@ -69,8 +69,9 @@ verificación del TTL con dos instancias (EP-13) quedan apoyadas en este entorno
   `GET /msvc-gateway/default`. Eureka y Gateway sí exponen `/actuator/health`.
 - No existe `logback-spring.xml` ni sección `logging:` en los YAML: por eso el
   logging se resuelve con una property en el perfil docker.
-- El login real (`POST /api/usuarios/login`) es condición de la verificación
-  manual; mientras no funcione, esas tareas quedan bloqueadas.
+- El login real (`POST /api/usuarios/login`) era condición de la verificación
+  manual; se verificó el 2026-11-23 con un JWT de `CLIENTE` y quedó registrado
+  en `verificacion-despliegue-docker.md`.
 
 ## Aprobación antes de escribir
 
@@ -80,8 +81,9 @@ configuración ni los tests hasta que esa aprobación exista.** Tampoco se hace 
 
 ## Fuera de alcance
 
-- Ejecución de JMeter e informe de carga: queda como tareas posteriores del
-  mismo change, no se ejecuta en esta primera entrega.
+- Ejecución de JMeter e informe de carga: se completó dentro de este mismo
+  change (sección 8); el plan y los resultados están en `prueba-carga.jmx` y
+  `resultado-carga.md`.
 - Activar `msvc-notificaciones` en el compose: hoy solo existe el esqueleto, así
   que sigue como plantilla comentada. `msvc-preferencias` y MongoDB sí se activan
   porque el servicio ya está implementado (commit `31d017c`).

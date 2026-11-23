@@ -208,7 +208,7 @@ Tests de configuración (se agregan, no se relajan los existentes):
   otra clave responden 401 (`oauth2ResourceServer` procesa el header antes de
   `permitAll`).
 
-Verificación manual (bloqueada hasta que funcione el login real): dos instancias
+Verificación manual (ejecutada el 2026-11-23 con login real): dos instancias
 registradas, `GET /api/entradas` con JWT de `CLIENTE`, `docker stop` y
 `docker kill` con tiempos medidos por separado, y `docker stats --no-stream`.
 Durante la ventana de convergencia pueden aparecer errores hacia la instancia
@@ -225,4 +225,7 @@ viven en `verificacion-despliegue-docker.md`, dentro de este change.
   documenta en el README.
 - El gateway mantiene su 503 para destinos no disponibles, distinto del 502 de
   circuito abierto de EP-13.
-- JMeter queda como tarea posterior del mismo change, fuera de esta ejecución.
+- JMeter se ejecutó dentro del mismo change: plan `prueba-carga.jmx` con 30
+  clientes concurrentes sobre dos réplicas; resultados en `resultado-carga.md`.
+  `maxPersonas` debe ser mayor que la concurrencia para que la tanda no se cierre
+  antes de que los clientes compren.
