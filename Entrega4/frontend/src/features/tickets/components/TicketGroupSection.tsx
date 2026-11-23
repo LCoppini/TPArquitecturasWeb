@@ -4,13 +4,13 @@ import { Button } from '@/components/ui/Button'
 import { describePurchaseError } from '@/features/purchase/utils/purchaseErrors'
 import { useRefundPurchase } from '../hooks/useRefundPurchase'
 import { canRefund, type TicketGroup } from '../utils/ticketStatus'
+import { RefundStatusAlert } from './RefundStatusAlert'
 import { TicketCard } from './TicketCard'
 
 /** Entradas de una misma compra, con la opción de devolverla completa (con confirmación). */
 export const TicketGroupSection = ({ group }: { group: TicketGroup }) => {
   const [confirming, setConfirming] = useState(false)
   const refund = useRefundPurchase()
-  const pending = group.tickets.some(({ estadoDevolucion }) => estadoDevolucion === 'PENDIENTE')
 
   return (
     <section aria-label={group.purchaseId ? `Compra ${group.purchaseId}` : 'Entrada'} className="flex flex-col gap-3">
@@ -34,7 +34,7 @@ export const TicketGroupSection = ({ group }: { group: TicketGroup }) => {
           )}
         </div>
       )}
-      {pending && <Alert tone="info" title="Devolución solicitada">La estamos procesando; te avisaremos cuando se acredite.</Alert>}
+      <RefundStatusAlert group={group} />
       {refund.error && <Alert tone="error" title="No pudimos pedir la devolución">{describePurchaseError(refund.error)}</Alert>}
       {group.tickets.map((ticket) => (
         <TicketCard key={ticket.id} ticket={ticket} />

@@ -7,6 +7,7 @@ import { EventDetailPage } from '@/features/events/pages/EventDetailPage'
 import { MyTicketsPage } from '@/features/tickets/pages/MyTicketsPage'
 import { ProfilePage } from '@/features/profile/pages/ProfilePage'
 import { HomePage } from '@/features/events/pages/HomePage'
+import { NotificationsPage } from '@/features/notifications/pages/NotificationsPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { AppLayout } from './AppLayout'
 
@@ -18,6 +19,7 @@ export const AppRoutes = () => (
       <Route element={<RequireAuth />}>
         <Route path="mis-entradas" element={<MyTicketsPage />} />
         <Route path="perfil" element={<ProfilePage />} />
+        <Route path="notificaciones" element={<NotificationsPage />} />
       </Route>
       <Route element={<GuestOnly />}>
         <Route path="ingresar" element={<LoginPage />} />

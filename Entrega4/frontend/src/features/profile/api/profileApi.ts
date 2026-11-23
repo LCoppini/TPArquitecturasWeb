@@ -14,4 +14,6 @@ export type UsuarioApi = {
 
 export const profileApi = {
   me: (signal?: AbortSignal) => http<UsuarioApi>('/usuarios/me', { signal }),
+  /** Cambia solo la ciudad de la persona con sesión (PUT /api/usuarios/me/ciudad). */
+  updateCity: (ciudad: string) => http<UsuarioApi>('/usuarios/me/ciudad', { method: 'PUT', body: { ciudad } }),
 }
