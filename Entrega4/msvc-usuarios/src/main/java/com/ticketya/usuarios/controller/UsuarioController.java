@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -55,6 +56,18 @@ public class UsuarioController {
     @ApiResponse(responseCode = "200", description = "Usuarios activos")
     public List<UsuarioResponse> listar() {
         return usuarioService.listar();
+    }
+
+    @GetMapping("/me")
+    @Operation(summary = "Consultar el perfil del usuario autenticado",
+            description = "El gateway deriva el usuario del token y lo envía en X-User-Id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Perfil del usuario autenticado"),
+            @ApiResponse(responseCode = "404", description = "Usuario inexistente o inactivo",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public UsuarioResponse miPerfil(@RequestHeader("X-User-Id") Long idUsuario) {
+        return usuarioService.buscarPorId(idUsuario);
     }
 
     @GetMapping("/{id}")
