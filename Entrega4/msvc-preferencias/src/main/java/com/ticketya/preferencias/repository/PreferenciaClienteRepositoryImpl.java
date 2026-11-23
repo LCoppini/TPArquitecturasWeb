@@ -3,7 +3,10 @@ package com.ticketya.preferencias.repository;
 import com.mongodb.ErrorCategory;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Collation;
+import com.mongodb.client.model.CollationStrength;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.UpdateOptions;
 import com.ticketya.preferencias.dto.request.ArtistaCompraRequest;
 import com.ticketya.preferencias.dto.request.CompraRegistradaRequest;
@@ -61,6 +64,23 @@ public class PreferenciaClienteRepositoryImpl implements PreferenciaClienteRepos
         return collection().countDocuments(Filters.and(
                 Filters.eq("_id", idUsuario),
                 Filters.eq("compras_procesadas", idEntrada))) > 0;
+    }
+
+    @Override
+    public List<Long> buscarClientesPorArtistaYCiudad(Long idArtista, String ciudad) {
+        // Colacion de fuerza primaria: ignora mayusculas y acentos ("Cordoba" = "Córdoba").
+        Collation colacion = Collation.builder().locale("es").collationStrength(CollationStrength.PRIMARY).build();
+        Bson filtro = Filters.and(
+                Filters.eq("artistas.id_artista", idArtista),
+                Filters.eq("ciudad", ciudad.trim()));
+        return collection().find(filtro)
+                .collation(colacion)
+                .projection(Projections.include("_id"))
+                .map(documento -> ((Number) documento.get("_id")).longValue())
+                .into(new java.util.ArrayList<>())
+                .stream()
+                .sorted()
+                .toList();
     }
 
     private MongoCollection<Document> collection() {

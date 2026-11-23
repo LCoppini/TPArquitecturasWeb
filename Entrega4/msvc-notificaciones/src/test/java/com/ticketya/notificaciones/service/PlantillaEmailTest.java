@@ -89,7 +89,7 @@ class PlantillaEmailTest {
     @Test
     void todosLosTiposSeRenderizanSinMarcadoresSinReemplazar() {
         Map<String, String> datos = new HashMap<>();
-        for (String clave : List.of("evento", "fechaHora", "idEntrada", "monto", "cambios")) {
+        for (String clave : List.of("evento", "fechaHora", "idEntrada", "monto", "cambios", "artista", "ciudad")) {
             datos.put(clave, clave + "-valor");
         }
 

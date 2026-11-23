@@ -1,0 +1,4 @@
+- [x] 1. msvc-evento: `EntradaClient.notificarModificacion`, `EventoModificadoEvent`, listener asíncrono y `EventoServiceImpl.actualizar`
+- [x] 2. msvc-entrada: `POST /internal/entradas/eventos/{idEvento}/modificacion`, `EventoModificadoEvent`, listener y soporte en `NotificacionesClient`
+- [x] 3. Tests en ambos servicios
+- [ ] 4. Correr `mvn -pl msvc-evento,msvc-entrada test`

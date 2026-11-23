@@ -1,0 +1,5 @@
+- [x] 1. msvc-preferencias: endpoint interno, repositorio y tests
+- [x] 2. msvc-notificaciones: tipo, plantilla, `PreferenciasClient`, endpoint interno, servicio de orquestación y tests
+- [x] 3. msvc-evento: `EventoPublicadoEvent`, `NotificacionesClient`, listener asíncrono (con `@EnableAsync`) y `EventoServiceImpl.publicar`
+- [ ] 4. Configuración: timeouts de `PreferenciasClient` en `msvc-config` y activar notificaciones en `docker-compose.yml`
+- [ ] 5. Correr `mvn -pl msvc-preferencias,msvc-notificaciones,msvc-evento test` y probar con Mailtrap
