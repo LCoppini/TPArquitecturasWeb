@@ -35,8 +35,11 @@ public class Pago {
     @Column(name = "medio_de_pago", nullable = false, length = 50)
     private String medioDePago;
 
-    @Column(name = "id_entrada", nullable = false)
+    @Column(name = "id_entrada")
     private Long idEntrada;
+
+    @Column(name = "id_compra")
+    private Long idCompra;
 
     @Column(name = "clave_idempotencia", length = 100)
     private String claveIdempotencia;

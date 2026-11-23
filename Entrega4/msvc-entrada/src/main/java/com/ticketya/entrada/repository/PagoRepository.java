@@ -10,6 +10,12 @@ public interface PagoRepository extends JpaRepository<Pago, Long> {
 
     Optional<Pago> findByIdEntradaAndClaveIdempotencia(Long idEntrada, String claveIdempotencia);
 
+    Optional<Pago> findByIdCompraAndClaveIdempotencia(Long idCompra, String claveIdempotencia);
+
+    Optional<Pago> findFirstByIdCompraOrderByIdPagoDesc(Long idCompra);
+
+    Optional<Pago> findFirstByIdCompraAndEstado(Long idCompra, String estado);
+
     Optional<Pago> findFirstByIdEntradaOrderByIdPagoDesc(Long idEntrada);
 
     List<Pago> findByIdUsuarioOrderByIdPagoDesc(Long idUsuario);

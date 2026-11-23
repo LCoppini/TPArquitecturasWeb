@@ -1,6 +1,7 @@
 package com.ticketya.evento.controller;
 
 import com.ticketya.evento.dto.response.DisponibilidadResponse;
+import com.ticketya.evento.dto.response.EventoDetalleResponse;
 import com.ticketya.evento.dto.response.EventoPaginaResponse;
 import com.ticketya.evento.dto.response.EventoResponse;
 import com.ticketya.evento.dto.response.EventoSectorResponse;
@@ -28,6 +29,11 @@ public class EventoController {
     @GetMapping("/{id}")
     public EventoResponse obtenerPorId(@PathVariable Long id) {
         return eventoService.obtenerPorId(id);
+    }
+
+    @GetMapping("/{id}/detalle")
+    public EventoDetalleResponse obtenerDetalle(@PathVariable Long id) {
+        return eventoService.obtenerDetalle(id);
     }
 
     @GetMapping("/{id}/sectores/{idSector}")

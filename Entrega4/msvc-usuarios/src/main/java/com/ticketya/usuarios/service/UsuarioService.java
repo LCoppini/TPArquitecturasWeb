@@ -16,6 +16,9 @@ public interface UsuarioService {
 
     UsuarioResponse actualizar(Long id, ActualizarUsuarioRequest request);
 
+    /** Cambia solo la ciudad del usuario activo (autoservicio del perfil propio). */
+    UsuarioResponse actualizarCiudad(Long id, String ciudad);
+
     void eliminar(Long id);
 
     UsuarioResponse reemplazarRoles(Long id, Set<String> tiposRoles);

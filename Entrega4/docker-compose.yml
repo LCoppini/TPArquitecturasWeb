@@ -1,37 +1,265 @@
-# Entrega 1: solo las bases de datos en Docker; los microservicios se ejecutan localmente.
-# Entrega 2: agregar un servicio por microservicio (build: ./msvc-xxx) + gateway + eureka + config.
+# Entrega 2: todo el sistema se levanta con un único `docker compose up -d`.
+# Orden: postgres/mongo -> msvc-config -> msvc-eureka -> dominio -> msvc-gateway.
+# Las credenciales y las claves viven en .env (ver .env.example). Nunca versionar .env.
+
+x-common-build: &common-build
+  context: .
+
+x-common-env: &common-env
+  SPRING_PROFILES_ACTIVE: docker
+  SPRING_CONFIG_IMPORT: configserver:http://msvc-config:8888
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70 -Duser.timezone=UTC
+
+x-postgres-env: &postgres-env
+  POSTGRES_HOST: postgres
+  # El contenedor postgres usa POSTGRES_*; los YAML de los servicios leen DB_*.
+  POSTGRES_USER: ${POSTGRES_USER:?Definir POSTGRES_USER en .env}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
+  DB_USER: ${POSTGRES_USER:?Definir POSTGRES_USER en .env}
+  DB_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
+
 services:
   postgres:
     image: postgres:16
-    container_name: ticketya-postgres
     environment:
-      POSTGRES_USER: ticketya
-      POSTGRES_PASSWORD: ticketya
+      POSTGRES_USER: ${POSTGRES_USER:?Definir POSTGRES_USER en .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
     ports:
       - "5432:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./docker/postgres/init:/docker-entrypoint-initdb.d   # crea una base por microservicio
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?Definir POSTGRES_USER en .env} -d postgres"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 1g
+    restart: unless-stopped
 
-  # E2 - NoSQL: preferencias de los clientes (msvc-preferencias). Justificar en docs/decisiones.
   mongo:
     image: mongo:7
-    container_name: ticketya-mongo
-    ports:
-      - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 512m
+    restart: unless-stopped
 
-  # E2 - mensajeria (EDA)
-  # rabbitmq:
-  #   image: rabbitmq:3-management
-  #   ports: ["5672:5672", "15672:15672"]
+  msvc-config:
+    build:
+      <<: *common-build
+      dockerfile: msvc-config/Dockerfile
+    environment:
+      # Conservar "native": el config server lee classpath:/configuration.
+      SPRING_PROFILES_ACTIVE: native,docker
+      # msvc-config no consume su propia configuración central.
+      LOGGING_FILE_NAME: /app/logs/msvc-config.log
+    ports:
+      - "127.0.0.1:8888:8888"
+    volumes:
+      - ticketya-logs:/app/logs
+    healthcheck:
+      # msvc-config no tiene Actuator; se valida con un YAML publicado.
+      test: ["CMD", "curl", "-fsS", "http://localhost:8888/msvc-gateway/default"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    mem_limit: 512m
+    restart: unless-stopped
 
-  # E2 - reservas temporales / fila virtual / cache
-  # redis:
-  #   image: redis:7
-  #   ports: ["6379:6379"]
+  msvc-eureka:
+    build:
+      <<: *common-build
+      dockerfile: msvc-eureka/Dockerfile
+    environment:
+      <<: *common-env
+      # Sin EUREKA_INSTANCE_HOSTNAME ni EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:
+      # register-with-eureka y fetch-registry son false en el servidor.
+    ports:
+      - "127.0.0.1:8761:8761"
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      msvc-config:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    mem_limit: 512m
+    restart: unless-stopped
+
+  msvc-usuarios:
+    build:
+      <<: *common-build
+      dockerfile: msvc-usuarios/Dockerfile
+    environment:
+      <<: [*common-env, *postgres-env]
+      # ADR-0003: la privada solo la recibe msvc-usuarios, por variable de entorno.
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?Definir JWT_PRIVATE_KEY en .env}
+      JWT_ISSUER: ${JWT_ISSUER:?Definir JWT_ISSUER en .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?Definir JWT_AUDIENCE en .env}
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 768m
+    restart: unless-stopped
+
+  msvc-ubicacion:
+    build:
+      <<: *common-build
+      dockerfile: msvc-ubicacion/Dockerfile
+    environment:
+      <<: [*common-env, *postgres-env]
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 768m
+    restart: unless-stopped
+
+  msvc-evento:
+    build:
+      <<: *common-build
+      dockerfile: msvc-evento/Dockerfile
+    environment:
+      <<: [*common-env, *postgres-env]
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 768m
+    restart: unless-stopped
+
+  msvc-entrada:
+    build:
+      <<: *common-build
+      dockerfile: msvc-entrada/Dockerfile
+    environment:
+      <<: [*common-env, *postgres-env]
+    deploy:
+      replicas: 2
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    mem_limit: 768m
+    restart: unless-stopped
+
+  msvc-preferencias:
+    build:
+      <<: *common-build
+      dockerfile: msvc-preferencias/Dockerfile
+    environment:
+      <<: *common-env
+      # El YAML del servicio ya usa mongodb://${MONGO_HOST:localhost}:27017.
+      MONGO_HOST: mongo
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      mongo:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8086/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    mem_limit: 768m
+    restart: unless-stopped
+
+  msvc-gateway:
+    build:
+      <<: *common-build
+      dockerfile: msvc-gateway/Dockerfile
+    environment:
+      <<: *common-env
+      JWT_PUBLIC_KEY_LOCATION: file:/run/secrets/ticketya_jwt_public.pem
+      JWT_ISSUER: ${JWT_ISSUER:?Definir JWT_ISSUER en .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?Definir JWT_AUDIENCE en .env}
+    ports:
+      - "8080:8080"
+    volumes:
+      - ticketya-logs:/app/logs
+      # chmod 644 en el archivo y 755 en ./secrets para que lo lea el uid 10001.
+      - ./secrets/ticketya_jwt_public.pem:/run/secrets/ticketya_jwt_public.pem:ro
+    depends_on:
+      msvc-eureka:
+        condition: service_healthy
+      msvc-usuarios:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    mem_limit: 512m
+    restart: unless-stopped
+
+  # Plantilla: hoy msvc-notificaciones es solo esqueleto (package-info.java).
+  # Activar cuando el servicio esté implementado:
+  # msvc-notificaciones:
+  #   build:
+  #     <<: *common-build
+  #     dockerfile: msvc-notificaciones/Dockerfile
+  #   environment:
+  #     <<: [*common-env, *postgres-env]
+  #   volumes: ["ticketya-logs:/app/logs"]
+  #   depends_on:
+  #     postgres: { condition: service_healthy }
+  #     msvc-eureka: { condition: service_healthy }
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-fsS", "http://localhost:8085/actuator/health"]
+  #     interval: 10s
+  #     timeout: 3s
+  #     retries: 10
+  #   mem_limit: 768m
+  #   restart: unless-stopped
 
 volumes:
   postgres-data:
   mongo-data:
+  ticketya-logs:

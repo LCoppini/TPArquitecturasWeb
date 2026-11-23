@@ -4,11 +4,13 @@ import com.ticketya.entrada.dto.request.PagoRequest;
 import com.ticketya.entrada.dto.response.PagoResponse;
 import com.ticketya.entrada.config.CorrelationContext;
 import com.ticketya.entrada.entity.Entrada;
+import com.ticketya.entrada.event.DevolucionAprobadaEvent;
 import com.ticketya.entrada.entity.Pago;
 import com.ticketya.entrada.entity.PendientePreferencia;
 import com.ticketya.entrada.entity.RegistroPago;
 import com.ticketya.entrada.entity.RegistroPagoId;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import com.ticketya.entrada.repository.PagoRepository;
 import com.ticketya.entrada.repository.PendientePreferenciaRepository;
 import com.ticketya.entrada.repository.RegistroPagoRepository;
@@ -16,6 +18,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,21 +40,25 @@ public class PagoService {
 
     private final PagoRepository pagoRepository;
     private final EntradaRepository entradaRepository;
+    private final FilaEventoRepository filaEventoRepository;
     private final RegistroPagoRepository registroPagoRepository;
     private final PendientePreferenciaRepository pendientePreferenciaRepository;
     private final String resultadoPasarela;
+    private ApplicationEventPublisher eventPublisher;
 
     /** Constructor usado por Spring; el pendiente se crea en la misma transacción del pago. */
     @Autowired
     public PagoService(
             PagoRepository pagoRepository,
             EntradaRepository entradaRepository,
+            FilaEventoRepository filaEventoRepository,
             RegistroPagoRepository registroPagoRepository,
             PendientePreferenciaRepository pendientePreferenciaRepository,
             @Value("${ticketya.pasarela.resultado:APRUEBA}") String resultadoPasarela
     ) {
         this.pagoRepository = pagoRepository;
         this.entradaRepository = entradaRepository;
+        this.filaEventoRepository = filaEventoRepository;
         this.registroPagoRepository = registroPagoRepository;
         this.pendientePreferenciaRepository = pendientePreferenciaRepository;
         this.resultadoPasarela = resultadoPasarela.toUpperCase(java.util.Locale.ROOT);
@@ -61,15 +68,33 @@ public class PagoService {
     public PagoService(
             PagoRepository pagoRepository,
             EntradaRepository entradaRepository,
+            FilaEventoRepository filaEventoRepository,
             RegistroPagoRepository registroPagoRepository,
             String resultadoPasarela
     ) {
-        this(pagoRepository, entradaRepository, registroPagoRepository, null, resultadoPasarela);
+        this(pagoRepository, entradaRepository, filaEventoRepository, registroPagoRepository, null, resultadoPasarela);
+    }
+
+    /** Opcional: sin publicador el reintegro funciona igual, solo que no se avisa al cliente. */
+    @Autowired(required = false)
+    public void setEventPublisher(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public PagoResponse crear(PagoRequest request) {
         validarClave(request.getClaveIdempotencia());
+        Entrada preflight = entradaRepository.findById(request.getIdEntrada())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "No se encontró la reserva " + request.getIdEntrada()
+                ));
+        filaEventoRepository.bloquearEventoCompartido(preflight.getIdEvento());
+        if (filaEventoRepository.existsById(preflight.getIdEvento())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.CONFLICT,
+                    "El evento tiene una fila persistida; debe utilizar una Compra agrupada"
+            );
+        }
         Entrada entrada = entradaRepository.buscarPorIdConBloqueo(request.getIdEntrada())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "No se encontró la reserva " + request.getIdEntrada()
@@ -196,6 +221,12 @@ public class PagoService {
         pago.setEstado("REEMBOLSADO");
         pago.setReferenciaPasarela("refund-" + UUID.randomUUID());
         entrada.setEstado("DEVUELTA");
+        if (eventPublisher != null && entrada.getIdCompra() == null
+                && "DEVOLUCION".equals(entrada.getMotivoInvalidacion())) {
+            eventPublisher.publishEvent(new DevolucionAprobadaEvent(
+                    null, entrada.getIdEvento(), entrada.getIdUsuario(), List.of(entrada.getId()),
+                    entrada.getPrecio(), correlacion()));
+        }
     }
 
     @Transactional
@@ -234,6 +265,11 @@ public class PagoService {
         entradas.stream()
                 .filter(entrada -> entradasReintegradas.contains(entrada.getId()))
                 .forEach(entrada -> entrada.setEstado("DEVUELTA"));
+    }
+
+    private String correlacion() {
+        String correlationId = MDC.get(CorrelationContext.MDC_KEY);
+        return correlationId == null || correlationId.isBlank() ? UUID.randomUUID().toString() : correlationId;
     }
 
     private boolean reintegroFalla() {

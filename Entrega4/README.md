@@ -20,6 +20,19 @@ Plataforma de venta de entradas en microservicios (Spring Boot). Esqueleto inici
 
 Aplicacion web en React (cartelera, ingreso y registro) en [`frontend/`](frontend/README.md). No es un modulo Maven: se ejecuta con `npm install && npm run dev` y consume el gateway en el puerto 8080 mediante un proxy de `/api`. Decision de stack: [ADR-0004](docs/decisiones/0004-stack-frontend.md).
 
+## Datos de demostracion (desarrollo)
+
+Para ver el frontend con datos sin cargarlos a mano, arrancar msvc-usuarios, msvc-ubicacion y msvc-evento con el perfil `dev-seed` (variable de entorno `SPRING_PROFILES_ACTIVE=dev-seed`) y con las bases vacias. Arrancar primero usuarios y ubicacion, y despues evento: los eventos referencian lugares, sectores y organizador por id.
+
+| Usuario | Rol |
+|---|---|
+| admin@ticketya.dev | ADMINISTRADOR |
+| organizador@ticketya.dev | ORGANIZADOR |
+| cliente@ticketya.dev, cliente2@ticketya.dev | CLIENTE |
+| acceso@ticketya.dev | PERSONAL_ACCESO |
+
+Contrasena de todos: `Ticketya123!` (se cambia con `seed.dev.password`). Cada seed es idempotente y no hace nada si ya hay datos. Para volver a cargar, vaciar las bases `ticketya_usuarios`, `ticketya_ubicacion` y `ticketya_evento`. No usar este perfil fuera de desarrollo. Detalle: `openspec/changes/datos-demo-desarrollo`.
+
 ## Como levantarlo (E1)
 
 1. `docker compose up -d` (PostgreSQL con una base por servicio y MongoDB para preferencias)
@@ -75,6 +88,53 @@ Los clientes consultan `msvc-config` durante el arranque. Sus imports son opcion
   `GatewayRoleMatrixTest` falla si se agrega una ruta al YAML sin regla de rol.
 - Cobertura de login/registro y verificación del path único de artistas:
   `docs/verificacion-seguridad-rutas.md`.
+
+## Despliegue Docker completo (Entrega 2 / EP-21)
+
+Con el proposal aprobado, todo el sistema se levanta con un solo comando. Hay
+**un Dockerfile por servicio** (9 en total) y el compose activa PostgreSQL,
+MongoDB, `msvc-config`, `msvc-eureka`, los cuatro servicios de dominio,
+`msvc-preferencias`, `msvc-entrada` con **dos réplicas** y `msvc-gateway`.
+`msvc-notificaciones` queda como plantilla comentada hasta que deje de ser un
+esqueleto.
+
+1. Copiar `.env.example` a `.env` y completar `POSTGRES_USER`,
+   `POSTGRES_PASSWORD`, `JWT_PRIVATE_KEY`, `JWT_ISSUER` y `JWT_AUDIENCE`.
+   El PEM privado va en una sola línea usando `\n` para los saltos.
+2. Escribir la clave pública correspondiente en
+   `secrets/ticketya_jwt_public.pem`. El gateway la monta `:ro` y la lee con el
+   uid 10001: dar `chmod 644` al archivo y `chmod 755` al directorio `secrets/`
+   (`icacls secrets /grant Everyone:RX` en Windows). Ni `.env` ni `secrets/`
+   se versionan.
+3. `docker compose up -d --build` (la primera vez; después alcanza con
+   `docker compose up -d`). No usar `--scale`: las dos réplicas de entrada ya
+   vienen de `deploy.replicas: 2`.
+4. Verificar con `docker compose ps`, en `http://127.0.0.1:8761` (dos instancias
+   de `MSVC-ENTRADA`) y con `curl http://localhost:8080/actuator/health`.
+   Config (8888) y Eureka (8761) escuchan solo en loopback; los servicios de
+   dominio no publican puerto al host.
+
+Los healthchecks usan `/actuator/health` en el puerto de cada servicio;
+`msvc-config` no tiene Actuator y se comprueba con
+`GET http://localhost:8888/msvc-gateway/default`. El perfil `docker` fija la
+URL interna de Eureka, `prefer-ip-address`, `instance-id` con `${HOSTNAME}` y
+un único `logging.file.name` por contenedor.
+
+### Logs y límites conocidos
+
+- Los logs están en el volumen con nombre `ticketya-logs`, en
+  `/app/logs/<servicio>-<HOSTNAME>.log`. Para leerlos, por ejemplo:
+  `docker run --rm -v ticketya-logs:/logs alpine sh -c 'ls -l /logs && tail -f /logs/msvc-gateway-*.log'`.
+- Las variables se pueden ver con `docker inspect <contenedor>`; es una
+  limitación conocida de este despliegue didáctico. En producción se usarían
+  Docker secrets o un gestor de secretos.
+- El compose activo suma ~7680 MiB de `mem_limit` (~7,5 GiB). En Windows con
+  WSL2 conviene crear `%USERPROFILE%\.wslconfig` con:
+  `[wsl2]` / `memory=10GB`, y luego `wsl --shutdown` antes de levantar Docker.
+  Activar notificaciones eleva el teórico a ~8448 MiB (~8,25 GiB).
+- Consumo real: `docker stats --no-stream`. Procedimiento y mediciones de
+  `docker stop` / `docker kill` en
+  `openspec/changes/verificacion-e2e-carga/verificacion-despliegue-docker.md`.
 
 ## Arquitectura de cada servicio: capas
 

@@ -12,6 +12,7 @@ import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.repository.EntradaRepository;
 import com.ticketya.entrada.service.CancelacionEventoService;
 import com.ticketya.entrada.service.EntradaService;
+import com.ticketya.entrada.service.FilaVirtualService;
 import com.ticketya.entrada.service.PagoService;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +78,9 @@ class NoDobleVentaTest {
 
     @MockitoBean
     private PagoService pagoService;
+
+    @MockitoBean
+    private FilaVirtualService filaVirtualService;
 
     @DynamicPropertySource
     static void configurarPostgres(DynamicPropertyRegistry registry) {
