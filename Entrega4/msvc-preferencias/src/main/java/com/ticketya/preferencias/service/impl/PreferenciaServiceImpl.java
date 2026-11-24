@@ -2,6 +2,7 @@ package com.ticketya.preferencias.service.impl;
 
 import com.ticketya.preferencias.dto.request.CompraRegistradaRequest;
 import com.ticketya.preferencias.dto.response.ArtistaPreferidoResponse;
+import com.ticketya.preferencias.dto.response.ClientesDeArtistaResponse;
 import com.ticketya.preferencias.dto.response.CompraRegistradaResponse;
 import com.ticketya.preferencias.dto.response.PreferenciaClienteResponse;
 import com.ticketya.preferencias.entity.PreferenciaCliente;
@@ -29,6 +30,15 @@ public class PreferenciaServiceImpl implements PreferenciaService {
         // del repositorio, no en esta consulta previa (que solo informa la respuesta).
         repository.registrarCompra(compra);
         return new CompraRegistradaResponse(compra.idEntrada(), yaProcesada);
+    }
+
+    @Override
+    public ClientesDeArtistaResponse clientesPorArtistaYCiudad(Long idArtista, String ciudad) {
+        if (ciudad == null || ciudad.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La ciudad es obligatoria");
+        }
+        return new ClientesDeArtistaResponse(idArtista, ciudad.trim(),
+                repository.buscarClientesPorArtistaYCiudad(idArtista, ciudad));
     }
 
     @Override

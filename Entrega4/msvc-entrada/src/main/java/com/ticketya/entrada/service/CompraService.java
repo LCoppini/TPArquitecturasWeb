@@ -14,6 +14,7 @@ import com.ticketya.entrada.dto.response.PagoCompraResponse;
 import com.ticketya.entrada.dto.response.PagoResponse;
 import com.ticketya.entrada.dto.response.SectorResponse;
 import com.ticketya.entrada.event.CompraPagadaEvent;
+import com.ticketya.entrada.event.DevolucionAprobadaEvent;
 import com.ticketya.entrada.entity.Compra;
 import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.entity.IngresoFila;
@@ -593,6 +594,16 @@ public class CompraService {
             entrada.setEstadoDevolucion("APROBADA");
             entrada.setCodigoQr(null);
         });
+        if (entradas.stream().allMatch(entrada -> "DEVOLUCION".equals(entrada.getMotivoInvalidacion()))) {
+            eventPublisher.publishEvent(new DevolucionAprobadaEvent(
+                    compra.getIdCompra(),
+                    compra.getIdEvento(),
+                    compra.getIdUsuario(),
+                    entradas.stream().map(Entrada::getId).toList(),
+                    compra.getTotal(),
+                    correlationId()
+            ));
+        }
         log.info("devolucion_compra_aprobada idCompra={} idEvento={} idPago={} correlationId={}",
                 compra.getIdCompra(), compra.getIdEvento(), pago.getIdPago(), correlationId());
     }

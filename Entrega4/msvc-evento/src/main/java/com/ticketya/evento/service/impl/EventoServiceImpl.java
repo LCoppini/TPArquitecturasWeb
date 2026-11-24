@@ -22,6 +22,8 @@ import com.ticketya.evento.entity.Participante;
 import com.ticketya.evento.exception.AccesoDenegadoException;
 import com.ticketya.evento.exception.RecursoNoEncontradoException;
 import com.ticketya.evento.exception.ReglaNegocioException;
+import com.ticketya.evento.event.EventoModificadoEvent;
+import com.ticketya.evento.event.EventoPublicadoEvent;
 import com.ticketya.evento.exception.ServicioExternoException;
 import com.ticketya.evento.mapper.EventoMapper;
 import com.ticketya.evento.repository.EventoRepository;
@@ -29,11 +31,15 @@ import com.ticketya.evento.repository.EventoSectorRepository;
 import com.ticketya.evento.repository.ParticipanteRepository;
 import com.ticketya.evento.service.EventoService;
 import feign.FeignException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -41,6 +47,8 @@ import java.util.*;
 public class EventoServiceImpl implements EventoService {
 
     private static final int TAMANO_MAXIMO_PAGINA = 100;
+    private static final DateTimeFormatter FECHA_AVISO = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
+            .withZone(ZoneId.of("America/Argentina/Buenos_Aires"));
 
     private final EventoRepository eventoRepository;
     private final EventoSectorRepository eventoSectorRepository;
@@ -49,6 +57,7 @@ public class EventoServiceImpl implements EventoService {
     private final SectorClient sectorClient;
     private final EntradaClient entradaClient;
     private final EventoMapper eventoMapper;
+    private ApplicationEventPublisher eventPublisher;
 
     public EventoServiceImpl(
             EventoRepository eventoRepository,
@@ -66,6 +75,12 @@ public class EventoServiceImpl implements EventoService {
         this.sectorClient = sectorClient;
         this.entradaClient = entradaClient;
         this.eventoMapper = eventoMapper;
+    }
+
+    /** Opcional: sin publicador la edicion funciona igual, solo que no se avisa a los compradores. */
+    @Autowired(required = false)
+    public void setEventPublisher(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
     }
 
     @Override
@@ -100,12 +115,38 @@ public class EventoServiceImpl implements EventoService {
         if (!EstadosEvento.BORRADOR.equals(evento.getEstado())) {
             throw new ReglaNegocioException("Solo se pueden editar eventos en estado BORRADOR");
         }
-        validarLugar(request.idLugar());
-        if (!evento.getIdLugar().equals(request.idLugar())) {
+        LugarResponse lugar = validarLugar(request.idLugar());
+        String nombreAnterior = evento.getNombre();
+        Instant fechaAnterior = evento.getFechaHora();
+        boolean cambioLugar = !evento.getIdLugar().equals(request.idLugar());
+        if (cambioLugar) {
             evento.getSectores().clear();
         }
         aplicarDatos(evento, request);
-        return eventoMapper.aResponse(eventoRepository.save(evento));
+        EventoResponse respuesta = eventoMapper.aResponse(eventoRepository.save(evento));
+        publicarModificacion(evento, nombreAnterior, fechaAnterior, cambioLugar ? lugar : null);
+        return respuesta;
+    }
+
+    /** Describe en texto lo que cambio (nombre, fecha, lugar) y lo publica; sin cambios no se avisa. */
+    private void publicarModificacion(Evento evento, String nombreAnterior, Instant fechaAnterior, LugarResponse lugarNuevo) {
+        if (eventPublisher == null) {
+            return;
+        }
+        List<String> cambios = new ArrayList<>();
+        if (!Objects.equals(nombreAnterior, evento.getNombre())) {
+            cambios.add("nuevo nombre: " + evento.getNombre());
+        }
+        if (!Objects.equals(fechaAnterior, evento.getFechaHora())) {
+            cambios.add("nueva fecha: " + FECHA_AVISO.format(evento.getFechaHora())
+                    + (fechaAnterior == null ? "" : " (antes " + FECHA_AVISO.format(fechaAnterior) + ")"));
+        }
+        if (lugarNuevo != null) {
+            cambios.add("nuevo lugar: " + lugarNuevo.nombre());
+        }
+        if (!cambios.isEmpty()) {
+            eventPublisher.publishEvent(new EventoModificadoEvent(evento.getId(), String.join("; ", cambios)));
+        }
     }
 
     @Override
@@ -171,7 +212,7 @@ public class EventoServiceImpl implements EventoService {
             throw new ReglaNegocioException("Solo se puede publicar un evento en BORRADOR o SUSPENDIDO");
         }
 
-        validarLugar(evento.getIdLugar());
+        LugarResponse lugar = validarLugar(evento.getIdLugar());
         if (evento.getSectores().isEmpty()) {
             throw new ReglaNegocioException("El evento debe tener sectores y precios configurados");
         }
@@ -183,7 +224,23 @@ public class EventoServiceImpl implements EventoService {
         }
 
         evento.setEstado(EstadosEvento.PUBLICADO);
-        return eventoMapper.aResponse(eventoRepository.save(evento));
+        EventoResponse respuesta = eventoMapper.aResponse(eventoRepository.save(evento));
+        publicarAvisoDeArtistas(evento, lugar);
+        return respuesta;
+    }
+
+    /** Avisa que el evento esta publicado para notificar a quienes siguen a sus artistas en la ciudad del lugar. */
+    private void publicarAvisoDeArtistas(Evento evento, LugarResponse lugar) {
+        if (eventPublisher == null || lugar == null || lugar.ciudad() == null || lugar.ciudad().isBlank()
+                || evento.getParticipantes().isEmpty()) {
+            return;
+        }
+        List<EventoPublicadoEvent.Artista> artistas = evento.getParticipantes().stream()
+                .map(relacion -> new EventoPublicadoEvent.Artista(
+                        relacion.getParticipante().getId(), relacion.getParticipante().getNombre()))
+                .toList();
+        eventPublisher.publishEvent(new EventoPublicadoEvent(evento.getId(), evento.getNombre(),
+                FECHA_AVISO.format(evento.getFechaHora()), lugar.ciudad(), artistas));
     }
 
     @Override
@@ -420,11 +477,12 @@ public class EventoServiceImpl implements EventoService {
         }
     }
 
-    private void validarLugar(Long idLugar) {
+    private LugarResponse validarLugar(Long idLugar) {
         LugarResponse lugar = obtenerLugar(idLugar);
         if (!idLugar.equals(lugar.id())) {
             throw new ServicioExternoException("Ubicación devolvió un identificador de lugar inesperado", null);
         }
+        return lugar;
     }
 
     private void validarSectorDelLugar(Long idSector, Long idLugarEsperado) {
