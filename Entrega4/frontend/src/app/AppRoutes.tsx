@@ -21,11 +21,12 @@ export const AppRoutes = () => (
         <Route path="perfil" element={<ProfilePage />} />
         <Route path="notificaciones" element={<NotificationsPage />} />
       </Route>
-      <Route element={<GuestOnly />}>
-        <Route path="ingresar" element={<LoginPage />} />
-        <Route path="registro" element={<RegisterPage />} />
-      </Route>
       <Route path="*" element={<NotFoundPage />} />
+    </Route>
+    {/* Ingreso y registro ocupan toda la pantalla: sin barra ni pie. */}
+    <Route element={<GuestOnly />}>
+      <Route path="ingresar" element={<LoginPage />} />
+      <Route path="registro" element={<RegisterPage />} />
     </Route>
   </Routes>
 )

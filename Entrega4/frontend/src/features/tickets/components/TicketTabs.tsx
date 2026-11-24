@@ -11,7 +11,7 @@ type TicketTabsProps = {
 export const TicketTabs = ({ active, counts, onChange }: TicketTabsProps) => (
   <div role="group" aria-label="Filtrar entradas" className="flex flex-wrap gap-2">
     {TICKET_TABS.map(({ id, label }) => (
-      <Chip key={id} pressed={active === id} count={counts[id]} onClick={() => onChange(id)}>
+      <Chip key={id} className="h-9 px-3.5 text-[13px]" pressed={active === id} count={counts[id]} onClick={() => onChange(id)}>
         {label}
       </Chip>
     ))}
