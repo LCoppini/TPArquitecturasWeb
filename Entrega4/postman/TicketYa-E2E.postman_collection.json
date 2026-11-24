@@ -1,0 +1,1967 @@
+{
+  "info": {
+    "name": "TicketYa - E2E completo (Entrega4)",
+    "description": "Flujo E2E por msvc-gateway (:8080). Ejecutar las carpetas en orden con el Collection Runner.\n\nPRECONDICIONES:\n- docker compose up -d --build desde Entrega4; .env creado desde .env.example (NO versionar).\n- El admin inicial se siembra con SEED_ADMIN_*, pero docker-compose.yml NO reenvía esas variables a msvc-usuarios: crear el admin por otro medio o agregarlas al environment del servicio antes de levantar.\n- La clave publica JWT debe estar en ./secrets/ticketya_jwt_public.pem (montada por compose).\n- msvc-notificaciones esta habilitado en docker-compose.yml en 127.0.0.1:8085; la carpeta I lo llama directo (el gateway no enruta /internal/**).\n- PASARELA_RESULTADO=APRUEBA y FILA_VIRTUAL_ENABLED=true son los defaults. El compose no los pasa como env; si cambias el resultado del pago, ajusta las aserciones de la fase E.\n\nNOTAS IMPORTANTES:\n- No enviar X-User-Id ni X-User-Role: el gateway los deriva/sobrescribe desde el JWT.\n- /api/lugares usa token ADMINISTRADOR (el matcher ADMIN va primero en la matriz del gateway).\n- Alta de artistas: POST /api/admin/artistas (POST /api/artistas esta denegado).\n- Publicacion: POST /api/organizador/eventos/{id}/publicacion (no /publicar).\n- GET /api/eventos/{id}/disponibilidad requiere el query idSector.\n- Activar fila con maxPersonas=30 y cupoEntradas=60: cupo >= maxPersonas y <= maxPersonas*6, dentro de la disponibilidad real.\n- El pago con Idempotency-Key repetido devuelve 200; la compra repetida devuelve 201; cambiar el body con la misma clave da 422.\n- El aviso automatico de notificaciones si se dispara (el Feign de msvc-entrada apunta a /internal/notificaciones). En local queda DESCARTADA (sin destinatario) o FALLIDA (sin SMTP): no se aserta entrega, solo estado conocido.\n- Las credenciales de estas variables son solo ejemplos locales; no poner secretos reales ni tokens en la coleccion.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "notificaciones",
+      "value": "http://localhost:8085"
+    },
+    {
+      "key": "emailAdmin",
+      "value": "admin@ticketya.local"
+    },
+    {
+      "key": "passwordAdmin",
+      "value": "Clave123!"
+    },
+    {
+      "key": "emailOrg",
+      "value": "ana.org@ticketya.local"
+    },
+    {
+      "key": "passwordOrg",
+      "value": "Clave123!"
+    },
+    {
+      "key": "emailCliente",
+      "value": "camila.cliente@ticketya.local"
+    },
+    {
+      "key": "passwordCliente",
+      "value": "Clave123!"
+    },
+    {
+      "key": "emailAcceso",
+      "value": "paula.acceso@ticketya.local"
+    },
+    {
+      "key": "passwordAcceso",
+      "value": "Clave123!"
+    },
+    {
+      "key": "dniOrg",
+      "value": "20000001"
+    },
+    {
+      "key": "dniAcceso",
+      "value": "50000001"
+    },
+    {
+      "key": "dniCliente",
+      "value": "30000001"
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenOrg",
+      "value": ""
+    },
+    {
+      "key": "tokenCliente",
+      "value": ""
+    },
+    {
+      "key": "tokenAcceso",
+      "value": ""
+    },
+    {
+      "key": "idOrg",
+      "value": ""
+    },
+    {
+      "key": "idAcceso",
+      "value": ""
+    },
+    {
+      "key": "idCliente",
+      "value": ""
+    },
+    {
+      "key": "idOtroCliente",
+      "value": "999999"
+    },
+    {
+      "key": "idLugar",
+      "value": ""
+    },
+    {
+      "key": "idSector1",
+      "value": ""
+    },
+    {
+      "key": "idSector2",
+      "value": ""
+    },
+    {
+      "key": "idArtista",
+      "value": "701"
+    },
+    {
+      "key": "idEvento",
+      "value": ""
+    },
+    {
+      "key": "idIngreso",
+      "value": ""
+    },
+    {
+      "key": "idCompra",
+      "value": ""
+    },
+    {
+      "key": "idEntrada",
+      "value": ""
+    },
+    {
+      "key": "codigoQr",
+      "value": ""
+    },
+    {
+      "key": "idPago",
+      "value": ""
+    },
+    {
+      "key": "idNotificacion",
+      "value": ""
+    },
+    {
+      "key": "claveCompra",
+      "value": ""
+    },
+    {
+      "key": "clavePago",
+      "value": ""
+    },
+    {
+      "key": "claveNotificacion",
+      "value": ""
+    },
+    {
+      "key": "fechaEvento",
+      "value": "2026-12-18T20:00:00Z"
+    },
+    {
+      "key": "fila1",
+      "value": "1"
+    },
+    {
+      "key": "asiento1",
+      "value": "1"
+    },
+    {
+      "key": "ciudad",
+      "value": "Tandil"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Inicio de corrida",
+      "item": [
+        {
+          "name": "0. Generar claves de idempotencia y limpiar ids",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/artistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artistas"
+              ]
+            },
+            "description": "Se ejecuta primero. Genera claves nuevas para que una corrida no choque con la anterior. No requiere token."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const s = Date.now();",
+                  "pm.collectionVariables.set('claveCompra', 'compra-e2e-' + s);",
+                  "pm.collectionVariables.set('clavePago', 'pago-e2e-' + s);",
+                  "pm.collectionVariables.set('claveNotificacion', 'COMPRA_CONFIRMADA:postman:' + s);",
+                  "pm.collectionVariables.set('dniOrg', String(20000000 + (s % 1000000)));",
+                  "pm.collectionVariables.set('dniAcceso', String(50000000 + (s % 1000000)));",
+                  "pm.collectionVariables.set('dniCliente', String(30000000 + (s % 1000000)));",
+                  "pm.collectionVariables.set('emailOrg', 'ana.org+' + s + '@ticketya.local');",
+                  "pm.collectionVariables.set('emailCliente', 'camila.cliente+' + s + '@ticketya.local');",
+                  "pm.collectionVariables.set('emailAcceso', 'paula.acceso+' + s + '@ticketya.local');",
+                  "pm.collectionVariables.set('idArtista', String(700000 + (s % 100000)));",
+                  "['idLugar','idSector1','idSector2','idEvento','idIngreso','idCompra','idEntrada','codigoQr','idPago','idNotificacion'].forEach(k => pm.collectionVariables.set(k, ''));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('catálogo público disponible', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Ejecutar siempre antes de una corrida completa."
+    },
+    {
+      "name": "A. Autenticación y roles",
+      "item": [
+        {
+          "name": "A1. Login admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailAdmin}}\",\n  \"password\": \"{{passwordAdmin}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requiere admin sembrado/creado previamente. Respuesta: {token,tipo,expiraEnSegundos}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login admin', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('tokenAdmin', r.token);",
+                  "pm.test('token Bearer', () => { pm.expect(r.token).to.be.a('string'); pm.expect(r.tipo).to.eql('Bearer'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A2. Crear organizador (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": {{dniOrg}},\n  \"nombre\": \"Ana\",\n  \"apellido\": \"Organizadora\",\n  \"ciudad\": \"{{ciudad}}\",\n  \"email\": \"{{emailOrg}}\",\n  \"password\": \"{{passwordOrg}}\",\n  \"roles\": [\n    \"ORGANIZADOR\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('organizador creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.collectionVariables.set('idOrg', pm.response.json().idUsuario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A3. Crear personal de acceso (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "usuarios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": {{dniAcceso}},\n  \"nombre\": \"Paula\",\n  \"apellido\": \"Acceso\",\n  \"ciudad\": \"{{ciudad}}\",\n  \"email\": \"{{emailAcceso}}\",\n  \"password\": \"{{passwordAcceso}}\",\n  \"roles\": [\n    \"PERSONAL_ACCESO\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('personal de acceso creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.collectionVariables.set('idAcceso', pm.response.json().idUsuario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A4. Registrar cliente (público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/registro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "registro"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dni\": {{dniCliente}},\n  \"nombre\": \"Camila\",\n  \"apellido\": \"Cliente\",\n  \"ciudad\": \"{{ciudad}}\",\n  \"email\": \"{{emailCliente}}\",\n  \"password\": \"{{passwordCliente}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El registro publico NO acepta roles: siempre queda CLIENTE."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('cliente registrado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('idCliente', r.idUsuario);",
+                  "pm.test('rol CLIENTE', () => pm.expect(r.roles.map(x => x.tipo)).to.include('CLIENTE'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A5. Login organizador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailOrg}}\",\n  \"password\": \"{{passwordOrg}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login organizador', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenOrg', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A6. Login cliente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCliente}}\",\n  \"password\": \"{{passwordCliente}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login cliente', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenCliente', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A7. Login personal de acceso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/usuarios/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "usuarios",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailAcceso}}\",\n  \"password\": \"{{passwordAcceso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login acceso', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenAcceso', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A8. GET /api/roles con CLIENTE debe dar 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 para CLIENTE', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "A9. GET /api/roles sin token debe dar 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "roles"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 sin token', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Tokens, usuarios y matriz basica de roles."
+    },
+    {
+      "name": "B. Catálogo (ubicación y artistas)",
+      "item": [
+        {
+          "name": "B1. Crear lugar con sectores (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lugares",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lugares"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Teatro Municipal de Tandil\",\n  \"direccion\": \"Av. Colón 438\",\n  \"ciudad\": \"{{ciudad}}\",\n  \"latitud\": -37.0325,\n  \"longitud\": -59.1361,\n  \"sectores\": [\n    {\n      \"nombre\": \"Platea\",\n      \"tipo\": \"NUMERADO\",\n      \"filas\": 5,\n      \"asientosPorFila\": 10,\n      \"capacidadMax\": null\n    },\n    {\n      \"nombre\": \"Patio\",\n      \"tipo\": \"NO_NUMERADO\",\n      \"filas\": null,\n      \"asientosPorFila\": null,\n      \"capacidadMax\": 100\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Usar ADMIN: el matcher ADMIN de /api/lugares va antes que el de ORGANIZADOR."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('lugar creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('idLugar', r.id);",
+                  "pm.collectionVariables.set('idSector1', r.sectores[0].idSector);",
+                  "pm.collectionVariables.set('idSector2', r.sectores[1].idSector);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B2. Crear artista (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/artistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "artistas"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": {{idArtista}},\n  \"nombre\": \"Los Tandileros\",\n  \"tipo\": \"Artista\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "POST /api/artistas esta denegado incluso para ADMIN; el alta es /api/admin/artistas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('artista creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.collectionVariables.set('idArtista', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B3. Listar artistas (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/artistas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "artistas"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('artistas publicos', () => pm.response.to.have.status(200));",
+                  "pm.test('es lista', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "B4. Buscar lugares por ciudad (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/lugares?ciudad={{ciudad}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "lugares"
+              ],
+              "query": [
+                {
+                  "key": "ciudad",
+                  "value": "{{ciudad}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('lugares por ciudad', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Lugar, sectores y artista."
+    },
+    {
+      "name": "C. Evento (organizador)",
+      "item": [
+        {
+          "name": "C1. Crear evento en BORRADOR",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOrg}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizador/eventos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idLugar\": {{idLugar}},\n  \"nombre\": \"Noche de Jazz en el Teatro\",\n  \"descripcion\": \"Evento de prueba E2E\",\n  \"tipo\": \"Musica\",\n  \"fechaHora\": \"{{fechaEvento}}\",\n  \"participantes\": [\n    {\n      \"id\": {{idArtista}}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('evento creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('idEvento', r.id);",
+                  "pm.test('BORRADOR', () => pm.expect(r.estado).to.eql('BORRADOR'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C2. Configurar sectores y precios",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOrg}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizador/eventos/{{idEvento}}/sectores",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos",
+                "{{idEvento}}",
+                "sectores"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectores\": [\n    {\n      \"idSector\": {{idSector1}},\n      \"precio\": 15000\n    },\n    {\n      \"idSector\": {{idSector2}},\n      \"precio\": 8000\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('sectores configurados', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C3. Publicar evento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOrg}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizador/eventos/{{idEvento}}/publicacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos",
+                "{{idEvento}}",
+                "publicacion"
+              ]
+            },
+            "description": "La ruta real es /publicacion (no /publicar). Sin body."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('evento publicado', () => pm.response.to.have.status(200));",
+                  "pm.test('PUBLICADO', () => pm.expect(pm.response.json().estado).to.eql('PUBLICADO'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C4. Consultar evento (público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/eventos/{{idEvento}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "{{idEvento}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('evento publico', () => pm.response.to.have.status(200));",
+                  "pm.test('el campo de id es id', () => pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('idEvento'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "C5. Disponibilidad del sector 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/eventos/{{idEvento}}/disponibilidad?idSector={{idSector1}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "eventos",
+                "{{idEvento}}",
+                "disponibilidad"
+              ],
+              "query": [
+                {
+                  "key": "idSector",
+                  "value": "{{idSector1}}"
+                }
+              ]
+            },
+            "description": "idSector es obligatorio; sin el query da 400."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('disponibilidad', () => pm.response.to.have.status(200));",
+                  "pm.test('tiene disponibles', () => pm.expect(pm.response.json()).to.have.property('disponibles'));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Alta, configuración, publicación y consulta pública."
+    },
+    {
+      "name": "D. Fila virtual",
+      "item": [
+        {
+          "name": "D1. Activar fila (ORGANIZADOR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOrg}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizador/filas-virtuales/eventos/{{idEvento}}/activacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "filas-virtuales",
+                "eventos",
+                "{{idEvento}}",
+                "activacion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maxPersonas\": 30,\n  \"cupoEntradas\": 60\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "cupoEntradas debe ser >= maxPersonas y <= maxPersonas*6, y no superar la disponibilidad real. El draft con 100/4 era invalido."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('fila activada', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const r = pm.response.json();",
+                  "pm.test('30/60', () => { pm.expect(r.maxPersonas).to.eql(30); pm.expect(r.cupoEntradas).to.eql(60); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D2. Cliente ingresa a la fila",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/filas-virtuales/eventos/{{idEvento}}/ingresos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "filas-virtuales",
+                "eventos",
+                "{{idEvento}}",
+                "ingresos"
+              ]
+            },
+            "description": "Sin body. Con un solo cliente suele quedar HABILITADO de una vez."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('ingreso a fila', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('idIngreso', r.idIngreso);",
+                  "pm.test('estado de ingreso conocido', () => pm.expect(['EN_ESPERA','HABILITADO','COMPRO','VENCIDO']).to.include(r.estado));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "D3. Polling mi-estado (repetir hasta HABILITADO)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/filas-virtuales/eventos/{{idEvento}}/mi-estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "filas-virtuales",
+                "eventos",
+                "{{idEvento}}",
+                "mi-estado"
+              ]
+            },
+            "description": "Repetir manualmente hasta que estado sea HABILITADO. Si queda EN_ESPERA con un solo cliente, revisar cupo/flag/tanda."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('mi-estado', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test('estado conocido', () => pm.expect(['EN_ESPERA','HABILITADO','COMPRO','VENCIDO']).to.include(r.estado));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Activación, ingreso y turno."
+    },
+    {
+      "name": "E. Compra y pago",
+      "item": [
+        {
+          "name": "E1. Crear compra (2 entradas)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{claveCompra}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEvento\": {{idEvento}},\n  \"entradas\": [\n    {\n      \"idSector\": {{idSector1}},\n      \"fila\": {{fila1}},\n      \"asiento\": {{asiento1}}\n    },\n    {\n      \"idSector\": {{idSector2}}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Requiere turno HABILITADO. Entrada NUMERADO lleva fila/asiento; NO_NUMERADO solo idSector. Maximo 6 entradas."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 compra creada', () => pm.response.to.have.status(201));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('idCompra', r.idCompra);",
+                  "const e = (r.entradas || []).find(x => x.codigoQr);",
+                  "if (e) { pm.collectionVariables.set('codigoQr', e.codigoQr); pm.collectionVariables.set('idEntrada', e.id); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E2. Repetir misma clave y body (201, misma compra)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{claveCompra}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEvento\": {{idEvento}},\n  \"entradas\": [\n    {\n      \"idSector\": {{idSector1}},\n      \"fila\": {{fila1}},\n      \"asiento\": {{asiento1}}\n    },\n    {\n      \"idSector\": {{idSector2}}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 en replay', () => pm.response.to.have.status(201));",
+                  "pm.test('misma compra', () => pm.expect(pm.response.json().idCompra).to.eql(Number(pm.collectionVariables.get('idCompra'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E3. Misma clave con body distinto (422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{claveCompra}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEvento\": {{idEvento}},\n  \"entradas\": [\n    {\n      \"idSector\": {{idSector2}}\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422 por clave reutilizada', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E4. Pagar compra",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{clavePago}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras/{{idCompra}}/pago",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras",
+                "{{idCompra}}",
+                "pago"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medioDePago\": \"TARJETA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Con PASARELA_RESULTADO=APRUEBA queda pagada y emite QR. FALLA compensa; DEMORA queda pendiente."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('pago aceptado', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('idPago', r.idPago);",
+                  "pm.test('misma compra', () => pm.expect(r.idCompra).to.eql(Number(pm.collectionVariables.get('idCompra'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E5. Repetir pago con la misma clave (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{clavePago}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras/{{idCompra}}/pago",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras",
+                "{{idCompra}}",
+                "pago"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"medioDePago\": \"TARJETA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('replay de pago', () => pm.response.to.have.status(200));",
+                  "pm.test('mismo pago', () => pm.expect(pm.response.json().idPago).to.eql(Number(pm.collectionVariables.get('idPago'))));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "E6. Consultar compra y capturar QR",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras/{{idCompra}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras",
+                "{{idCompra}}"
+              ]
+            },
+            "description": "El QR se genera al PAGAR, no al reservar. Esta consulta captura codigoQr/idEntrada para F e I."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('compra consultada', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "const e = (r.entradas || []).find(x => x.codigoQr);",
+                  "pm.test('QR emitido', () => pm.expect(e).to.exist);",
+                  "if (e) { pm.collectionVariables.set('codigoQr', e.codigoQr); pm.collectionVariables.set('idEntrada', e.id); }"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Reserva, idempotencia y pago."
+    },
+    {
+      "name": "F. Acceso QR",
+      "item": [
+        {
+          "name": "F1. Escanear QR (PERSONAL_ACCESO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAcceso}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accesos/escanear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accesos",
+                "escanear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEvento\": {{idEvento}},\n  \"codigoQr\": \"{{codigoQr}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El campo es codigoQr (no qr/codigo)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('QR escaneado', () => pm.response.to.have.status(200));",
+                  "pm.test('entrada USADA', () => pm.expect(pm.response.json().estado).to.eql('USADA'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "F2. Reescanear el mismo QR (409 QR_YA_USADO)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAcceso}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accesos/escanear",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accesos",
+                "escanear"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEvento\": {{idEvento}},\n  \"codigoQr\": \"{{codigoQr}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));",
+                  "pm.test('codigo QR_YA_USADO', () => pm.expect(pm.response.json().code).to.eql('QR_YA_USADO'));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Uso y rechazo de QR."
+    },
+    {
+      "name": "G. Devolución y reporte",
+      "item": [
+        {
+          "name": "G1. Devolución del cliente (409 esperado: QR usado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/compras/{{idCompra}}/devolucion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "compras",
+                "{{idCompra}}",
+                "devolucion"
+              ]
+            },
+            "description": "Como F1 marco la entrada USADA, aqui toca 409. Para devolucion exitosa usar otra compra sin escanear y evento a >= 72 h."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202 o 409 coherente', () => pm.expect([202, 409]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G2. Resolver devolución (ADMIN, opcional)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/entradas/compras/{{idCompra}}/devolucion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "entradas",
+                "compras",
+                "{{idCompra}}",
+                "devolucion"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"aprobarDevolucion\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Solo aplica si G1 devolvio 202 y quedo pendiente. Respuesta exitosa: 204 sin body. El reintento es POST .../devolucion/reintentar."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('204/202/404/409 segun estado previo', () => pm.expect([202, 204, 404, 409]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "G3. Reporte del organizador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenOrg}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/organizador/eventos/{{idEvento}}/reporte",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "organizador",
+                "eventos",
+                "{{idEvento}}",
+                "reporte"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('reporte', () => pm.response.to.have.status(200));",
+                  "pm.test('tiene totales', () => pm.expect(pm.response.json()).to.have.property('totales'));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Devolución, resolución administrativa y reporte."
+    },
+    {
+      "name": "H. Preferencias y recomendaciones",
+      "item": [
+        {
+          "name": "H1. Preferencias del cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/preferencias/clientes/{{idCliente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "preferencias",
+                "clientes",
+                "{{idCliente}}"
+              ]
+            },
+            "description": "El pago agrupado ya registra el outbox, pero el worker lo procesa de forma asincronica (1 entrada cada 5 s). El pre-request sondea hasta que el documento exista; las aserciones no cambian."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// El worker de preferencias es asincrono: esperar a que procese el outbox antes de consultar.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "const id = pm.collectionVariables.get('idCliente');",
+                  "const token = pm.collectionVariables.get('tokenCliente');",
+                  "const url = base + '/api/preferencias/clientes/' + id;",
+                  "function sondear(n) {",
+                  "  pm.sendRequest({ url: url, method: 'GET', header: [{ key: 'Authorization', value: 'Bearer ' + token }] }, function (err, res) {",
+                  "    if (!err && res.code === 200) { pm.collectionVariables.set('outboxPreferencias', 'LISTO'); return; }",
+                  "    if (n >= 20) { pm.collectionVariables.set('outboxPreferencias', 'TIMEOUT'); return; }",
+                  "    setTimeout(function () { sondear(n + 1); }, 600);",
+                  "  });",
+                  "}",
+                  "sondear(1);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 o 404 segun outbox', () => pm.expect([200, 404]).to.include(pm.response.code));",
+                  "if (pm.response.code === 200) { const r = pm.response.json(); pm.test('es propio', () => pm.expect(r.idUsuario).to.eql(Number(pm.collectionVariables.get('idCliente')))); pm.test('campos', () => { pm.expect(r).to.have.property('tiposEvento'); pm.expect(r).to.have.property('artistas'); }); }"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H2. Preferencias de otro usuario (403)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/preferencias/clientes/{{idOtroCliente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "preferencias",
+                "clientes",
+                "{{idOtroCliente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403 por ownership', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H3. Recomendaciones del cliente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/recomendaciones/clientes/{{idCliente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "recomendaciones",
+                "clientes",
+                "{{idCliente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('recomendaciones', () => pm.response.to.have.status(200));",
+                  "pm.test('es lista', () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H4. Vista admin de preferencias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/preferencias/clientes/{{idCliente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "preferencias",
+                "clientes",
+                "{{idCliente}}"
+              ]
+            },
+            "description": "Tras el sondeo de H1 el documento ya existe: el resultado esperado es 200. Se conserva la asercion original 200 o 404."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 o 404 segun outbox', () => pm.expect([200, 404]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "H5. Vista admin de recomendaciones",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/recomendaciones/clientes/{{idCliente}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "recomendaciones",
+                "clientes",
+                "{{idCliente}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('recomendaciones admin', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Se derivan de compras aprobadas via outbox; si no aparecen, revisar logs de entrada/preferencias."
+    },
+    {
+      "name": "I. Notificaciones (interno, opcional)",
+      "item": [
+        {
+          "name": "I1. Solicitar notificación (202)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{notificaciones}}/internal/notificaciones",
+              "host": [
+                "{{notificaciones}}"
+              ],
+              "path": [
+                "internal",
+                "notificaciones"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"claveIdempotencia\": \"{{claveNotificacion}}\",\n  \"idUsuario\": {{idCliente}},\n  \"tipo\": \"COMPRA_CONFIRMADA\",\n  \"destinatario\": \"{{emailCliente}}\",\n  \"datos\": {\n    \"nombre\": \"Camila\",\n    \"evento\": \"Noche de Jazz en el Teatro\",\n    \"fechaHora\": \"{{fechaEvento}}\",\n    \"idEntrada\": \"{{idEntrada}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Directo a msvc-notificaciones:8085 (habilitado en compose), nunca por el gateway (/internal/** esta denegado). Sin SMTP el estado puede ser FALLIDA; sin destinatario, DESCARTADA."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('202', () => pm.response.to.have.status(202));",
+                  "const r = pm.response.json();",
+                  "pm.test('estado conocido', () => pm.expect(['PENDIENTE','ENVIANDO','ENVIADA','FALLIDA','DESCARTADA']).to.include(r.estado));",
+                  "pm.collectionVariables.set('idNotificacion', r.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "I2. Consultar estado de la notificación",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{notificaciones}}/internal/notificaciones/{{idNotificacion}}",
+              "host": [
+                "{{notificaciones}}"
+              ],
+              "path": [
+                "internal",
+                "notificaciones",
+                "{{idNotificacion}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('notificación', () => pm.response.to.have.status(200));",
+                  "pm.test('estado conocido', () => pm.expect(['PENDIENTE','ENVIANDO','ENVIADA','FALLIDA','DESCARTADA']).to.include(pm.response.json().estado));"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "description": "No forma parte del flujo por gateway: /internal/** va directo a msvc-notificaciones:8085. El Feign de msvc-entrada ya apunta a /internal/notificaciones (contrato correcto) y el aviso automatico si se dispara; en local queda DESCARTADA (sin destinatario) o FALLIDA (sin SMTP), por eso no se aserta la entrega, solo el estado conocido."
+    }
+  ]
+}
