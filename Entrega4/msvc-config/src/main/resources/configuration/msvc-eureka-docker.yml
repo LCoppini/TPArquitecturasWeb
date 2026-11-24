@@ -1,0 +1,5 @@
+# Solo el servidor Eureka: tiempos rápidos de expulsión sin auto-preservación.
+eureka:
+  server:
+    enable-self-preservation: false
+    eviction-interval-timer-in-ms: 5000

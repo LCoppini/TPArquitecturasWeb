@@ -1,6 +1,8 @@
 package com.ticketya.entrada.controller;
 
 import com.ticketya.entrada.dto.request.EntradaRequest;
+import com.ticketya.entrada.dto.request.CompraDevolucionRequest;
+import com.ticketya.entrada.service.CompraService;
 import com.ticketya.entrada.service.CancelacionEventoService;
 import com.ticketya.entrada.service.EntradaService;
 import com.ticketya.entrada.service.PagoService;
@@ -21,15 +23,18 @@ public class AdminEntradaController {
     private final EntradaService entradaService;
     private final PagoService pagoService;
     private final CancelacionEventoService cancelacionEventoService;
+    private final CompraService compraService;
 
     public AdminEntradaController(
             EntradaService entradaService,
             PagoService pagoService,
-            CancelacionEventoService cancelacionEventoService
+            CancelacionEventoService cancelacionEventoService,
+            CompraService compraService
     ) {
         this.entradaService = entradaService;
         this.pagoService = pagoService;
         this.cancelacionEventoService = cancelacionEventoService;
+        this.compraService = compraService;
     }
 
     @PutMapping("/{id}/devolucion")
@@ -63,6 +68,25 @@ public class AdminEntradaController {
             @RequestHeader("X-User-Id") Long idAdministrador
     ) {
         cancelacionEventoService.cancelarEvento(idEvento);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PutMapping("/compras/{idCompra}/devolucion")
+    public ResponseEntity<Void> resolverDevolucionCompra(
+            @PathVariable Long idCompra,
+            @RequestHeader("X-User-Id") Long idAdministrador,
+            @RequestBody @jakarta.validation.Valid CompraDevolucionRequest request
+    ) {
+        compraService.resolverDevolucion(idCompra, Boolean.TRUE.equals(request.aprobarDevolucion()));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/compras/{idCompra}/devolucion/reintentar")
+    public ResponseEntity<Void> reintentarDevolucionCompra(
+            @PathVariable Long idCompra,
+            @RequestHeader("X-User-Id") Long idAdministrador
+    ) {
+        compraService.reintentarDevolucion(idCompra);
         return ResponseEntity.accepted().build();
     }
 }

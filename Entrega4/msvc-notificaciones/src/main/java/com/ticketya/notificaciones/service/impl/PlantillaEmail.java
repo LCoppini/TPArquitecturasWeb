@@ -78,6 +78,19 @@ public class PlantillaEmail {
 
                 TicketYa
                 """));
+        PLANTILLAS.put(TipoNotificacion.ARTISTA_FAVORITO_PUBLICA_EVENTO, new Plantilla(
+                List.of("artista", "evento", "fechaHora", "ciudad"),
+                "{artista} publicó un evento en {ciudad}",
+                """
+                {saludo}
+
+                {artista}, uno de tus artistas favoritos, publicó un evento en {ciudad}.
+
+                Evento: {evento}
+                Fecha y hora: {fechaHora}
+
+                Ya podés ver las entradas disponibles en TicketYa.
+                """));
     }
 
     /** Datos obligatorios del tipo que no vienen (o vienen vacios). */

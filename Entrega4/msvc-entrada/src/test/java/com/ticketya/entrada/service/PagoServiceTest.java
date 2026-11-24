@@ -4,12 +4,15 @@ import com.ticketya.entrada.dto.request.PagoRequest;
 import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.entity.Pago;
 import com.ticketya.entrada.repository.EntradaRepository;
+import com.ticketya.entrada.repository.FilaEventoRepository;
 import com.ticketya.entrada.repository.PagoRepository;
 import com.ticketya.entrada.repository.RegistroPagoRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +35,15 @@ class PagoServiceTest {
     private EntradaRepository entradaRepository;
 
     @Mock
+    private FilaEventoRepository filaEventoRepository;
+
+    @Mock
     private RegistroPagoRepository registroPagoRepository;
 
     @Test
     void noPermitePagarUnaReservaCancelada() {
         Entrada entrada = entrada(100L, "CANCELADA");
+        when(entradaRepository.findById(100L)).thenReturn(Optional.of(entrada));
         when(entradaRepository.buscarPorIdConBloqueo(100L)).thenReturn(Optional.of(entrada));
         when(pagoRepository.findByIdEntradaAndClaveIdempotencia(100L, "pago-1"))
                 .thenReturn(Optional.empty());
@@ -44,6 +51,21 @@ class PagoServiceTest {
         assertThrows(IllegalStateException.class, () -> servicio("APRUEBA").crear(solicitud()));
 
         verify(pagoRepository, never()).save(org.mockito.ArgumentMatchers.any(Pago.class));
+    }
+
+    @Test
+    void bloqueaPagoIndividualCuandoExisteUnaFilaPersistida() {
+        Entrada entrada = entrada(100L, "RESERVADA");
+        when(entradaRepository.findById(100L)).thenReturn(Optional.of(entrada));
+        when(filaEventoRepository.existsById(20L)).thenReturn(true);
+
+        ResponseStatusException error = assertThrows(
+                ResponseStatusException.class,
+                () -> servicio("APRUEBA").crear(solicitud())
+        );
+
+        assertEquals(HttpStatus.CONFLICT, error.getStatusCode());
+        verify(entradaRepository, never()).buscarPorIdConBloqueo(100L);
     }
 
     @Test
@@ -103,7 +125,9 @@ class PagoServiceTest {
     }
 
     private PagoService servicio(String resultadoPasarela) {
-        return new PagoService(pagoRepository, entradaRepository, registroPagoRepository, resultadoPasarela);
+        return new PagoService(
+                pagoRepository, entradaRepository, filaEventoRepository, registroPagoRepository, resultadoPasarela
+        );
     }
 
     private PagoRequest solicitud() {

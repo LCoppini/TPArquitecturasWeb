@@ -155,6 +155,44 @@ class GatewayErrorHandlingTest {
     }
 
     @Test
+    void elCorrelationIdDelClienteLlegaAlBackendYaLaRespuesta() {
+        HttpHeaders headers = autorizado(TOKEN_VALIDO);
+        headers.add("X-Correlation-Id", "corr-gateway-cliente");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/backend/recurso", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+
+        assertTrue(response.getBody().contains("X-Correlation-Id=corr-gateway-cliente"));
+        assertEquals("corr-gateway-cliente", response.getHeaders().getFirst("X-Correlation-Id"));
+    }
+
+    @Test
+    void elGatewayGeneraCorrelationIdCuandoElClienteNoLoEnvia() {
+        HttpHeaders headers = autorizado(TOKEN_VALIDO);
+        headers.add("X-Correlation-Id", "   ");
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/backend/recurso", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+
+        String generado = response.getHeaders().getFirst("X-Correlation-Id");
+        assertNotNull(generado);
+        assertFalse(generado.isBlank());
+        assertTrue(response.getBody().contains("X-Correlation-Id=" + generado));
+    }
+
+    @Test
+    void elCorrelationIdSePropagaEnLosErroresGeneradosPorElGateway() {
+        HttpHeaders headers = autorizado(TOKEN_VALIDO);
+        headers.add("X-Correlation-Id", "corr-gateway-error");
+
+        ResponseEntity<Map> response = restTemplate.exchange(
+                "/api/registros-pago", HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertEquals("corr-gateway-error", response.getHeaders().getFirst("X-Correlation-Id"));
+    }
+
+    @Test
     void tokenSinClaimIdUsuarioResponde401() {
         ResponseEntity<Map> response = restTemplate.exchange(
                 "/api/backend/recurso",
@@ -219,11 +257,13 @@ class GatewayErrorHandlingTest {
             server.createContext("/api/backend", exchange -> {
                 String userId = exchange.getRequestHeaders().getFirst("X-User-Id");
                 String role = exchange.getRequestHeaders().getFirst("X-User-Role");
+                String correlationId = exchange.getRequestHeaders().getFirst("X-Correlation-Id");
 
                 StringBuilder cuerpo = new StringBuilder("error-backend; X-User-Id=" + userId);
                 if (role != null) {
                     cuerpo.append("; X-User-Role=").append(role);
                 }
+                cuerpo.append("; X-Correlation-Id=").append(correlationId);
 
                 byte[] response = cuerpo.toString().getBytes(StandardCharsets.UTF_8);
                 exchange.getResponseHeaders().add("Content-Type", "text/plain; charset=UTF-8");

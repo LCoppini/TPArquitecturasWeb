@@ -29,6 +29,17 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
+# Solo health, sin detalles. El gateway lo deja fuera de la cadena con
+# securityMatcher("/api/**", "/internal/**").
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
 # E2 (ADR-0003): emision RS256. La privada NO tiene valor por defecto: sin
 # JWT_PRIVATE_KEY el servicio no arranca (fail closed).
 jwt:

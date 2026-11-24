@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe JMeter — verificación de carga tope de lote</title>
+<style>
+  :root { color-scheme: light; --ink:#17202a; --muted:#5d6d7e; --line:#dfe6e9; --accent:#1f618d; --ok:#1e8449; --warn:#b9770e; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:32px; font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:#f7f9fa; }
+  main { max-width:1080px; margin:0 auto; background:#fff; border:1px solid var(--line); border-radius:12px; padding:32px; box-shadow:0 2px 10px rgba(0,0,0,.04); }
+  h1 { margin:0 0 4px; font-size:26px; }
+  h2 { margin:32px 0 12px; font-size:18px; border-bottom:1px solid var(--line); padding-bottom:6px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .notice { border-left:4px solid var(--warn); background:#fdf5e6; padding:14px 16px; border-radius:6px; margin:20px 0; }
+  .notice strong { color:#7d6608; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:20px 0; }
+  .kpi { border:1px solid var(--line); border-radius:8px; padding:14px; background:#fbfcfc; }
+  .kpi .v { font-size:24px; font-weight:700; color:var(--accent); }
+  .kpi .l { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th,td { padding:9px 10px; border-bottom:1px solid var(--line); text-align:right; }
+  th:first-child,td:first-child { text-align:left; }
+  th { background:#eef3f6; font-weight:600; }
+  tr:last-child td { border-bottom:0; }
+  .bar { background:#eaf0f3; border-radius:4px; height:18px; overflow:hidden; }
+  .bar > span { display:block; height:100%; background:linear-gradient(90deg,#2e86c1,#1f618d); color:#fff; font-size:11px; line-height:18px; padding-left:6px; white-space:nowrap; }
+  code { background:#eef3f6; padding:1px 5px; border-radius:4px; font-size:13px; }
+  ul { margin:8px 0 0 20px; padding:0; }
+  li { margin:5px 0; }
+  .ok { color:var(--ok); font-weight:600; }
+  footer { margin-top:30px; padding-top:14px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Informe de carga — JMeter</h1>
+  <p class="sub">Change <code>corregir-tope-lote-fila</code> · 2026-11-23 · Evento 21 · escenario <code>r45m30top</code></p>
+
+  <div class="notice">
+    <strong>Alcance explícito:</strong> la carga se ejecutó <strong>sin el flujo
+    aviso-artista-favorito</strong>. El plan cubre únicamente activar la fila,
+    ingreso a fila, polling de <code>mi-estado</code> hasta <code>HABILITADO</code>,
+    compra de 2 entradas y pago. No se ejecutaron avisos al artista, favoritos ni
+    endpoints de preferencias/notificaciones. Estos resultados <strong>no cubren</strong>
+    ese flujo.
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">45</div><div class="l">Clientes (ramp 0)</div></div>
+    <div class="kpi"><div class="v">250</div><div class="l">Muestras JTL</div></div>
+    <div class="kpi"><div class="v ok">0</div><div class="l">Errores</div></div>
+    <div class="kpi"><div class="v">1887 ms</div><div class="l">p95 compra</div></div>
+    <div class="kpi"><div class="v">7,94 s</div><div class="l">Duración</div></div>
+    <div class="kpi"><div class="v">31,48/s</div><div class="l">Throughput muestras</div></div>
+  </div>
+
+  <h2>Parámetros de la corrida</h2>
+  <table>
+    <tbody>
+      <tr><td>Evento / sector</td><td>21 / 1 (capacidad máxima 1000)</td></tr>
+      <tr><td>Hilos / ramp</td><td>45 / 0</td></tr>
+      <tr><td><code>maxPersonas</code> / <code>cupoEntradas</code></td><td>30 / 60 por tanda</td></tr>
+      <tr><td>Entradas por compra</td><td>2</td></tr>
+      <tr><td>Timeout de polling</td><td>60000 ms (<code>-JpollTimeoutMs=60000</code>)</td></tr>
+      <tr><td>Instancias</td><td>2 réplicas de <code>msvc-entrada</code> + gateway en <code>127.0.0.1:8080</code></td></tr>
+      <tr><td>Inicio / fin (UTC-3)</td><td>17:26:10.470 / 17:26:18.411</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Métricas por sampler</h2>
+  <table>
+    <thead>
+      <tr><th>Sampler</th><th>N</th><th>OK</th><th>Err</th><th>Min ms</th><th>Avg ms</th><th>p95 ms</th><th>Max ms</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1 - POST ingreso a fila</td><td>45</td><td>45</td><td>0</td><td>254</td><td>1307,0</td><td>2217</td><td>2335</td></tr>
+      <tr><td>2a - GET mi-estado</td><td>114</td><td>114</td><td>0</td><td>13</td><td>491,2</td><td>1750</td><td>1883</td></tr>
+      <tr><td>3 - POST compra (2 entradas)</td><td>45</td><td>45</td><td>0</td><td>137</td><td>935,4</td><td>1887</td><td>2364</td></tr>
+      <tr><td>4 - POST pago de compra</td><td>45</td><td>45</td><td>0</td><td>320</td><td>1457,6</td><td>2291</td><td>2328</td></tr>
+      <tr><td>PUT activar fila (setup)</td><td>1</td><td>1</td><td>0</td><td>282</td><td>282,0</td><td>282</td><td>282</td></tr>
+      <tr><td><strong>Global</strong></td><td><strong>250</strong></td><td><strong>250</strong></td><td><strong>0</strong></td><td><strong>13</strong></td><td><strong>891,1</strong></td><td><strong>2136</strong></td><td><strong>2364</strong></td></tr>
+    </tbody>
+  </table>
+  <p class="sub">Códigos de respuesta: <code>200</code> × 205, <code>201</code> × 45. Sin timeouts de polling.</p>
+
+  <h2>p95 por sampler</h2>
+  <table>
+    <tbody>
+      <tr><td>1 - POST ingreso a fila</td><td style="width:70%"><div class="bar"><span style="width:97%">2217 ms</span></div></td></tr>
+      <tr><td>2a - GET mi-estado</td><td><div class="bar"><span style="width:76%">1750 ms</span></div></td></tr>
+      <tr><td>3 - POST compra</td><td><div class="bar"><span style="width:82%">1887 ms</span></div></td></tr>
+      <tr><td>4 - POST pago</td><td><div class="bar"><span style="width:100%">2291 ms</span></div></td></tr>
+      <tr><td>PUT activar fila</td><td><div class="bar"><span style="width:12%">282 ms</span></div></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Verificación funcional en base</h2>
+  <table>
+    <tbody>
+      <tr><td>Compras OK / pagadas</td><td class="ok">45 / 45</td></tr>
+      <tr><td>Entradas <code>VALIDA</code></td><td class="ok">90</td></tr>
+      <tr><td>Sobreventa</td><td class="ok">0 (90 ≤ 1000)</td></tr>
+      <tr><td>Tanda 1 / tanda 2</td><td>30 personas (seq 1–30) / 15 personas (seq 31–45)</td></tr>
+      <tr><td>Inversiones FIFO</td><td class="ok">0</td></tr>
+      <tr><td>Claves de idempotencia</td><td>45 compra + 45 pago, todas distintas</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Fuentes</h2>
+  <ul>
+    <li>JTL XML: <code>jtl/ramp0-45-tope.jtl</code> (250 muestras, sin secretos).</li>
+    <li>Plan JMeter: <code>../../archive/2026-11-23-turno-vigente-al-ingresar/jmeter/prueba-carga.jmx</code>.</li>
+    <li>Resumen de corrida: <code>carga-verificacion.md</code>. Gemelo Markdown: <code>informe-jmeter.md</code>.</li>
+  </ul>
+  <p class="sub">Los tokens se pasaron por propiedades (<code>-JclientTokens</code>, <code>-JorgToken</code>); no hay credenciales en el JTL ni en este informe. JMeter CLI no está disponible en el entorno local, por lo que el HTML se generó directamente desde el JTL XML sin agregar dependencias al proyecto.</p>
+
+  <footer>Generado el 2026-11-23 · Documentación de verificación de carga.</footer>
+</main>
+</body>
+</html>

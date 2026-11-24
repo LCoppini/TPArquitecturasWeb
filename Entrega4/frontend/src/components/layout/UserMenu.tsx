@@ -52,6 +52,7 @@ export const UserMenu = ({ email, onSignOut }: UserMenuProps) => {
           </div>
           <div role="separator" className="my-1 h-px bg-line-subtle" />
           <MenuLink to="/mis-entradas" icon="ticket" label="Mis entradas" onNavigate={close} />
+          <MenuLink to="/notificaciones" icon="mail" label="Notificaciones" onNavigate={close} />
           <MenuLink to="/perfil" icon="user" label="Mi perfil" onNavigate={close} />
           <div role="separator" className="my-1 h-px bg-line-subtle" />
           <button

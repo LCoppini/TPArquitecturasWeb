@@ -1,0 +1,5 @@
+- [x] 1. `AsignacionAsientos` y uso en `CompraService.crear`
+- [x] 2. `GET /api/filas-virtuales/eventos/{id}`
+- [x] 3. Tests `AsignacionAsientosTest` y `FilaVirtualSalidaControllerTest`
+- [ ] 4. Correr `mvn -pl msvc-entrada test`
+- [x] 5. `EntradaResponse` suma `idCompra`, `estadoDevolucion`, `motivoInvalidacion` (constructor previo conservado) para "Mis entradas"

@@ -9,6 +9,20 @@ public record UsuarioResponse(
         String apellido,
         String ciudad,
         boolean activo,
-        Set<RolResponse> roles
+        Set<RolResponse> roles,
+        String email
 ) {
+
+    /** Constructor previo, conservado para no modificar los tests existentes. */
+    public UsuarioResponse(
+            Long idUsuario,
+            Long dni,
+            String nombre,
+            String apellido,
+            String ciudad,
+            boolean activo,
+            Set<RolResponse> roles
+    ) {
+        this(idUsuario, dni, nombre, apellido, ciudad, activo, roles, null);
+    }
 }

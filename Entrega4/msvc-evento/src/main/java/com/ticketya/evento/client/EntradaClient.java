@@ -1,5 +1,6 @@
 package com.ticketya.evento.client;
 
+import com.ticketya.evento.dto.request.ModificacionEventoRequest;
 import com.ticketya.evento.dto.response.DisponibilidadResponse;
 import com.ticketya.evento.dto.response.ReporteVentasEventoResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -19,7 +20,14 @@ public interface EntradaClient {
     @GetMapping("/internal/entradas/eventos/{idEvento}/reporte")
     ReporteVentasEventoResponse consultarReporte(@PathVariable("idEvento") Long idEvento);
 
-    @PostMapping("/eventos/{idEvento}/cancelacion")
+    /** Contrato interno: entrada conoce a los compradores y les avisa del cambio. */
+    @PostMapping("/internal/entradas/eventos/{idEvento}/modificacion")
+    void notificarModificacion(
+            @PathVariable("idEvento") Long idEvento,
+            @RequestBody ModificacionEventoRequest request
+    );
+
+    @PostMapping("/api/admin/entradas/eventos/{idEvento}/cancelacion")
     void cancelarEntradas(
             @PathVariable("idEvento") Long idEvento,
             @RequestHeader("X-User-Id") Long idAdministrador

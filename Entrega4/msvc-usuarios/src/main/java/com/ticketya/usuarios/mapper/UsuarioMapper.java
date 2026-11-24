@@ -25,7 +25,8 @@ public class UsuarioMapper {
                 usuario.getApellido(),
                 usuario.getCiudad(),
                 usuario.isActivo(),
-                roles
+                roles,
+                usuario.getEmail()
         );
     }
 }

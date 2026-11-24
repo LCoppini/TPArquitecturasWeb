@@ -1,0 +1,3 @@
+- [x] 1. `FilaVirtualService.salir`, endpoint DELETE y `esperaEstimadaSegundos`
+- [x] 2. Tests: `FilaVirtualSalidaTest`, `FilaVirtualSalidaControllerTest`
+- [ ] 3. Correr `mvn -pl msvc-entrada test`

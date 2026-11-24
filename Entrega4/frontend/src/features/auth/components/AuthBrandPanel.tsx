@@ -1,6 +1,5 @@
 import { Icon } from '@/components/ui/Icon'
 import type { IconName } from '@/components/ui/iconPaths'
-import { Logo } from '@/components/ui/Logo'
 import { ScenePanel } from '@/components/layout/ScenePanel'
 
 const BENEFITS: { icon: IconName; text: string }[] = [
@@ -11,8 +10,7 @@ const BENEFITS: { icon: IconName; text: string }[] = [
 
 /** Panel oscuro de marca que acompaña a los formularios de ingreso y registro. */
 export const AuthBrandPanel = () => (
-  <ScenePanel aria-label="Por qué TicketYa" className="flex min-h-190 flex-col justify-between p-14" artClassName="-top-32 -right-40">
-    <Logo className="relative text-[30px]" />
+  <ScenePanel aria-label="Por qué TicketYa" className="flex flex-col justify-center gap-16 p-16" artClassName="-top-32 -right-40">
     <div className="relative flex max-w-120 flex-col gap-6">
       <span className="text-overline text-brand-text">Entradas en pocos pasos</span>
       <p className="text-display text-fg">Tu noche, tu entrada</p>

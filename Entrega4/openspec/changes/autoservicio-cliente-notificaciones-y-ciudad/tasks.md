@@ -1,0 +1,4 @@
+- [x] 1. msvc-notificaciones: `MisNotificacionesController`, `MiNotificacionResponse` y tests
+- [x] 2. msvc-usuarios: `PUT /api/usuarios/me/ciudad`, `ActualizarCiudadRequest`, servicio y tests
+- [x] 3. msvc-gateway: ruta (application.yml y msvc-config), matriz de roles, regla de ciudad propia y tests
+- [ ] 4. Correr `mvn -pl msvc-notificaciones,msvc-usuarios,msvc-gateway test`

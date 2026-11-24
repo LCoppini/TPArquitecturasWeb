@@ -43,6 +43,9 @@ public class Entrada {
     @Column(name = "id_evento", nullable = false)
     private Long idEvento;
 
+    @Column(name = "id_compra")
+    private Long idCompra;
+
     @Column(name = "id_usuario", nullable = false)
     private Long idUsuario;
 

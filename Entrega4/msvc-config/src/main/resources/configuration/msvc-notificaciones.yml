@@ -25,6 +25,9 @@ spring:
           usuarioClient:            # contextId de UsuarioClient
             connect-timeout: 500
             read-timeout: 1500
+          preferenciasClient:       # contextId de PreferenciasClient (por cada artista del evento)
+            connect-timeout: 500
+            read-timeout: 3000
   mail:
     host: ${MAIL_HOST:sandbox.smtp.mailtrap.io}
     port: ${MAIL_PORT:2525}
@@ -81,3 +84,14 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+# Solo health, sin detalles. El gateway lo deja fuera de la cadena con
+# securityMatcher("/api/**", "/internal/**").
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

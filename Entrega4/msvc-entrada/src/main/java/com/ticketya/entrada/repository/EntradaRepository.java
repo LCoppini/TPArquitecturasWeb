@@ -36,11 +36,23 @@ public interface EntradaRepository extends JpaRepository<Entrada, Long> {
 
     Optional<Entrada> findByCodigoQr(String codigoQr);
 
+    List<Entrada> findByIdCompraOrderById(Long idCompra);
+
     List<Entrada> findByIdUsuarioOrderByIdDesc(Long idUsuario);
 
     Optional<Entrada> findByIdAndIdUsuario(Long id, Long idUsuario);
 
     List<Entrada> findByIdEventoAndEstadoIn(Long idEvento, List<String> estados);
+
+    @Query("""
+            select count(e) from Entrada e
+            where e.idEvento = :idEvento
+              and (
+                e.estado in ('VALIDA', 'USADA')
+                or (e.estado = 'RESERVADA' and e.expiraEn > :ahora)
+              )
+            """)
+    long contarEntradasActivasDeEvento(@Param("idEvento") Long idEvento, @Param("ahora") Instant ahora);
 
     @Query("""
             select count(e) from Entrada e
@@ -51,6 +63,25 @@ public interface EntradaRepository extends JpaRepository<Entrada, Long> {
               )
             """)
     long contarActivasDeSector(
+            @Param("idEvento") Long idEvento,
+            @Param("idSector") Long idSector,
+            @Param("ahora") Instant ahora
+    );
+
+    @Query("select distinct e.idUsuario from Entrada e where e.idEvento = :idEvento and e.estado = 'VALIDA'")
+    List<Long> buscarUsuariosConEntradasValidas(@Param("idEvento") Long idEvento);
+
+    /** Asientos (fila, asiento) ocupados de un sector: reservas vigentes y entradas emitidas. */
+    @Query("""
+            select e.fila, e.asiento from Entrada e
+            where e.idEvento = :idEvento and e.idSector = :idSector
+              and e.fila is not null and e.asiento is not null
+              and (
+                e.estado in ('VALIDA', 'USADA')
+                or (e.estado = 'RESERVADA' and e.expiraEn > :ahora)
+              )
+            """)
+    List<Object[]> asientosOcupadosDeSector(
             @Param("idEvento") Long idEvento,
             @Param("idSector") Long idSector,
             @Param("ahora") Instant ahora
