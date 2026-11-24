@@ -1,0 +1,130 @@
+/*
+ * Mapea los tokens generados (--ty-*) a Tailwind v4.
+ * Dos grupos de nombres: los de shadcn/ui (para que sus componentes tomen el estilo de TicketYa)
+ * y los propios de la aplicación (page, surface, fg, brand, line, estados).
+ */
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* shadcn/ui */
+  --color-background: var(--ty-bg-page);
+  --color-foreground: var(--ty-text-primary);
+  --color-card: var(--ty-bg-surface);
+  --color-card-foreground: var(--ty-text-primary);
+  --color-popover: var(--ty-bg-surface);
+  --color-popover-foreground: var(--ty-text-primary);
+  --color-primary: var(--ty-accent);
+  --color-primary-foreground: var(--ty-text-on-accent);
+  --color-secondary: var(--ty-bg-inverse);
+  --color-secondary-foreground: var(--ty-text-inverse);
+  --color-muted: var(--ty-bg-surface-alt);
+  --color-muted-foreground: var(--ty-text-muted);
+  --color-accent: var(--ty-bg-surface-alt);
+  --color-accent-foreground: var(--ty-text-primary);
+  --color-destructive: var(--ty-error-fg);
+  --color-border: var(--ty-border-default);
+  --color-input: var(--ty-border-control);
+  --color-ring: var(--ty-focus-ring);
+
+  /* Superficies y texto de TicketYa */
+  --color-page: var(--ty-bg-page);
+  --color-surface: var(--ty-bg-surface);
+  --color-surface-alt: var(--ty-bg-surface-alt);
+  --color-field: var(--ty-bg-input);
+  --color-inverse: var(--ty-bg-inverse);
+  --color-glass: var(--ty-bg-glass);
+  --color-fg: var(--ty-text-primary);
+  --color-fg-secondary: var(--ty-text-secondary);
+  --color-fg-muted: var(--ty-text-muted);
+  --color-fg-disabled: var(--ty-text-disabled);
+  --color-fg-inverse: var(--ty-text-inverse);
+  --color-ink: var(--ty-ink-950);
+  --color-bone: var(--ty-bone);
+  --color-ink-line: var(--ty-ink-700);
+  --color-gray-soft: var(--ty-gray-300);
+
+  /* Acento */
+  --color-brand: var(--ty-accent);
+  --color-brand-hover: var(--ty-accent-hover);
+  --color-brand-pressed: var(--ty-accent-pressed);
+  --color-brand-soft: var(--ty-accent-soft);
+  --color-brand-text: var(--ty-text-accent);
+  --color-on-brand: var(--ty-text-on-accent);
+  --color-mint: var(--ty-mint-500);
+
+  /* Bordes */
+  --color-line-subtle: var(--ty-border-subtle);
+  --color-line: var(--ty-border-default);
+  --color-line-control: var(--ty-border-control);
+  --color-line-strong: var(--ty-border-strong);
+  --color-line-glass: var(--ty-border-glass);
+  --color-overlay: var(--ty-bg-overlay);
+
+  /* Estados */
+  --color-success-fg: var(--ty-success-fg);
+  --color-success-bg: var(--ty-success-bg);
+  --color-success-border: var(--ty-success-border);
+  --color-error-fg: var(--ty-error-fg);
+  --color-error-bg: var(--ty-error-bg);
+  --color-error-border: var(--ty-error-border);
+  --color-warning-fg: var(--ty-warning-fg);
+  --color-warning-bg: var(--ty-warning-bg);
+  --color-warning-border: var(--ty-warning-border);
+  --color-info-fg: var(--ty-info-fg);
+  --color-info-bg: var(--ty-info-bg);
+  --color-info-border: var(--ty-info-border);
+
+  /* Tipografía, radios, sombras, curvas y contenedor */
+  --font-sans: var(--ty-font-sans);
+  --font-serif: var(--ty-font-serif);
+  --radius-xs: var(--ty-radius-xs);
+  --radius-sm: var(--ty-radius-sm);
+  --radius-md: var(--ty-radius-md);
+  --radius-lg: var(--ty-radius-lg);
+  --radius-xl: var(--ty-radius-xl);
+  --radius-2xl: var(--ty-radius-2xl);
+  --radius-pill: var(--ty-radius-pill);
+  --shadow-xs: var(--ty-shadow-xs);
+  --shadow-sm: var(--ty-shadow-sm);
+  --shadow-md: var(--ty-shadow-md);
+  --shadow-lg: var(--ty-shadow-lg);
+  --shadow-glow: var(--ty-shadow-glow);
+  --ease-standard: var(--ty-ease-standard);
+  --ease-enter: var(--ty-ease-enter);
+  --ease-exit: var(--ty-ease-exit);
+  --container-content: var(--ty-content-max);
+}
+
+/* Transición estándar de estados (hover, foco, pressed). */
+@utility motion-fast {
+  transition-duration: var(--ty-duration-fast);
+  transition-timing-function: var(--ty-ease-standard);
+}
+
+/* Elevación de tarjetas. */
+@utility motion-base {
+  transition-duration: var(--ty-duration-base);
+  transition-timing-function: var(--ty-ease-standard);
+}
+
+/* Escena de fondo de héroes y paneles de marca. */
+@utility bg-scene {
+  background:
+    radial-gradient(60% 80% at 80% 10%, #6bf28b33, transparent 60%),
+    radial-gradient(50% 60% at 10% 90%, #6bf28b1f, transparent 60%), var(--ty-ink-950);
+}
+
+/* Efecto vidrio sobre fondos oscuros o imágenes. */
+@utility surface-glass {
+  background: var(--ty-bg-glass);
+  border: 1px solid var(--ty-border-glass);
+  backdrop-filter: blur(16px);
+}
+
+@keyframes ty-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

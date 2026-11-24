@@ -1,0 +1,6 @@
+- [x] Detalle de evento y selección de sector y cantidad
+- [x] Fila virtual (espera, salir) y compra (reserva, pago, resultados)
+- [x] Mis entradas con QR y devolución
+- [x] Perfil, recomendados y sesión vencida
+- [x] Tests (96 en total), lint, tipos y límite de 150 líneas
+- [ ] Auditoría en el navegador con todos los servicios levantados
