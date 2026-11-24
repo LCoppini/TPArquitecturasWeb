@@ -239,25 +239,32 @@ services:
     mem_limit: 512m
     restart: unless-stopped
 
-  # Plantilla: hoy msvc-notificaciones es solo esqueleto (package-info.java).
-  # Activar cuando el servicio esté implementado:
-  # msvc-notificaciones:
-  #   build:
-  #     <<: *common-build
-  #     dockerfile: msvc-notificaciones/Dockerfile
-  #   environment:
-  #     <<: [*common-env, *postgres-env]
-  #   volumes: ["ticketya-logs:/app/logs"]
-  #   depends_on:
-  #     postgres: { condition: service_healthy }
-  #     msvc-eureka: { condition: service_healthy }
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-fsS", "http://localhost:8085/actuator/health"]
-  #     interval: 10s
-  #     timeout: 3s
-  #     retries: 10
-  #   mem_limit: 768m
-  #   restart: unless-stopped
+  # Servicio implementado. El puerto se expone solo en loopback para probar
+  # /internal/** con Postman; el gateway no enruta ni permite ese prefijo.
+  msvc-notificaciones:
+    build:
+      <<: *common-build
+      dockerfile: msvc-notificaciones/Dockerfile
+    environment:
+      <<: [*common-env, *postgres-env]
+      # Sin credenciales SMTP, el indicador de salud de mail deja el servicio DOWN.
+      # El circuito "email" y los reintentos siguen activos; solo se desactiva el indicador.
+      MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
+    ports:
+      - "127.0.0.1:8085:8085"
+    volumes:
+      - ticketya-logs:/app/logs
+    depends_on:
+      postgres: { condition: service_healthy }
+      msvc-eureka: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8085/actuator/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    mem_limit: 768m
+    restart: unless-stopped
 
 volumes:
   postgres-data:

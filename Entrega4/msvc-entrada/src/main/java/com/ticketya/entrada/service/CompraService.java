@@ -19,6 +19,7 @@ import com.ticketya.entrada.entity.Entrada;
 import com.ticketya.entrada.entity.IngresoFila;
 import com.ticketya.entrada.entity.IntentoCompra;
 import com.ticketya.entrada.entity.Pago;
+import com.ticketya.entrada.entity.PendientePreferencia;
 import com.ticketya.entrada.entity.RegistroPago;
 import com.ticketya.entrada.entity.RegistroPagoId;
 import com.ticketya.entrada.entity.FilaEvento;
@@ -29,6 +30,7 @@ import com.ticketya.entrada.repository.FilaEventoRepository;
 import com.ticketya.entrada.repository.IngresoFilaRepository;
 import com.ticketya.entrada.repository.IntentoCompraRepository;
 import com.ticketya.entrada.repository.PagoRepository;
+import com.ticketya.entrada.repository.PendientePreferenciaRepository;
 import com.ticketya.entrada.repository.RegistroPagoRepository;
 import com.ticketya.entrada.repository.TandaFilaRepository;
 import feign.FeignException;
@@ -89,6 +91,16 @@ public class CompraService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    /** Outbox opcional: los tests unitarios pueden construir el servicio sin el repositorio. */
+    private PendientePreferenciaRepository pendientePreferenciaRepository;
+
+    @Autowired(required = false)
+    public void setPendientePreferenciaRepository(PendientePreferenciaRepository pendientePreferenciaRepository) {
+        if (pendientePreferenciaRepository != null) {
+            this.pendientePreferenciaRepository = pendientePreferenciaRepository;
+        }
+    }
 
     private FilaVirtualProperties filaVirtualProperties = new FilaVirtualProperties();
 
@@ -422,6 +434,7 @@ public class CompraService {
         ).filter(m -> idTandaCompra != null && idTandaCompra.equals(m.getIdTanda()))
                 .ifPresent(m -> m.setEstado("COMPRO"));
         reevaluarCierreTanda(fila, tanda, ahora);
+        registrarPendientesPreferencia(compra, entradas);
         eventPublisher.publishEvent(new CompraPagadaEvent(
                 compra.getIdCompra(),
                 compra.getIdEvento(),
@@ -729,6 +742,31 @@ public class CompraService {
     private String correlationId() {
         String correlationId = MDC.get(com.ticketya.entrada.config.CorrelationContext.MDC_KEY);
         return correlationId == null || correlationId.isBlank() ? "no-disponible" : correlationId;
+    }
+
+    /**
+     * Registra el outbox de preferencias de la compra agrupada. El titular es el usuario que pago,
+     * no los participantes invitados. Se llama dentro de la transaccion de pago, antes de publicar
+     * el evento, para que el aviso y el pago se confirmen juntos.
+     */
+    private void registrarPendientesPreferencia(Compra compra, List<Entrada> entradas) {
+        if (pendientePreferenciaRepository == null) {
+            return;
+        }
+        String correlationId = correlationId();
+        for (Entrada entrada : entradas) {
+            if (pendientePreferenciaRepository.findByIdEntrada(entrada.getId()).isPresent()) {
+                continue;
+            }
+            PendientePreferencia pendiente = new PendientePreferencia();
+            pendiente.setIdEntrada(entrada.getId());
+            pendiente.setIdUsuario(compra.getIdUsuario());
+            pendiente.setIdEvento(compra.getIdEvento());
+            pendiente.setCorrelationId(correlationId);
+            pendiente.setEstado(PendientePreferencia.PENDIENTE);
+            pendiente.setIntentos(0);
+            pendientePreferenciaRepository.save(pendiente);
+        }
     }
 
     private void compensar(Compra compra, List<Entrada> entradas, TandaFila tanda) {
